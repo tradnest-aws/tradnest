@@ -642,6 +642,9 @@ export type Routes = {
                 calculate: typeof import("@medusajs/medusa/api/store/shipping-options/[id]/calculate/route");
             };
         };
+        quoteRequests: typeof import("../src/api/store/quote-requests/route") & {
+            $id: typeof import("../src/api/store/quote-requests/[id]/route");
+        };
         reviews: typeof import("../src/api/store/reviews/route") & {
             $id: typeof import("../src/api/store/reviews/[id]/route");
         };
@@ -931,6 +934,9 @@ export type Routes = {
         };
         stores: typeof import("../src/api/vendor/stores/route");
         uploads: typeof import("../src/api/vendor/uploads/route");
+        quoteRequests: typeof import("../src/api/vendor/quote-requests/route") & {
+            $id: typeof import("../src/api/vendor/quote-requests/[id]/route");
+        };
         rbac: {
             me: {
                 permissions: typeof import("../src/api/vendor/rbac/me/permissions/route");
