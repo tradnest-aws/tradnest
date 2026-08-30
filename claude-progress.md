@@ -18,7 +18,7 @@ session detail aggressively. The per-spec source of truth lives in
 
 - **Goal.** Use this Mercur fork as Tradnest: B2B multi-vendor with a procurement storefront.
 - **Landed.** Quote-request module (store + vendor APIs); buyer company registration; RFQ on product pages; wholesale homepage/copy; `/user/quotes`. Spec: `docs/specs/SPEC-001-b2b-multi-vendor-storefront.md`.
-- **Verified.** See spec Evidence after lint/build/tests in this session.
+- **Verified.** `bun run lint` (oxlint) passed. `@mercurjs/types` + `@mercurjs/core` built. `bun run test:integration:http -- quote-request`: 7/7 passed. Storefront `tsc` still has pre-existing errors unrelated to this change.
 - **Owed / next.** Vendor-panel quote inbox UI, company buyer teams, net payment terms.
 
 ## Session — Admin Inventory (MER-139), branch `feat/admin-inventory`
