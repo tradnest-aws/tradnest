@@ -27,7 +27,11 @@ export const metadata: Metadata = {
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
     'Tradnest B2B multi-vendor marketplace — source from suppliers, compare offers, and request quotes.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000')
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  icons: {
+    icon: '/tradnest-icon.png',
+    apple: '/tradnest-icon.png'
+  }
 };
 
 export default async function RootLayout({

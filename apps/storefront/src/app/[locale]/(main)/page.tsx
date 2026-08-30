@@ -47,7 +47,7 @@ export async function generateMetadata({
   const title = "Wholesale marketplace"
   const description =
     "Tradnest is a B2B multi-vendor marketplace. Source from approved suppliers, compare offers, request quotes, and check out on one order."
-  const ogImage = "/B2C_Storefront_Open_Graph.png"
+  const ogImage = "/tradnest-logo.png"
 
   return {
     title,
@@ -125,7 +125,7 @@ export default async function Home({
             "@type": "Organization",
             name: siteName,
             url: `${baseUrl}/${locale}`,
-            logo: `${baseUrl}/favicon.ico`,
+            logo: `${baseUrl}/tradnest-icon.png`,
           }),
         }}
       />

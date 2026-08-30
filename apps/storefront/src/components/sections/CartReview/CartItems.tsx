@@ -42,7 +42,7 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
           seller: {
             name: 'Tradnest',
             id: 'tradnest',
-            photo: '/Logo.svg',
+            photo: '/tradnest-icon.png',
             created_at: new Date()
           },
           items: []

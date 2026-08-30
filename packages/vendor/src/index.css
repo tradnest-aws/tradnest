@@ -3,3 +3,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --brand-navy: #101828;
+  --brand-navy-soft: #1a2740;
+  --brand-gold: #d2a64b;
+  --brand-canvas: #f6f3ec;
+  --fg-interactive: var(--brand-navy);
+  --fg-interactive-hover: var(--brand-gold);
+  --border-interactive: var(--brand-gold);
+  --button-inverted-bg: var(--brand-navy);
+  --button-inverted-bg-hover: var(--brand-navy-soft);
+  --bg-subtle: var(--brand-canvas);
+}

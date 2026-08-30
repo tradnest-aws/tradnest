@@ -1,7 +1,7 @@
 import { Button } from "@/components/atoms"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { CollapseIcon } from "@/icons"
-import Image from "next/image"
+import { TradnestLogo } from "@/components/atoms/TradnestLogo/TradnestLogo"
 
 export default async function RootLayout({
   children,
@@ -21,14 +21,8 @@ export default async function RootLayout({
             </LocalizedClientLink>
           </div>
           <div className="flex items-center justify-center pl-4 lg:pl-0 w-full">
-            <LocalizedClientLink href="/" className="text-2xl font-bold">
-              <Image
-                src="/Logo.svg"
-                width={126}
-                height={40}
-                alt="Logo"
-                priority
-              />
+            <LocalizedClientLink href="/" className="inline-flex items-center">
+              <TradnestLogo height={36} priority />
             </LocalizedClientLink>
           </div>
         </div>

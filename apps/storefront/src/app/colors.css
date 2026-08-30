@@ -1,9 +1,9 @@
 :root {
     /* Neutral colors are the foundation of the color system. Almost everything in UI design — text, fields, backgrounds, dividers — are usually gray. */
     --neutral-0: 255, 255, 255;
-    --neutral-25: 247, 247, 247;
-    --neutral-50: 238, 238, 238;
-    --neutral-100: 226, 226, 226;
+    --neutral-25: 246, 243, 236;
+    --neutral-50: 230, 224, 212;
+    --neutral-100: 214, 206, 190;
     --neutral-200: 198, 198, 198;
     --neutral-300: 163, 163, 163;
     --neutral-400: 115, 115, 115;
@@ -14,18 +14,18 @@
     --neutral-900: 22, 22, 22;
     --neutral-1000: 9, 9, 9;
 
-    /* Brand colors are used across all interactive elements such as buttons, links, inputs, etc. This color can define the overall feel and can elicit emotion. */
-    --brand-25: 247, 247, 247;
-    --brand-50: 238, 238, 238;
-    --brand-100: 226, 226, 226;
-    --brand-200: 198, 198, 198;
-    --brand-300: 163, 163, 163;
-    --brand-400: 115, 115, 115;
-    --brand-500: 82, 82, 82;
-    --brand-600: 64, 64, 64;
-    --brand-700: 27, 27, 27;
-    --brand-800: 22, 22, 22;
-    --brand-900: 9, 9, 9;
+    /* Brand: Tradnest navy + gold from the wordmark. */
+    --brand-25: 246, 243, 236;
+    --brand-50: 230, 224, 212;
+    --brand-100: 210, 166, 75;
+    --brand-200: 196, 149, 58;
+    --brand-300: 168, 124, 42;
+    --brand-400: 90, 108, 138;
+    --brand-500: 45, 62, 96;
+    --brand-600: 31, 48, 80;
+    --brand-700: 26, 39, 64;
+    --brand-800: 22, 32, 52;
+    --brand-900: 16, 24, 40;
     
     /* Red colors are used across error states and in "destructive" actions. */
     --red-25: 254, 243, 242;
@@ -83,7 +83,7 @@
 :root {
     --bg-primary: var(--neutral-0);
     --bg-secondary: var(--neutral-25);
-    --bg-tertiary: var(--neutral-1000);
+    --bg-tertiary: var(--brand-900);
 
     --bg-component-primary: var(--neutral-0);
     --bg-component-primary-hover: var(--neutral-25);
@@ -130,8 +130,8 @@
     --content-tertiary: var(--neutral-0);
 
     --content-action-primary: var(--brand-900);
-    --content-action-primary-hover: var(--brand-800);
-    --content-action-primary-pressed: var(--brand-700);
+    --content-action-primary-hover: var(--brand-100);
+    --content-action-primary-pressed: var(--brand-200);
     --content-action-on-primary: var(--brand-25);
     --content-action-on-secondary: var(--neutral-1000);
     --content-action-on-tertiary: var(--neutral-0);
@@ -152,7 +152,7 @@
 
     --border-primary: var(--neutral-50);
     --border-secondary: var(--neutral-800);
-    --border-action: var(--brand-900);
+    --border-action: var(--brand-100);
     --border-negative-primary: var(--red-700);
     --border-negative-secondary: var(--red-200);
     --border-positive-primary: var(--green-800);
