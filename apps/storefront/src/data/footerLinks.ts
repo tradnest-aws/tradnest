@@ -1,21 +1,19 @@
 const links = {
   customerServices: [
-    { label: 'FAQs', path: '#' },
-    { label: 'Track Order', path: '#' },
-    { label: 'Returns', path: '#' },
-    { label: 'Delivery', path: '#' },
-    { label: 'Payment', path: '#' },
+    { label: 'Catalog', path: '/categories' },
+    { label: 'Quote requests', path: '/user/quotes' },
+    { label: 'Orders', path: '/user/orders' },
+    { label: 'Returns', path: '/user/returns' },
+    { label: 'Buyer account', path: '/register' },
   ],
   about: [
-    { label: 'About us', path: '#' },
-    { label: 'Blog', path: '#' },
+    { label: 'About Tradnest', path: '/' },
+    { label: 'Become a supplier', path: '#' },
     { label: 'Privacy Policy', path: '#' },
     { label: 'Terms & Conditions', path: '#' },
   ],
   connect: [
-    { label: 'Facebook', path: 'https://facebook.com' },
-    { label: 'Instagram', path: 'https://instagram.com' },
-    { label: 'LinekdIn', path: 'https://linkedin.com' },
+    { label: 'LinkedIn', path: 'https://linkedin.com' },
   ],
 };
 

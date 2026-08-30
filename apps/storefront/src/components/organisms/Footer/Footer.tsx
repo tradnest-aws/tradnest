@@ -7,7 +7,7 @@ export function Footer() {
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="p-6 border rounded-sm" data-testid="footer-customer-services">
           <h2 className="heading-sm text-primary mb-3 uppercase">
-            Customer services
+            Buyer services
           </h2>
           <nav className="space-y-3" aria-label="Customer services navigation">
             {footerLinks.customerServices.map(({ label, path }) => (
@@ -61,7 +61,7 @@ export function Footer() {
       </div>
 
       <div className="py-6 border rounded-sm " data-testid="footer-copyright">
-        <p className="text-md text-secondary text-center ">© 2026 Fleek</p>
+        <p className="text-md text-secondary text-center ">© 2026 Tradnest</p>
       </div>
     </footer>
   )

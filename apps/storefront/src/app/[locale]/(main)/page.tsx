@@ -1,10 +1,9 @@
 import {
   BannerSection,
-  BlogSection,
   Hero,
   HomeCategories,
   HomeProductSection,
-  ShopByStyleSection,
+  HowProcurementWorksSection,
 } from "@/components/sections"
 
 import type { Metadata } from "next"
@@ -16,6 +15,8 @@ import {
   getStorefrontLocales,
   toHreflang,
 } from "@/lib/helpers/hreflang"
+
+const DEFAULT_SITE_NAME = "Tradnest — B2B multi-vendor marketplace"
 
 export async function generateMetadata({
   params,
@@ -43,9 +44,9 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "Home"
+  const title = "Wholesale marketplace"
   const description =
-    "Welcome to Mercur B2C Demo! Create a modern marketplace that you own and customize in every aspect with high-performance, fully customizable storefront."
+    "Tradnest is a B2B multi-vendor marketplace. Source from approved suppliers, compare offers, request quotes, and check out on one order."
   const ogImage = "/B2C_Storefront_Open_Graph.png"
 
   return {
@@ -68,23 +69,18 @@ export async function generateMetadata({
     },
     openGraph: {
       title: `${title} | ${
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront"
+        process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME
       }`,
       description,
       url: canonical,
-      siteName:
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME,
       type: "website",
       images: [
         {
           url: ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`,
           width: 1200,
           height: 630,
-          alt:
-            process.env.NEXT_PUBLIC_SITE_NAME ||
-            "Mercur B2C Demo - Marketplace Storefront",
+          alt: process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME,
         },
       ],
     },
@@ -109,9 +105,7 @@ export default async function Home({
   const protocol = headersList.get("x-forwarded-proto") || "https"
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
 
-  const siteName =
-    process.env.NEXT_PUBLIC_SITE_NAME ||
-    "Mercur B2C Demo - Marketplace Storefront"
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME
 
   return (
     <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
@@ -151,12 +145,12 @@ export default async function Home({
 
       <Hero
         image="/images/hero/Image.jpg"
-        heading="Snag your style in a flash"
-        paragraph="Buy, sell, and discover pre-loved gems from the trendiest brands."
+        heading="Source from many suppliers in one marketplace"
+        paragraph="Tradnest is built for B2B procurement: compare vendor offers on the same product, request volume quotes, and check out across suppliers on a single order."
         buttons={[
-          { label: "Buy now", path: "/categories" },
+          { label: "Browse catalog", path: "/categories" },
           {
-            label: "Sell now",
+            label: "Sell as a supplier",
             path:
               process.env.NEXT_PUBLIC_VENDOR_URL ||
               "https://vendor.mercurjs.com",
@@ -164,14 +158,13 @@ export default async function Home({
         ]}
       />
       <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="trending listings" locale={locale} home />
+        <HomeProductSection heading="featured catalog" locale={locale} home />
       </div>
       <div className="px-4 lg:px-8 w-full">
         <HomeCategories heading="SHOP BY CATEGORY" />
       </div>
       <BannerSection />
-      <ShopByStyleSection />
-      <BlogSection />
+      <HowProcurementWorksSection />
     </main>
   )
 }

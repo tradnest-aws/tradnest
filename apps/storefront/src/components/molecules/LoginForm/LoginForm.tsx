@@ -148,7 +148,7 @@ const Form = () => {
 
         <div className="rounded-sm border p-4">
           <h2 className="heading-md mb-4 uppercase text-primary">
-            Don&apos;t have an account yet?
+            Need a buyer account?
           </h2>
           <Link
             href="/register"
@@ -158,7 +158,7 @@ const Form = () => {
               variant="tonal"
               className="mt-8 flex w-full justify-center uppercase"
             >
-              Create account
+              Create buyer account
             </Button>
           </Link>
         </div>

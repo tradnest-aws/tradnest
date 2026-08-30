@@ -37,11 +37,11 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
       }
       groupedBySeller[seller.id].items.push(item);
     } else {
-      if (!groupedBySeller['fleek']) {
-        groupedBySeller['fleek'] = {
+      if (!groupedBySeller['tradnest']) {
+        groupedBySeller['tradnest'] = {
           seller: {
-            name: 'Fleek',
-            id: 'fleek',
+            name: 'Tradnest',
+            id: 'tradnest',
             photo: '/Logo.svg',
             created_at: new Date()
           },

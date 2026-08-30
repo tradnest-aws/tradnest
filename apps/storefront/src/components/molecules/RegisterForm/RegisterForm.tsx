@@ -1,7 +1,6 @@
 "use client"
 import {
   FieldError,
-  FieldValues,
   FormProvider,
   useForm,
   useFormContext,
@@ -16,6 +15,7 @@ import { Container } from "@medusajs/ui"
 import Link from "next/link"
 import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
 import { toast } from "@/lib/helpers/toast"
+import { useRouter } from "next/navigation"
 
 export const RegisterForm = () => {
   const methods = useForm<RegisterFormData>({
@@ -26,6 +26,9 @@ export const RegisterForm = () => {
       phone: "",
       email: "",
       password: "",
+      companyName: "",
+      jobTitle: "",
+      taxId: "",
     },
   })
 
@@ -51,6 +54,7 @@ const Form = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useFormContext<RegisterFormData>()
+  const router = useRouter()
 
   const submit = async (data: RegisterFormData) => {
     if (!passwordError.isValid) {
@@ -63,13 +67,21 @@ const Form = () => {
     formData.append("first_name", data.firstName)
     formData.append("last_name", data.lastName)
     formData.append("phone", data.phone)
+    formData.append("company_name", data.companyName)
+    formData.append("job_title", data.jobTitle || "")
+    formData.append("tax_id", data.taxId || "")
 
     const res = await signup(formData)
+
+    if (res && typeof res === "object" && "id" in res && res.id) {
+      router.push("/user")
+      return
+    }
 
     if (res && !res?.id) {
 
       // Temporary solution. Check also for status code when it's fixed by backend
-      const errorMessage = res.toLowerCase().includes('error: identity with email already exists') ? 'It seems the email you entered is already associated with another account. Please log in instead.' : res
+      const errorMessage = String(res).toLowerCase().includes('error: identity with email already exists') ? 'It seems the email you entered is already associated with another account. Please log in instead.' : String(res)
       toast.error({ title: errorMessage})
     }
   }
@@ -78,8 +90,11 @@ const Form = () => {
     <main className="container" data-testid="register-page">
       <Container className="border max-w-xl mx-auto mt-8 p-4" data-testid="register-form-container">
         <h1 className="heading-md text-primary uppercase mb-8">
-          Create account
+          Create a buyer account
         </h1>
+        <p className="label-md text-secondary mb-6">
+          Tradnest is a B2B marketplace. Register with your company so suppliers can quote you.
+        </p>
         <form onSubmit={handleSubmit(submit)} data-testid="register-form">
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <LabeledInput
@@ -99,6 +114,32 @@ const Form = () => {
               {...register("lastName")}
             />
           </div>
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <LabeledInput
+              className="md:w-1/2"
+              label="Company name"
+              placeholder="Legal company name"
+              error={errors.companyName as FieldError}
+              data-testid="register-company-name-input"
+              {...register("companyName")}
+            />
+            <LabeledInput
+              className="md:w-1/2"
+              label="Job title"
+              placeholder="Procurement, operations…"
+              error={errors.jobTitle as FieldError}
+              data-testid="register-job-title-input"
+              {...register("jobTitle")}
+            />
+          </div>
+          <LabeledInput
+            className="mb-4"
+            label="VAT / tax ID"
+            placeholder="Optional"
+            error={errors.taxId as FieldError}
+            data-testid="register-tax-id-input"
+            {...register("taxId")}
+          />
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <LabeledInput
               className="md:w-1/2"
@@ -139,7 +180,7 @@ const Form = () => {
             loading={isSubmitting}
             data-testid="register-submit-button"
           >
-            Create account
+            Create buyer account
           </Button>
         </form>
       </Container>

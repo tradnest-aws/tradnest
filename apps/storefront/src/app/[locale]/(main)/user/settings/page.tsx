@@ -1,5 +1,6 @@
 import { LoginForm, ProfileDetails } from "@/components/molecules"
 import { UserNavigation } from "@/components/molecules"
+import { CompanyProfile } from "@/components/molecules/CompanyProfile/CompanyProfile"
 import { ProfilePassword } from "@/components/molecules/ProfileDetails/ProfilePassword"
 import { retrieveCustomer } from "@/lib/data/customer"
 
@@ -15,6 +16,7 @@ export default async function ReviewsPage() {
         <div className="md:col-span-3" data-testid="profile-settings-container">
           <h1 className="heading-md uppercase mb-8">Settings</h1>
           <ProfileDetails user={user} />
+          <CompanyProfile user={user} />
           <ProfilePassword user={user} />
         </div>
       </div>

@@ -32,7 +32,7 @@ export const SellerInfo = ({
       {showArrow ? (
         <LocalizedClientLink
           href={`/sellers/${seller.handle}`}
-          aria-label={`View ${name} seller`}
+          aria-label={`View ${name} supplier`}
         >
           {headerContent}
         </LocalizedClientLink>

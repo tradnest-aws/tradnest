@@ -20,12 +20,13 @@ const funnelDisplay = Funnel_Display({
 export const metadata: Metadata = {
   title: {
     template: `%s | ${
-      process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+      process.env.NEXT_PUBLIC_SITE_NAME || 'Tradnest — B2B multi-vendor marketplace'
     }`,
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Tradnest — B2B multi-vendor marketplace'
   },
   description:
-    process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
+    process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
+    'Tradnest B2B multi-vendor marketplace — source from suppliers, compare offers, and request quotes.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000')
 };
 

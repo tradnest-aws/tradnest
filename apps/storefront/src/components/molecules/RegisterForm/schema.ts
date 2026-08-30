@@ -27,7 +27,13 @@ export const registerFormSchema = z.object({
     .string()
     .min(6, 'Please enter phone number')
     .regex(/^\+?\d+$/, { message: 'Mobile phone must contain digits only' })
-    .max(20, 'Phone number must contain up to 20 characters')
+    .max(20, 'Phone number must contain up to 20 characters'),
+  companyName: z
+    .string()
+    .nonempty('Please enter company name')
+    .max(120, 'Company name must contain up to 120 characters'),
+  jobTitle: z.string().max(80, 'Job title must contain up to 80 characters').optional(),
+  taxId: z.string().max(40, 'VAT / tax ID must contain up to 40 characters').optional()
 });
 
 export type RegisterFormData = z.infer<typeof registerFormSchema>;

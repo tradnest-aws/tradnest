@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/atoms"
 import { HttpTypes } from "@medusajs/types"
 import { ProductVariants } from "@/components/molecules"
@@ -16,6 +17,7 @@ import {
 } from "@/lib/helpers/buybox"
 import { Chat } from "@/components/organisms/Chat/Chat"
 import { CompareOffersModal } from "@/components/organisms/CompareOffersModal/CompareOffersModal"
+import { RequestQuoteModal } from "@/components/organisms/RequestQuoteModal/RequestQuoteModal"
 import { SellerDTO } from "@mercurjs/types"
 import { toast } from "@/lib/helpers/toast"
 import { useCartContext } from "@/components/providers"
@@ -50,8 +52,10 @@ export const ProductDetailsHeader = ({
   seller?: SellerDTO
 }) => {
   const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext()
+  const router = useRouter()
   const { allSearchParams } = useGetAllSearchParams()
   const [isCompareOpen, setIsCompareOpen] = useState(false)
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false)
 
   const { cheapestVariant, cheapestPrice } = getProductPrice({
     product,
@@ -159,7 +163,12 @@ export const ProductDetailsHeader = ({
               </span>
             ) : (
               <span className="label-md text-secondary pt-2 pb-4" data-testid="product-price-unavailable">
-                Not available in your region
+                Not listed for your region
+              </span>
+            )}
+            {hasOffer && (
+              <span className="label-sm text-secondary" data-testid="product-unit-price-hint">
+                Best available unit price · {offerStock} in stock from this supplier
               </span>
             )}
           </div>
@@ -177,11 +186,27 @@ export const ProductDetailsHeader = ({
         data-testid="product-add-to-cart-button"
       >
         {!hasOffer
-          ? "NOT AVAILABLE"
+          ? "NOT LISTED"
           : offerStock
-          ? "ADD TO CART"
+          ? "ADD TO ORDER"
           : "OUT OF STOCK"}
       </Button>
+      {seller && (
+        <Button
+          variant="tonal"
+          onClick={() => {
+            if (!user) {
+              router.push("/login?sessionRequired=true")
+              return
+            }
+            setIsQuoteOpen(true)
+          }}
+          className="w-full uppercase mb-4"
+          data-testid="request-quote-button"
+        >
+          Request quote
+        </Button>
+      )}
       {otherOffersCount > 0 && (
         <Button
           variant="tonal"
@@ -189,7 +214,7 @@ export const ProductDetailsHeader = ({
           className="w-full uppercase mb-4"
           data-testid="compare-offers-button"
         >
-          {`Compare other ${otherOffersCount} offers`}
+          {`Compare ${otherOffersCount} other supplier offers`}
         </Button>
       )}
       {isCompareOpen && (
@@ -201,6 +226,17 @@ export const ProductDetailsHeader = ({
             undefined
           }
           onClose={() => setIsCompareOpen(false)}
+        />
+      )}
+      {isQuoteOpen && user && seller && (
+        <RequestQuoteModal
+          productId={product.id}
+          productTitle={product.title}
+          sellerId={seller.id}
+          offerId={winnerOffer?.id}
+          variantId={variantId || null}
+          user={user}
+          onClose={() => setIsQuoteOpen(false)}
         />
       )}
       {user && seller && (

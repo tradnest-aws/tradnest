@@ -6,13 +6,20 @@ session detail aggressively. The per-spec source of truth lives in
 
 ## Current Verified State
 
-- **Repository root**: `/Users/viktorholik/Desktop/mercur`
-- **Current branch**: `main`
-- **Current version**: `2.2.0-rc.1`
+- **Repository root**: `/workspace`
+- **Current branch**: `cursor/b2b-multi-vendor-storefront-81d5`
+- **Current version**: `2.3.2-canary.4`
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
 - **Current blocker**: none
+
+## Session — Tradnest B2B storefront
+
+- **Goal.** Use this Mercur fork as Tradnest: B2B multi-vendor with a procurement storefront.
+- **Landed.** Quote-request module (store + vendor APIs); buyer company registration; RFQ on product pages; wholesale homepage/copy; `/user/quotes`. Spec: `docs/specs/SPEC-001-b2b-multi-vendor-storefront.md`.
+- **Verified.** See spec Evidence after lint/build/tests in this session.
+- **Owed / next.** Vendor-panel quote inbox UI, company buyer teams, net payment terms.
 
 ## Session — Admin Inventory (MER-139), branch `feat/admin-inventory`
 
