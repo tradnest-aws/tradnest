@@ -11,8 +11,8 @@ import { Suspense } from "react"
 export const dynamicParams = true
 
 export const metadata: Metadata = {
-  title: "Store",
-  description: "Explore all of our products.",
+  title: "Catalog",
+  description: "Browse wholesale products from Tradnest vendors.",
 }
 
 type Params = {
@@ -60,4 +60,3 @@ export default async function StorePage(props: Params) {
     </div>
   )
 }
-;``

@@ -1,46 +1,36 @@
 "use client"
 
-import { Github } from "@medusajs/icons"
-import { Heading } from "@medusajs/ui"
 import Button from "@/modules/common/components/button"
-import Image from "next/image"
+import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import { Heading, Text } from "@medusajs/ui"
 
 const Hero = () => {
   return (
-    <div className="h-[75vh] w-full border-b border-ui-border-base relative bg-neutral-100">
-      <Image
-        src="/hero-image.jpg"
-        alt="Hero background"
-        layout="fill"
-        quality={100}
-        priority
-      />
-      <div className="absolute inset-0 z-1 flex flex-col justify-center items-center text-center small:p-32 gap-6">
-        <span>
-          <p className="text-neutral-600 text-xs uppercase">
-            Be light on your feet
-          </p>
-
-          <Heading
-            level="h1"
-            className="text-6xl leading-10 text-ui-fg-base font-normal mt-10 mb-5"
-          >
-            Portable Bestsellers
-          </Heading>
-
-          <p className="leading-10 text-ui-fg-subtle font-normal text-lg">
-            See our widest selection of electronics
-          </p>
-        </span>
-        <a
-          href="https://github.com/medusajs/b2b-starter-medusa"
-          target="_blank"
+    <div className="w-full border-b border-ui-border-base relative bg-neutral-950 text-white">
+      <div className="content-container flex flex-col justify-center gap-6 py-20 small:py-32">
+        <Text className="text-xs uppercase tracking-[0.2em] text-neutral-400">
+          Tradnest B2B marketplace
+        </Text>
+        <Heading
+          level="h1"
+          className="text-4xl small:text-6xl leading-tight text-white font-normal max-w-3xl"
         >
-          <Button variant="secondary" className="rounded-2xl">
-            <Github />
-            Github Repository
-          </Button>
-        </a>
+          Source from verified vendors. Buy as a company.
+        </Heading>
+        <Text className="text-lg text-neutral-300 max-w-2xl">
+          A wholesale catalog for procurement teams: multiple suppliers, company
+          accounts, spending limits, quote requests, and order approvals.
+        </Text>
+        <div className="flex flex-wrap gap-3">
+          <LocalizedClientLink href="/store">
+            <Button className="rounded-2xl">Browse catalog</Button>
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/vendors">
+            <Button variant="secondary" className="rounded-2xl">
+              View vendors
+            </Button>
+          </LocalizedClientLink>
+        </div>
       </div>
     </div>
   )

@@ -28,12 +28,28 @@ export async function NavigationHeader() {
             >
               <h1 className="small:text-base text-sm font-medium flex items-center">
                 <LogoIcon className="inline mr-2" />
-                Medusa B2B Starter
+                Tradnest
               </h1>
             </LocalizedClientLink>
 
             <nav>
               <ul className="space-x-4 hidden small:flex">
+                <li>
+                  <LocalizedClientLink
+                    href="/store"
+                    className="hover:text-ui-fg-base"
+                  >
+                    Catalog
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    href="/vendors"
+                    className="hover:text-ui-fg-base"
+                  >
+                    Vendors
+                  </LocalizedClientLink>
+                </li>
                 <li>
                   <Suspense fallback={<SkeletonMegaMenu />}>
                     <MegaMenuWrapper />

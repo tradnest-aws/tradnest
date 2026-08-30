@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
-import { QueryCompany, QueryEmployee } from "@/types"
+import { QueryCompany, QueryEmployee } from "./company"
 import { QueryApproval, QueryApprovalStatus } from "./approval/query"
+import { StoreVendor } from "./vendor"
 
 export enum SpendingLimitResetFrequency {
   never = "never",
@@ -27,6 +28,10 @@ export interface B2BCustomer extends HttpTypes.StoreCustomer {
   employee: QueryEmployee | null
   orders?: HttpTypes.StoreOrder[]
   cart?: B2BCart[]
+}
+
+export type StoreProductWithVendor = HttpTypes.StoreProduct & {
+  vendor?: StoreVendor | null
 }
 
 export type FilterType = string | string[] | { [key: string]: any }

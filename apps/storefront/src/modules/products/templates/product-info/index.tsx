@@ -1,15 +1,26 @@
-import { HttpTypes } from "@medusajs/types"
-import { Heading, Text } from "@medusajs/ui"
+import { getProductVendor } from "@/lib/util/get-product-vendor"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import { StoreProductWithVendor } from "@/types/global"
+import { Heading, Text } from "@medusajs/ui"
 
 type ProductInfoProps = {
-  product: HttpTypes.StoreProduct
+  product: StoreProductWithVendor
 }
 
 const ProductInfo = ({ product }: ProductInfoProps) => {
+  const vendor = getProductVendor(product)
+
   return (
     <div id="product-info">
       <div className="flex flex-col gap-y-4 w-full">
+        {vendor && (
+          <LocalizedClientLink
+            href={`/vendors/${vendor.handle}`}
+            className="text-sm text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+          >
+            Sold by {vendor.name}
+          </LocalizedClientLink>
+        )}
         <Heading
           level="h1"
           className="text-[2.5rem] leading-10 text-ui-fg-base"

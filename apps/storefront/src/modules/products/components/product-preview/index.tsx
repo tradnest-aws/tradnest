@@ -1,7 +1,9 @@
 import { getProductPrice } from "@/lib/util/get-product-price"
+import { getProductVendor } from "@/lib/util/get-product-vendor"
+import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import { StoreProductWithVendor } from "@/types/global"
 import { HttpTypes } from "@medusajs/types"
 import { Text, clx } from "@medusajs/ui"
-import LocalizedClientLink from "@/modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
 import PreviewAddToCart from "./preview-add-to-cart"
 import PreviewPrice from "./price"
@@ -11,7 +13,7 @@ export default async function ProductPreview({
   isFeatured,
   region,
 }: {
-  product: HttpTypes.StoreProduct
+  product: StoreProductWithVendor
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
 }) {
@@ -42,7 +44,9 @@ export default async function ProductPreview({
           />
         </div>
         <div className="flex flex-col txt-compact-medium">
-          <Text className="text-neutral-600 text-xs">BRAND</Text>
+          <Text className="text-neutral-600 text-xs uppercase">
+            {getProductVendor(product)?.name || "Marketplace"}
+          </Text>
           <Text className="text-ui-fg-base" data-testid="product-title">
             {product.title}
           </Text>

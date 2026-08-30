@@ -4,4 +4,5 @@ export * from "./global"
 export * from "./icon"
 export * from "./quote"
 export * from "./shipping-option"
+export * from "./vendor"
 

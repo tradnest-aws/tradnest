@@ -1,7 +1,9 @@
 import { getCartApprovalStatus } from "@/lib/util/get-cart-approval-status"
 import { convertToLocale } from "@/lib/util/money"
+import { getProductVendor } from "@/lib/util/get-product-vendor"
 import ItemFull from "@/modules/cart/components/item-full"
-import { B2BCart } from "@/types/global"
+import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import { B2BCart, StoreProductWithVendor } from "@/types/global"
 import { StoreCartLineItem } from "@medusajs/types"
 import { Container, Text } from "@medusajs/ui"
 import { useMemo } from "react"
@@ -23,6 +25,33 @@ const ItemsTemplate = ({
     [cart?.items]
   )
 
+  const groupedItems = useMemo(() => {
+    const groups = new Map<
+      string,
+      { label: string; handle?: string; items: StoreCartLineItem[] }
+    >()
+
+    for (const item of items || []) {
+      const vendor = getProductVendor(
+        item.product as StoreProductWithVendor | undefined
+      )
+      const key = vendor?.id || "unassigned"
+      const existing = groups.get(key)
+
+      if (existing) {
+        existing.items.push(item)
+      } else {
+        groups.set(key, {
+          label: vendor?.name || "Unassigned vendor",
+          handle: vendor?.handle,
+          items: [item],
+        })
+      }
+    }
+
+    return Array.from(groups.values())
+  }, [items])
+
   const { isPendingAdminApproval, isPendingSalesManagerApproval } =
     getCartApprovalStatus(cart)
 
@@ -31,10 +60,22 @@ const ItemsTemplate = ({
 
   return (
     <div className="w-full flex flex-col gap-y-2">
-      <div className="flex flex-col gap-y-2 w-full">
-        {items &&
-          items.map((item: StoreCartLineItem) => {
-            return (
+      <div className="flex flex-col gap-y-4 w-full">
+        {groupedItems.map((group) => (
+          <div key={group.label} className="flex flex-col gap-y-2">
+            <Text className="text-sm font-medium">
+              {group.handle ? (
+                <LocalizedClientLink
+                  href={`/vendors/${group.handle}`}
+                  className="hover:text-ui-fg-interactive"
+                >
+                  {group.label}
+                </LocalizedClientLink>
+              ) : (
+                group.label
+              )}
+            </Text>
+            {group.items.map((item) => (
               <ItemFull
                 disabled={isPendingApproval}
                 currencyCode={cart?.currency_code}
@@ -46,8 +87,9 @@ const ItemsTemplate = ({
                   }
                 }
               />
-            )
-          })}
+            ))}
+          </div>
+        ))}
       </div>
       {showTotal && (
         <Container>
