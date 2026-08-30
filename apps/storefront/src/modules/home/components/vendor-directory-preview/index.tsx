@@ -13,7 +13,7 @@ export default async function VendorDirectoryPreview() {
     <section className="content-container py-10">
       <div className="flex items-end justify-between mb-6">
         <div>
-          <Text className="text-xs uppercase tracking-widest text-neutral-500">
+          <Text className="text-xs uppercase tracking-widest text-brand-gold">
             Suppliers
           </Text>
           <Heading level="h2" className="text-2xl">
@@ -22,7 +22,7 @@ export default async function VendorDirectoryPreview() {
         </div>
         <LocalizedClientLink
           href="/vendors"
-          className="text-sm text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+          className="text-sm text-brand-navy hover:text-brand-gold"
         >
           All vendors
         </LocalizedClientLink>

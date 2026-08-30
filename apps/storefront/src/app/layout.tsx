@@ -7,6 +7,20 @@ import "@/styles/globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  title: {
+    default: "Tradnest",
+    template: "%s | Tradnest",
+  },
+  description:
+    "Wholesale marketplace for company buyers. Source products from multiple vendors, request quotes, and manage approvals.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/tradnest-icon.png", type: "image/png", sizes: "351x351" },
+    ],
+    apple: [{ url: "/tradnest-icon.png" }],
+    shortcut: ["/favicon.png"],
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

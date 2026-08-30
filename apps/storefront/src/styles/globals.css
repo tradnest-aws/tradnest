@@ -2,7 +2,54 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+:root {
+  --brand-navy: #101828;
+  --brand-navy-soft: #1a2740;
+  --brand-gold: #d2a64b;
+  --brand-gold-hover: #c4953a;
+  --brand-canvas: #f6f3ec;
+  --brand-line: #e6e0d4;
+  --fg-base: #101828;
+  --fg-subtle: #3d4a5c;
+  --fg-muted: #64748b;
+  --fg-interactive: #101828;
+  --fg-interactive-hover: #d2a64b;
+  --bg-base: #ffffff;
+  --bg-subtle: #f6f3ec;
+  --bg-component: #ffffff;
+  --border-base: #e6e0d4;
+  --button-inverted-bg: #101828;
+  --button-inverted-bg-hover: #1a2740;
+}
+
+@layer base {
+  html,
+  body {
+    color: var(--brand-navy);
+    background-color: #ffffff;
+  }
+
+  a {
+    color: inherit;
+  }
+}
+
 @layer utilities {
+  .bg-neutral-100 {
+    background-color: var(--brand-canvas) !important;
+  }
+
+  .bg-neutral-900,
+  .bg-neutral-950 {
+    background-color: var(--brand-navy) !important;
+  }
+
+  .text-neutral-900,
+  .text-neutral-950,
+  .text-zinc-900 {
+    color: var(--brand-navy) !important;
+  }
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -55,7 +102,7 @@
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+    @apply px-4 py-2 border border-brand-navy rounded-full hover:bg-brand-navy hover:text-white transition-colors duration-200 ease-in;
   }
 
   .text-xsmall-regular {

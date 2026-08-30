@@ -15,7 +15,7 @@ export default async function VendorsPage() {
     <div className="bg-neutral-100">
       <div className="content-container py-10 flex flex-col gap-6">
         <div>
-          <Text className="text-xs uppercase tracking-widest text-neutral-500">
+          <Text className="text-xs uppercase tracking-widest text-brand-gold">
             Marketplace
           </Text>
           <Heading className="text-3xl">Vendors</Heading>

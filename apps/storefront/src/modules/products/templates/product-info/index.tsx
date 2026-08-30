@@ -16,7 +16,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         {vendor && (
           <LocalizedClientLink
             href={`/vendors/${vendor.handle}`}
-            className="text-sm text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+            className="text-sm text-brand-navy hover:text-brand-gold"
           >
             Sold by {vendor.name}
           </LocalizedClientLink>

@@ -3,8 +3,8 @@ import { retrieveCustomer } from "@/lib/data/customer"
 import AccountButton from "@/modules/account/components/account-button"
 import CartButton from "@/modules/cart/components/cart-button"
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import TradnestLogo from "@/modules/common/components/tradnest-logo"
 import FilePlus from "@/modules/common/icons/file-plus"
-import LogoIcon from "@/modules/common/icons/logo"
 import { MegaMenuWrapper } from "@/modules/layout/components/mega-menu"
 import { RequestQuoteConfirmation } from "@/modules/quotes/components/request-quote-confirmation"
 import { RequestQuotePrompt } from "@/modules/quotes/components/request-quote-prompt"
@@ -18,18 +18,15 @@ export async function NavigationHeader() {
   const cart = await retrieveCart()
 
   return (
-    <div className="sticky top-0 inset-x-0 group bg-white text-zinc-900 small:p-4 p-2 text-sm border-b duration-200 border-ui-border-base z-50">
+    <div className="sticky top-0 inset-x-0 group bg-white text-brand-navy small:p-4 p-2 text-sm border-b duration-200 border-[#e4e0d8] z-50">
       <header className="flex w-full content-container relative small:mx-auto justify-between">
         <div className="small:mx-auto flex justify-between items-center min-w-full">
-          <div className="flex items-center small:space-x-4">
+          <div className="flex items-center small:space-x-6">
             <LocalizedClientLink
-              className="hover:text-ui-fg-base flex items-center w-fit"
+              className="flex items-center w-fit"
               href="/"
             >
-              <h1 className="small:text-base text-sm font-medium flex items-center">
-                <LogoIcon className="inline mr-2" />
-                Tradnest
-              </h1>
+              <TradnestLogo height={36} priority />
             </LocalizedClientLink>
 
             <nav>
@@ -37,7 +34,7 @@ export async function NavigationHeader() {
                 <li>
                   <LocalizedClientLink
                     href="/store"
-                    className="hover:text-ui-fg-base"
+                    className="hover:text-brand-gold"
                   >
                     Catalog
                   </LocalizedClientLink>
@@ -45,7 +42,7 @@ export async function NavigationHeader() {
                 <li>
                   <LocalizedClientLink
                     href="/vendors"
-                    className="hover:text-ui-fg-base"
+                    className="hover:text-brand-gold"
                   >
                     Vendors
                   </LocalizedClientLink>
@@ -74,7 +71,7 @@ export async function NavigationHeader() {
             {customer && cart?.items && cart.items.length > 0 ? (
               <RequestQuoteConfirmation>
                 <button
-                  className="flex gap-1.5 items-center rounded-2xl bg-none shadow-none border-none hover:bg-neutral-100 px-2 py-1"
+                  className="flex gap-1.5 items-center rounded-2xl bg-none shadow-none border-none hover:bg-brand-canvas hover:text-brand-gold px-2 py-1"
                   // disabled={isPendingApproval}
                 >
                   <FilePlus />
@@ -83,7 +80,7 @@ export async function NavigationHeader() {
               </RequestQuoteConfirmation>
             ) : (
               <RequestQuotePrompt>
-                <button className="flex gap-1.5 items-center rounded-2xl bg-none shadow-none border-none hover:bg-neutral-100 px-2 py-1">
+                <button className="flex gap-1.5 items-center rounded-2xl bg-none shadow-none border-none hover:bg-brand-canvas hover:text-brand-gold px-2 py-1">
                   <FilePlus />
                   <span className="hidden small:inline-block">Quote</span>
                 </button>

@@ -3,6 +3,7 @@ import { listCollections } from "@/lib/data/collections"
 import { Text, clx } from "@medusajs/ui"
 
 import LocalizedClientLink from "@/modules/common/components/localized-client-link"
+import TradnestLogo from "@/modules/common/components/tradnest-logo"
 import MedusaCTA from "@/modules/layout/components/medusa-cta"
 
 export default async function Footer() {
@@ -16,15 +17,12 @@ export default async function Footer() {
   })
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
+    <footer className="border-t border-brand-line w-full bg-white">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
+        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-20">
           <div>
-            <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
-            >
-              Tradnest
+            <LocalizedClientLink href="/" className="inline-flex">
+              <TradnestLogo height={40} />
             </LocalizedClientLink>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">

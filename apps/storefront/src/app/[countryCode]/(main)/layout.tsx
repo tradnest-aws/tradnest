@@ -26,7 +26,7 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
   return (
     <>
       <NavigationHeader />
-      <div className="flex items-center text-neutral-50 justify-center small:p-4 p-2 text-center bg-neutral-900 small:gap-2 gap-1 text-sm">
+      <div className="flex items-center text-white justify-center small:p-4 p-2 text-center bg-brand-navy small:gap-2 gap-1 text-sm border-b border-brand-gold/40">
         <span>
           Company buyers: request quotes, apply spending limits, and send orders
           for approval.

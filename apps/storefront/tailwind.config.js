@@ -11,6 +11,16 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        brand: {
+          navy: "#101828",
+          "navy-soft": "#1a2740",
+          gold: "#d2a64b",
+          "gold-hover": "#c4953a",
+          canvas: "#f6f3ec",
+          line: "#e6e0d4",
+        },
+      },
       maxWidth: {
         "8xl": "100rem",
       },
