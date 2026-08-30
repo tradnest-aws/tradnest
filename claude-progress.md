@@ -12,7 +12,8 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: none
+- **Current blocker**: AWS deploy cannot run from this cloud agent (no profile
+  `tradnest`, no SSH to `13.60.11.98:22`). Instance is live in `eu-north-1`.
 
 ## Session — Tradnest B2B storefront
 
