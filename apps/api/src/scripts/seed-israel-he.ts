@@ -16,6 +16,7 @@ import {
   createSellerAccountWorkflow,
   createSellerShippingOptionsWorkflow,
   createSellerStockLocationsWorkflow,
+  updateProductCategoryWithImagesWorkflow,
 } from "@mercurjs/core/workflows"
 import {
   createLocationFulfillmentSetWorkflow,
@@ -26,6 +27,7 @@ import {
   createShippingProfilesWorkflow,
   createTaxRegionsWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
+  updateProductsWorkflow,
   updateStoresStep,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows"
@@ -186,6 +188,37 @@ export default async function seedIsraelHebrew({
       (meta ? catByHandle.get(meta.handle) : undefined) ??
       catByHandle.get(name)
     )
+  }
+
+  const storefrontOrigin = (
+    process.env.STOREFRONT_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    ""
+  ).replace(/\/$/, "")
+
+  for (const categoryMeta of israelCategories) {
+    const category = resolveCategory(categoryMeta.name)
+    if (!category) {
+      continue
+    }
+    const localIcon = `/images/categories/${categoryMeta.handle}.png`
+    const iconUrl = storefrontOrigin
+      ? `${storefrontOrigin}${localIcon}`
+      : categoryMeta.iconUrl
+    await updateProductCategoryWithImagesWorkflow(container).run({
+      input: {
+        id: category.id,
+        update: {
+          metadata: {
+            ...((category.metadata as Record<string, unknown> | null) || {}),
+            image_url: localIcon,
+          },
+        },
+        icon: iconUrl,
+        media: [{ url: iconUrl, is_thumbnail: true }],
+      },
+    })
+    logger.info(`Set icon for category "${categoryMeta.name}"`)
   }
 
   let sharedShippingProfileId: string
@@ -441,17 +474,11 @@ export default async function seedIsraelHebrew({
     (item) => !existingHandles.has(item.handle)
   )
 
-  if (!productsToCreate.length) {
-    logger.info(
-      "All Hebrew catalog handles already exist. Nothing new to seed."
-    )
-    return
-  }
-
-  const products: CreateProductDTO[] = productsToCreate.map((item) => {
+  if (productsToCreate.length) {
+    const products: CreateProductDTO[] = productsToCreate.map((item) => {
     const sku = item.handle.toUpperCase().replace(/-/g, "")
     const image = {
-      url: `https://picsum.photos/seed/${item.handle}/800/800`,
+      url: item.imageUrl,
     }
     const category = resolveCategory(item.category)
     if (!category) {
@@ -521,7 +548,51 @@ export default async function seedIsraelHebrew({
   }
 
   await createOffersWorkflow(container).run({ input: { offers } })
-  logger.info(
-    `Seeded ${sellers.length} Hebrew sellers, ${products.length} products, ${offers.length} offers. Region Israel / ILS only.`
+    logger.info(
+      `Seeded ${sellers.length} Hebrew sellers, ${products.length} products, ${offers.length} offers. Region Israel / ILS only.`
+    )
+  } else {
+    logger.info("All Hebrew catalog handles already exist.")
+  }
+
+  const photoByHandle = new Map(
+    israelProducts.map((item) => [item.handle, item.imageUrl])
   )
+  const { data: catalogProducts } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle", "thumbnail", "images.id", "images.url"],
+    filters: {
+      handle: israelProducts.map((item) => item.handle),
+    },
+  })
+
+  for (const product of catalogProducts as {
+    id: string
+    handle: string
+    thumbnail: string | null
+    images?: { id: string; url: string }[]
+  }[]) {
+    const imageUrl = photoByHandle.get(product.handle)
+    if (!imageUrl) {
+      continue
+    }
+    const hasPhoto =
+      Boolean(product.thumbnail) &&
+      !product.thumbnail?.includes("picsum.photos") &&
+      (product.images?.length ?? 0) > 0 &&
+      !product.images?.some((image) => image.url.includes("picsum.photos"))
+    if (hasPhoto && product.thumbnail === imageUrl) {
+      continue
+    }
+    await updateProductsWorkflow(container).run({
+      input: {
+        selector: { id: product.id },
+        update: {
+          thumbnail: imageUrl,
+          images: [{ url: imageUrl }],
+        },
+      },
+    })
+    logger.info(`Set photo for product "${product.handle}"`)
+  }
 }

@@ -16,15 +16,16 @@ export const FeaturedCategory = ({ category, onLinkClick }: Props) => {
       className="flex flex-col w-full h-full"
     >
       <div className="relative aspect-square max-h-[248px] w-full h-full bg-initial rounded-t-sm">
-        {category && category.metadata && (
-          <Image
-            src={category.metadata?.image_url as string}
-            alt={category.name}
-            width={100}
-            height={100}
-            className="object-cover p-1 rounded-sm w-full h-full"
-          />
-        )}
+        <Image
+          src={
+            (category.metadata?.image_url as string) ||
+            `/images/categories/${category.handle}.png`
+          }
+          alt={category.name}
+          width={100}
+          height={100}
+          className="object-cover p-1 rounded-sm w-full h-full"
+        />
       </div>
 
         <div className="p-4 flex flex-col gap-y-2 mt-auto bg-initial">
