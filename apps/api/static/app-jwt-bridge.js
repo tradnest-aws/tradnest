@@ -2,6 +2,7 @@
   var STORAGE_KEY = "tradnest_admin_jwt";
   var SDK_KEY = "medusa_auth_token";
   var origFetch = window.fetch.bind(window);
+  var origJson = Response.prototype.json;
 
   function forceJwtAuth() {
     var sdk = window.__sdk;
@@ -24,7 +25,9 @@
       if (typeof URL !== "undefined" && input instanceof URL) {
         return input.href;
       }
-    } catch (err) {}
+    } catch {
+      /* ignore */
+    }
     if (typeof Request !== "undefined" && input instanceof Request) {
       return input.url;
     }
@@ -49,8 +52,19 @@
     try {
       localStorage.setItem(STORAGE_KEY, token);
       localStorage.setItem(SDK_KEY, token);
-    } catch (err) {}
+    } catch {
+      /* ignore quota / private-mode */
+    }
   }
+
+  Response.prototype.json = function () {
+    return origJson.call(this).then(function (body) {
+      if (body && typeof body.token === "string") {
+        rememberToken(body.token);
+      }
+      return body;
+    });
+  };
 
   window.fetch = function (input, init) {
     forceJwtAuth();
@@ -60,28 +74,14 @@
     var token = null;
     try {
       token = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SDK_KEY);
-    } catch (err) {}
+    } catch {
+      /* ignore */
+    }
     if (token && isApiUrl(url) && !headers.get("Authorization")) {
       headers.set("Authorization", "Bearer " + token);
     }
     init.headers = headers;
-    return origFetch(input, init).then(function (res) {
-      if (!res.ok || url.indexOf("/auth") === -1) {
-        return res;
-      }
-      return res
-        .clone()
-        .json()
-        .then(function (body) {
-          if (body && typeof body.token === "string") {
-            rememberToken(body.token);
-          }
-          return res;
-        })
-        .catch(function () {
-          return res;
-        });
-    });
+    return origFetch(input, init);
   };
 
   var attempts = 0;
