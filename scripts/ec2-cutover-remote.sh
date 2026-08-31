@@ -303,6 +303,18 @@ EOF
   systemctl restart tradnest-storefront
 }
 
+build_vendor_spa() {
+  # tsup DTS workers OOM on the 2–4GB EC2 box after ESM succeeds.
+  # The SPA only needs JS + CSS; skip declaration emit on deploy.
+  export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
+  log "Build vendor package JS only (skip DTS)"
+  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/vendor^... )
+  ( cd "$DEPLOY_DIR/packages/vendor" && bun run build:js )
+  log "Build vendor SPA at /seller/"
+  ( cd "$DEPLOY_DIR/apps/vendor" && \
+    VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
+}
+
 write_vendor_unit() {
   local bun_bin
   bun_bin="$(command -v bun 2>/dev/null || true)"
@@ -397,10 +409,7 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
   ensure_storefront_publishable_key
-  log "Build vendor panel (base /seller/)"
-  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/vendor... --filter=@mercurjs/client... )
-  ( cd "$DEPLOY_DIR/apps/vendor" && \
-    VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
+  build_vendor_spa
   write_vendor_unit
   log "Rebuild storefront so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and vendor CTA URL are inlined"
   ( cd "$DEPLOY_DIR/apps/storefront" && bun run build )
@@ -476,10 +485,8 @@ bun install
 
 log "Build workspace packages (cli before core, plus storefront deps)"
 cd "$DEPLOY_DIR"
-bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client... --filter=@mercurjs/vendor...
-log "Build vendor panel"
-( cd "$DEPLOY_DIR/apps/vendor" && \
-  VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
+bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client...
+build_vendor_spa
 
 log "Medusa migrate (skip interactive link prompts; do not drop b2b-starter link tables)"
 cd "$DEPLOY_DIR/apps/api"
