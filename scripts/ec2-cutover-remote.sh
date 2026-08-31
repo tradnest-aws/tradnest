@@ -278,7 +278,7 @@ server {
     proxy_set_header Connection "upgrade";
     proxy_set_header Accept-Encoding "";
     sub_filter_types text/html;
-    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js"></script><script type="module" crossorigin src="/app/assets/';
+    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js?v=2"></script><script type="module" crossorigin src="/app/assets/';
     sub_filter_once on;
   }
 
