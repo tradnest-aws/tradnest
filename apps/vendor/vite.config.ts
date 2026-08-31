@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
         medusaConfigPath: '../api/medusa-config.ts',
         name: 'Tradnest',
         logo: '/tradnest-icon.png',
+        base: env.VITE_VENDOR_BASE || '/seller/',
         ...(backendUrl ? { backendUrl } : {}),
       }),
       {

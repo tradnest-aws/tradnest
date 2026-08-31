@@ -367,8 +367,9 @@ build_vendor_spa() {
   # tsup DTS workers OOM on the 2–4GB EC2 box after ESM succeeds.
   # The SPA only needs JS + CSS; skip declaration emit on deploy.
   export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
+  export TSUP_DTS=0
   log "Build vendor package JS only (skip DTS; HEAD=$(git -C "$DEPLOY_DIR" rev-parse --short HEAD))"
-  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/vendor^... )
+  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/dashboard-sdk --filter=@mercurjs/vendor^... )
   ( cd "$DEPLOY_DIR/packages/vendor" && TSUP_DTS=0 bunx tsup && bun run generate:targets )
   log "Build vendor SPA at /seller/"
   ( cd "$DEPLOY_DIR/apps/vendor" && \
