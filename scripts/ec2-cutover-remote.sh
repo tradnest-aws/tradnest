@@ -421,6 +421,8 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
 fi
 
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
+  log "Ensuring Medusa /app admin user"
+  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
   log "Seeding Israel / Hebrew demo catalog"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/seed-israel-he.ts )
   exit 0
