@@ -153,22 +153,40 @@ export default async function seedIsraelHebrew({
     })
   }
 
-  const existingCats = await productModule.listProductCategories({
-    name: [...israelCategories],
-  })
+  const existingCats = await productModule.listProductCategories(
+    {},
+    { take: 500 }
+  )
   const catByName = new Map(existingCats.map((category) => [category.name, category]))
-  const missing = israelCategories.filter((name) => !catByName.has(name))
+  const catByHandle = new Map(
+    existingCats.map((category) => [category.handle, category])
+  )
+  const missing = israelCategories.filter((category) => {
+    return !catByName.has(category.name) && !catByHandle.has(category.handle)
+  })
   if (missing.length) {
     const { result } = await createProductCategoriesWorkflow(container).run({
       input: {
-        product_categories: missing.map((name, rank) => ({
-          name,
+        product_categories: missing.map((category, rank) => ({
+          name: category.name,
+          handle: category.handle,
           is_active: true,
           rank,
         })),
       },
     })
-    result.forEach((category) => catByName.set(category.name, category))
+    result.forEach((category) => {
+      catByName.set(category.name, category)
+      catByHandle.set(category.handle, category)
+    })
+  }
+  const resolveCategory = (name: string) => {
+    const meta = israelCategories.find((category) => category.name === name)
+    return (
+      catByName.get(name) ??
+      (meta ? catByHandle.get(meta.handle) : undefined) ??
+      catByHandle.get(name)
+    )
   }
 
   const { data: existingPrimary } = await query.graph({
@@ -394,9 +412,13 @@ export default async function seedIsraelHebrew({
     const image = {
       url: `https://picsum.photos/seed/${item.handle}/800/800`,
     }
+    const category = resolveCategory(item.category)
+    if (!category) {
+      throw new Error(`Missing category ${item.category}`)
+    }
     return {
       title: item.title,
-      category_ids: [catByName.get(item.category)!.id],
+      category_ids: [category.id],
       description: item.description,
       handle: item.handle,
       status: ProductStatus.PUBLISHED,

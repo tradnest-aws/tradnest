@@ -69,11 +69,11 @@ export const israelSellers: IsraelSeedSeller[] = [
 ]
 
 export const israelCategories = [
-  "אריזות",
-  "מזון סיטונאי",
-  "חומרי בניין",
-  "ציוד משרדי",
-  "ניקיון תעשייתי",
+  { name: "אריזות", handle: "packaging" },
+  { name: "מזון סיטונאי", handle: "food" },
+  { name: "חומרי בניין", handle: "building" },
+  { name: "ציוד משרדי", handle: "office" },
+  { name: "ניקיון תעשייתי", handle: "cleaning" },
 ] as const
 
 export const israelProducts: IsraelSeedProduct[] = [
