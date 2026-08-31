@@ -15,6 +15,8 @@ module.exports = withMercur({
     cookieOptions: {
       sameSite: "lax",
       secure: process.env.COOKIE_SECURE === "true",
+      httpOnly: true,
+      path: "/",
     },
     http: {
       storeCors: process.env.STORE_CORS!,

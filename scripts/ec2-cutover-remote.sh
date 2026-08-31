@@ -50,6 +50,42 @@ upsert() {
   fi
 }
 
+ensure_http_session_cookies() {
+  local api_env="$DEPLOY_DIR/apps/api/.env"
+  touch "$api_env"
+  if [[ "$PUBLIC_ORIGIN" == https://* ]]; then
+    upsert "$api_env" COOKIE_SECURE true
+    log "COOKIE_SECURE=true (HTTPS origin)"
+  else
+    upsert "$api_env" COOKIE_SECURE false
+    log "COOKIE_SECURE=false so /app session cookies work on HTTP"
+  fi
+  bash "$DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh" "$DEPLOY_DIR" || true
+}
+
+verify_admin_session_cookie() {
+  local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
+  local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
+  local token headers
+  token="$(curl -sS -X POST "http://127.0.0.1:${API_PORT}/auth/user/emailpass" \
+    -H 'content-type: application/json' \
+    -d "{\"email\":\"${email}\",\"password\":\"${pass}\"}" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || true)"
+  if [[ -z "$token" ]]; then
+    log "WARN: could not mint admin JWT for ${email} — skip session-cookie check"
+    return 0
+  fi
+  headers="$(curl -sS -D - -o /dev/null -X POST "http://127.0.0.1:${API_PORT}/auth/session" \
+    -H "authorization: Bearer ${token}" \
+    -H 'content-type: application/json' || true)"
+  if printf '%s\n' "$headers" | grep -qi '^set-cookie:.*connect\.sid'; then
+    log "POST /auth/session sets connect.sid"
+  else
+    log "WARN: POST /auth/session did not Set-Cookie connect.sid"
+    printf '%s\n' "$headers" | sed -n '1,20p' || true
+  fi
+}
+
 copy_key() {
   local src="$1" dest="$2" key="$3"
   local line
@@ -155,6 +191,15 @@ server {
     proxy_set_header Host \$host;
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /cloud {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Cookie \$http_cookie;
   }
 
   location /admin {
@@ -413,7 +458,8 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
-  log "Restart API so cookieOptions / admin.disable from this tree are loaded"
+  ensure_http_session_cookies
+  log "Restart API so HTTP session cookies / admin.disable from this tree are loaded"
   systemctl restart tradnest-api || true
   sleep 8
   ensure_storefront_publishable_key
@@ -424,6 +470,7 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   write_storefront_unit
   sleep 6
   install_nginx_vhost
+  verify_admin_session_cookie
   health_check
   exit 0
 fi
@@ -431,9 +478,11 @@ fi
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
   log "Ensuring Medusa /app admin user"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+  ensure_http_session_cookies
   log "Restart API so session cookies work on HTTP /app"
   systemctl restart tradnest-api || true
   sleep 8
+  verify_admin_session_cookie
   log "Seeding Israel / Hebrew demo catalog"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/seed-israel-he.ts )
   exit 0
@@ -468,6 +517,7 @@ upsert "$API_ENV" STOREFRONT_REVALIDATE_URL "$PUBLIC_ORIGIN"
 grep -q '^JWT_SECRET=' "$API_ENV" || upsert "$API_ENV" JWT_SECRET supersecret
 grep -q '^COOKIE_SECRET=' "$API_ENV" || upsert "$API_ENV" COOKIE_SECRET supersecret
 grep -q '^REDIS_URL=' "$API_ENV" || upsert "$API_ENV" REDIS_URL redis://127.0.0.1:6379
+ensure_http_session_cookies
 
 if ! grep -qE '^DATABASE_URL=.+' "$API_ENV"; then
   echo "DATABASE_URL is missing in $API_ENV. Refusing to cut over an empty database." >&2
@@ -523,6 +573,7 @@ Type=simple
 WorkingDirectory=$DEPLOY_DIR/apps/api
 EnvironmentFile=$API_ENV
 Environment=NODE_ENV=production
+ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh $DEPLOY_DIR
 ExecStart=$BUN_BIN run start
 Restart=on-failure
 RestartSec=5
@@ -566,4 +617,5 @@ write_storefront_unit
 write_vendor_unit
 
 install_nginx_vhost
+verify_admin_session_cookie
 health_check
