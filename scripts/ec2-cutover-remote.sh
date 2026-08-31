@@ -21,7 +21,7 @@ if [[ ! -d "$DEPLOY_DIR/.git" ]]; then
   exit 1
 fi
 
-if [[ "${TRADNEST_STEP:-}" != "nginx" ]] && ! command -v bun >/dev/null; then
+if ! command -v bun >/dev/null; then
   echo "bun not on PATH" >&2
   exit 1
 fi
@@ -56,6 +56,68 @@ copy_key() {
   [[ -n "$line" ]] || return 0
   grep -q "^${key}=" "$dest" 2>/dev/null && return 0
   printf '%s\n' "$line" >>"$dest"
+}
+
+find_publishable_key() {
+  local key="" f line dburl
+  for f in \
+    "$DEPLOY_DIR/apps/storefront/.env" \
+    /opt/b2b-starter/apps/web/.env \
+    /opt/b2b-starter/apps/storefront/.env \
+    /opt/b2b-starter/apps/backend/.env \
+    /opt/b2b-starter/.env
+  do
+    [[ -f "$f" ]] || continue
+    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.+' "$f" 2>/dev/null | tail -1 || true)"
+    key="${line#NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=}"
+    key="${key%\"}"
+    key="${key#\"}"
+    if [[ "$key" == pk_* ]]; then
+      echo "$key"
+      return 0
+    fi
+  done
+  while IFS= read -r f; do
+    [[ -f "$f" ]] || continue
+    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.+' "$f" 2>/dev/null | tail -1 || true)"
+    key="${line#NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=}"
+    key="${key%\"}"
+    key="${key#\"}"
+    if [[ "$key" == pk_* ]]; then
+      echo "$key"
+      return 0
+    fi
+  done < <(grep -rl --include='.env*' 'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=' /opt /home /var/www 2>/dev/null | grep -v "$DEPLOY_DIR" | head -20)
+  dburl="$(grep -E '^DATABASE_URL=' "$DEPLOY_DIR/apps/api/.env" 2>/dev/null | tail -1 | cut -d= -f2- || true)"
+  if [[ -n "$dburl" ]] && command -v psql >/dev/null; then
+    key="$(psql "$dburl" -tAc "SELECT token FROM api_key WHERE type = 'publishable' AND (revoked_at IS NULL OR revoked_at IS NULL) LIMIT 1" 2>/dev/null | tr -d '[:space:]' || true)"
+    if [[ "$key" == pk_* || "$key" == pk* ]]; then
+      echo "$key"
+      return 0
+    fi
+    key="$(psql "$dburl" -tAc "SELECT token FROM api_key WHERE type = 'publishable' LIMIT 1" 2>/dev/null | tr -d '[:space:]' || true)"
+    if [[ -n "$key" && "$key" != "SELECT" ]]; then
+      echo "$key"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+ensure_storefront_publishable_key() {
+  local key=""
+  mkdir -p "$DEPLOY_DIR/apps/storefront"
+  touch "$DEPLOY_DIR/apps/storefront/.env"
+  if key="$(find_publishable_key)"; then
+    log "Using publishable key ${key:0:12}…"
+    upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY "$key"
+    upsert "$DEPLOY_DIR/apps/storefront/.env" MEDUSA_BACKEND_URL "http://127.0.0.1:${API_PORT}"
+    upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
+    return 0
+  fi
+  echo "No Medusa publishable API key found (NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY / api_key table)." >&2
+  echo "Create one in Admin → Settings → Publishable API keys, then rerun nginx." >&2
+  exit 1
 }
 
 install_nginx_vhost() {
@@ -244,9 +306,12 @@ ORIGIN_HOST="${ORIGIN_HOST#https://}"
 ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
-  log "nginx-only switch (no rebuild)"
+  log "nginx-only switch (no full monorepo rebuild)"
+  ensure_storefront_publishable_key
+  log "Rebuild storefront so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is inlined"
+  ( cd "$DEPLOY_DIR/apps/storefront" && bun run build )
   write_storefront_unit
-  sleep 4
+  sleep 6
   install_nginx_vhost
   health_check
   exit 0
@@ -301,6 +366,7 @@ upsert "$STORE_ENV" NEXT_PUBLIC_SITE_NAME Tradnest
 upsert "$STORE_ENV" NEXT_PUBLIC_SITE_DESCRIPTION "Tradnest B2B wholesale marketplace"
 upsert "$STORE_ENV" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller"
 upsert "$STORE_ENV" REVALIDATE_SECRET "$(grep -E '^STOREFRONT_REVALIDATE_SECRET=' "$API_ENV" | cut -d= -f2- || echo supersecret)"
+ensure_storefront_publishable_key
 
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=3072}"
 
