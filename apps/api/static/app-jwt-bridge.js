@@ -3,6 +3,16 @@
   var SDK_KEY = "medusa_auth_token";
   var origFetch = window.fetch.bind(window);
 
+  function forceJwtAuth() {
+    var sdk = window.__sdk;
+    if (!sdk || !sdk.client || !sdk.client.config) {
+      return false;
+    }
+    sdk.client.config.auth = sdk.client.config.auth || {};
+    sdk.client.config.auth.type = "jwt";
+    return true;
+  }
+
   function urlOf(input) {
     if (!input) {
       return "";
@@ -10,9 +20,11 @@
     if (typeof input === "string") {
       return input;
     }
-    if (typeof URL !== "undefined" && input instanceof URL) {
-      return input.href;
-    }
+    try {
+      if (typeof URL !== "undefined" && input instanceof URL) {
+        return input.href;
+      }
+    } catch (err) {}
     if (typeof Request !== "undefined" && input instanceof Request) {
       return input.url;
     }
@@ -34,21 +46,27 @@
   }
 
   function rememberToken(token) {
-    localStorage.setItem(STORAGE_KEY, token);
-    localStorage.setItem(SDK_KEY, token);
+    try {
+      localStorage.setItem(STORAGE_KEY, token);
+      localStorage.setItem(SDK_KEY, token);
+    } catch (err) {}
   }
 
   window.fetch = function (input, init) {
+    forceJwtAuth();
     init = init ? Object.assign({}, init) : {};
     var headers = new Headers(init.headers || undefined);
     var url = urlOf(input);
-    var token = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SDK_KEY);
-    if (token && isApiUrl(url) && !headers.has("Authorization")) {
+    var token = null;
+    try {
+      token = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(SDK_KEY);
+    } catch (err) {}
+    if (token && isApiUrl(url) && !headers.get("Authorization")) {
       headers.set("Authorization", "Bearer " + token);
     }
     init.headers = headers;
     return origFetch(input, init).then(function (res) {
-      if (!res.ok || url.indexOf("/auth/") === -1) {
+      if (!res.ok || url.indexOf("/auth") === -1) {
         return res;
       }
       return res
@@ -65,4 +83,12 @@
         });
     });
   };
+
+  var attempts = 0;
+  (function waitForSdk() {
+    if (forceJwtAuth() || attempts++ > 200) {
+      return;
+    }
+    setTimeout(waitForSdk, 25);
+  })();
 })();

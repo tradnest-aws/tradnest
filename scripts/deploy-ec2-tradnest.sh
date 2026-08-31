@@ -341,7 +341,7 @@ git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
 git checkout -B "\$BRANCH" "origin/\$BRANCH"
 git reset --hard "origin/\$BRANCH"
 log "Now at \$(git rev-parse --short HEAD)"
-chmod +x scripts/ec2-cutover-remote.sh
+chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh scripts/patch-medusa-admin-jwt.sh
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 bash scripts/ec2-cutover-remote.sh
@@ -363,7 +363,7 @@ git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
 git checkout -B "\$BRANCH" "origin/\$BRANCH"
 git reset --hard "origin/\$BRANCH"
 log "Now at \$(git rev-parse --short HEAD)"
-chmod +x scripts/ec2-cutover-remote.sh
+chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh scripts/patch-medusa-admin-jwt.sh
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=nginx
@@ -386,7 +386,7 @@ git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
 git checkout -B "\$BRANCH" "origin/\$BRANCH"
 git reset --hard "origin/\$BRANCH"
 log "Now at \$(git rev-parse --short HEAD)"
-chmod +x scripts/ec2-cutover-remote.sh
+chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh scripts/patch-medusa-admin-jwt.sh
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=seed
@@ -409,7 +409,7 @@ git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
 git checkout -B "\$BRANCH" "origin/\$BRANCH"
 git reset --hard "origin/\$BRANCH"
 log "Now at \$(git rev-parse --short HEAD)"
-chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh
+chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh scripts/patch-medusa-admin-jwt.sh scripts/patch-medusa-session-cookie.sh
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=api

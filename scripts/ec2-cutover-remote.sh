@@ -61,6 +61,7 @@ ensure_http_session_cookies() {
     log "COOKIE_SECURE=false so /app session cookies work on HTTP"
   fi
   bash "$DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh" "$DEPLOY_DIR" || true
+  bash "$DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh" "$DEPLOY_DIR" || true
 }
 
 verify_admin_session_cookie() {
@@ -277,9 +278,11 @@ server {
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
     proxy_set_header Accept-Encoding "";
-    sub_filter_types text/html;
-    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js?v=2"></script><script type="module" crossorigin src="/app/assets/';
-    sub_filter_once on;
+    sub_filter_types text/html application/javascript;
+    sub_filter_once off;
+    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js?v=3"></script><script type="module" crossorigin src="/app/assets/';
+    sub_filter 'wje="session"' 'wje="jwt"';
+    sub_filter 'auth:{type:"session"}' 'auth:{type:"jwt"}';
   }
 
   location = /app-jwt-bridge.js {
@@ -599,6 +602,7 @@ WorkingDirectory=$DEPLOY_DIR/apps/api
 EnvironmentFile=$API_ENV
 Environment=NODE_ENV=production
 ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh $DEPLOY_DIR
+ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh $DEPLOY_DIR
 ExecStart=$BUN_BIN run start
 Restart=on-failure
 RestartSec=5
