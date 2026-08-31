@@ -21,7 +21,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Landed.** Quote-request module (store + vendor APIs); buyer company registration; RFQ on product pages; wholesale homepage/copy; `/user/quotes`. Spec: `docs/specs/SPEC-001-b2b-multi-vendor-storefront.md`.
 - **2026-08-31.** Storefront production build was failing because `next/headers` ran in modules that client barrels re-export (`not-found`, Footer, BannerSection, ProductDetailsShipping, ProductPageDetails). Those are Client Components using `useCopy()`; a few client files now import by path instead of the barrel.
 - **Verified.** `bun run lint` (oxlint) passed. `@mercurjs/types` + `@mercurjs/core` built. `bun run test:integration:http -- quote-request`: 7/7 passed. Storefront `tsc` still has pre-existing errors unrelated to this change.
-- **Owed / next.** Redeploy storefront on EC2 (`git pull` then `./scripts/deploy-ec2-tradnest.sh nginx`). Vendor-panel quote inbox UI, company buyer teams, net payment terms.
+- **2026-08-31.** Seller landing CTA "כניסה לפאנל ספקים" was a nested `<button>` inside an `<a href="…/seller">`, and nginx sent `/seller` to the storefront (same marketing page). CTA is now a real link; `/seller` (no locale) is the vendor panel, `/il/seller` stays the landing page. `/vendor` API is proxied to Medusa.
 
 ## Session — Admin Inventory (MER-139), branch `feat/admin-inventory`
 

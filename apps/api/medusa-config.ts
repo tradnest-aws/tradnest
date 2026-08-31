@@ -33,7 +33,7 @@ module.exports = withMercur({
     {
       resolve: '@mercurjs/core/modules/vendor-ui',
       options: {
-        appDir: '',
+        appDir: '../vendor',
         path: '/seller',
         disable: true
       }

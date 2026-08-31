@@ -7,6 +7,7 @@ DEPLOY_DIR="${TRADNEST_DEPLOY_DIR:-/opt/tradnest}"
 PUBLIC_ORIGIN="${TRADNEST_PUBLIC_ORIGIN:-http://13.60.11.98}"
 API_PORT="${TRADNEST_API_PORT:-9000}"
 STORE_PORT="${TRADNEST_STORE_PORT:-3000}"
+VENDOR_PORT="${TRADNEST_VENDOR_PORT:-7001}"
 export PATH="/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:${PATH}"
 
 log() { echo "[cutover $(date +'%H:%M:%S')] $*"; }
@@ -132,6 +133,7 @@ ensure_storefront_publishable_key() {
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_DEFAULT_REGION il
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_SITE_NAME "טרדנסט"
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller"
 }
 
 install_nginx_vhost() {
@@ -189,6 +191,33 @@ server {
   location /static {
     proxy_pass http://127.0.0.1:$API_PORT;
     proxy_set_header Host \$host;
+  }
+
+  location /vendor {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Cookie \$http_cookie;
+  }
+
+  location /seller/ {
+    proxy_pass http://127.0.0.1:$VENDOR_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location = /seller {
+    proxy_pass http://127.0.0.1:$VENDOR_PORT/seller/;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
   }
 
   location /app {
@@ -274,6 +303,36 @@ EOF
   systemctl restart tradnest-storefront
 }
 
+write_vendor_unit() {
+  local bun_bin
+  bun_bin="$(command -v bun 2>/dev/null || true)"
+  [[ -n "$bun_bin" ]] || bun_bin="/root/.bun/bin/bun"
+  [[ -x "$bun_bin" ]] || bun_bin="/home/ubuntu/.bun/bin/bun"
+  log "Writing tradnest-vendor.service (bun=$bun_bin port=$VENDOR_PORT)"
+  cat >/etc/systemd/system/tradnest-vendor.service <<EOF
+[Unit]
+Description=Tradnest vendor panel
+After=network.target tradnest-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=$DEPLOY_DIR/apps/vendor
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
+ExecStart=$bun_bin x vite preview --host 127.0.0.1 --port $VENDOR_PORT --strictPort
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/tradnest-vendor.log
+StandardError=append:/var/log/tradnest-vendor.err.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tradnest-vendor >/dev/null
+  systemctl restart tradnest-vendor
+}
+
 health_check() {
   log "Health checks"
   local ok=0 i
@@ -306,12 +365,28 @@ health_check() {
     ls -la "$DEPLOY_DIR/apps/storefront/.next" 2>/dev/null | head || log "missing $DEPLOY_DIR/apps/storefront/.next"
     exit 1
   fi
+  ok=0
+  for i in $(seq 1 20); do
+    if curl -fsS -o /dev/null "http://127.0.0.1:${VENDOR_PORT}/seller/" 2>/dev/null; then
+      ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$ok" -ne 1 ]]; then
+    log "Vendor panel not listening on :$VENDOR_PORT/seller/"
+    systemctl status tradnest-vendor --no-pager || true
+    journalctl -u tradnest-vendor -n 80 --no-pager || true
+    tail -n 80 /var/log/tradnest-vendor.err.log || true
+    exit 1
+  fi
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
   log "Cutover complete"
   echo "API:        $PUBLIC_ORIGIN/health"
   echo "Storefront: $PUBLIC_ORIGIN/"
   echo "Admin:      $PUBLIC_ORIGIN/app"
+  echo "Vendor:     $PUBLIC_ORIGIN/seller"
   echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
 }
 
@@ -322,7 +397,12 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
   ensure_storefront_publishable_key
-  log "Rebuild storefront so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is inlined"
+  log "Build vendor panel (base /seller/)"
+  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/vendor... --filter=@mercurjs/client... )
+  ( cd "$DEPLOY_DIR/apps/vendor" && \
+    VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
+  write_vendor_unit
+  log "Rebuild storefront so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and vendor CTA URL are inlined"
   ( cd "$DEPLOY_DIR/apps/storefront" && bun run build )
   write_storefront_unit
   sleep 6
@@ -396,7 +476,10 @@ bun install
 
 log "Build workspace packages (cli before core, plus storefront deps)"
 cd "$DEPLOY_DIR"
-bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client...
+bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client... --filter=@mercurjs/vendor...
+log "Build vendor panel"
+( cd "$DEPLOY_DIR/apps/vendor" && \
+  VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
 
 log "Medusa migrate (skip interactive link prompts; do not drop b2b-starter link tables)"
 cd "$DEPLOY_DIR/apps/api"
@@ -460,6 +543,7 @@ systemctl enable tradnest-api
 systemctl restart tradnest-api
 sleep 5
 write_storefront_unit
+write_vendor_unit
 
 install_nginx_vhost
 health_check

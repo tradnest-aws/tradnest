@@ -35,6 +35,12 @@ export default defineConfig(({ mode }) => {
         logo: '/tradnest-icon.png',
         ...(backendUrl ? { backendUrl } : {}),
       }),
+      {
+        name: 'tradnest-vendor-base',
+        config: () => ({
+          base: env.VITE_VENDOR_BASE || '/seller/',
+        }),
+      },
     ],
   }
 })

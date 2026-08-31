@@ -32,11 +32,14 @@ export default async function SellerLandingPage({
         <h1 className="heading-xl uppercase mb-4">{t.sellerPageTitle}</h1>
         <p className="text-lg mb-4">{t.sellerHero}</p>
         <p className="label-md text-secondary mb-8">{t.sellerBody}</p>
-        <a href={vendorUrl} data-testid="seller-vendor-cta">
-          <Button size="large" className="uppercase">
-            {t.sellerCta}
-          </Button>
-        </a>
+        <Button
+          href={vendorUrl}
+          size="large"
+          className="uppercase"
+          data-testid="seller-vendor-cta"
+        >
+          {t.sellerCta}
+        </Button>
       </section>
       <section className="mt-8">
         <h2 className="heading-lg uppercase mb-6">{t.sellerHowTitle}</h2>
