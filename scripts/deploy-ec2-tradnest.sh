@@ -168,7 +168,12 @@ run_remote() {
   local script="$1"
   if [[ -n "${TRADNEST_SSH_HOST:-}" ]]; then
     log "SSH ${TRADNEST_SSH_HOST}"
-    local ssh_opts=(-o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new)
+    local ssh_opts=(
+      -o ConnectTimeout=10
+      -o StrictHostKeyChecking=accept-new
+      -o ServerAliveInterval=15
+      -o ServerAliveCountMax=240
+    )
     if [[ -n "${TRADNEST_SSH_KEY:-}" ]]; then
       ssh_opts+=(-i "$TRADNEST_SSH_KEY")
     fi
@@ -321,6 +326,28 @@ echo "HEAD=\$(git rev-parse HEAD)"
 REMOTE
 )
 
+CUTOVER_REMOTE=$(cat <<REMOTE
+set -eu
+REPO_URL='$REPO_URL'
+BRANCH='$BRANCH'
+DEPLOY_DIR='$DEPLOY_DIR'
+PUBLIC_IP='$PUBLIC_IP'
+log() { echo "[cutover] \$*"; }
+
+export PATH="/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:\$PATH"
+cd "\$DEPLOY_DIR"
+git remote set-url origin "\$REPO_URL" || true
+git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
+git checkout -B "\$BRANCH" "origin/\$BRANCH"
+git reset --hard "origin/\$BRANCH"
+log "Now at \$(git rev-parse --short HEAD)"
+chmod +x scripts/ec2-cutover-remote.sh
+export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
+export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
+bash scripts/ec2-cutover-remote.sh
+REMOTE
+)
+
 case "$ACTION" in
   ensure-ssm)
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) region $REGION profile $PROFILE"
@@ -344,8 +371,13 @@ case "$ACTION" in
     echo "This stages the Mercur/Tradnest tree; it does not rewrite live nginx."
     run_remote "$DEPLOY_REMOTE"
     ;;
+  cutover)
+    echo "Instance $INSTANCE_ID ($PUBLIC_IP) CUTOVER $REPO_URL#$BRANCH"
+    echo "This builds API + storefront, reuses DATABASE_URL if found, and rewrites nginx."
+    run_remote "$CUTOVER_REMOTE"
+    ;;
   *)
-    echo "Usage: $0 inspect|deploy|ensure-ssm|open-ssh" >&2
+    echo "Usage: $0 inspect|deploy|cutover|ensure-ssm|open-ssh" >&2
     exit 1
     ;;
 esac
