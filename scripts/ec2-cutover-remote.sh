@@ -59,7 +59,7 @@ copy_key() {
 }
 
 find_publishable_key() {
-  local key="" f line dburl
+  local key="" f line
   for f in \
     "$DEPLOY_DIR/apps/storefront/.env" \
     /opt/b2b-starter/apps/web/.env \
@@ -68,40 +68,51 @@ find_publishable_key() {
     /opt/b2b-starter/.env
   do
     [[ -f "$f" ]] || continue
-    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.+' "$f" 2>/dev/null | tail -1 || true)"
+    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_' "$f" 2>/dev/null | tail -1 || true)"
     key="${line#NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=}"
     key="${key%\"}"
     key="${key#\"}"
-    if [[ "$key" == pk_* ]]; then
+    if [[ "$key" == pk_* ]] && publishable_key_works "$key"; then
       echo "$key"
       return 0
     fi
   done
   while IFS= read -r f; do
     [[ -f "$f" ]] || continue
-    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.+' "$f" 2>/dev/null | tail -1 || true)"
+    line="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_' "$f" 2>/dev/null | tail -1 || true)"
     key="${line#NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=}"
     key="${key%\"}"
     key="${key#\"}"
-    if [[ "$key" == pk_* ]]; then
+    if [[ "$key" == pk_* ]] && publishable_key_works "$key"; then
       echo "$key"
       return 0
     fi
-  done < <(grep -rl --include='.env*' 'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=' /opt /home /var/www 2>/dev/null | grep -v "$DEPLOY_DIR" | head -20)
-  dburl="$(grep -E '^DATABASE_URL=' "$DEPLOY_DIR/apps/api/.env" 2>/dev/null | tail -1 | cut -d= -f2- || true)"
-  if [[ -n "$dburl" ]] && command -v psql >/dev/null; then
-    key="$(psql "$dburl" -tAc "SELECT token FROM api_key WHERE type = 'publishable' AND (revoked_at IS NULL OR revoked_at IS NULL) LIMIT 1" 2>/dev/null | tr -d '[:space:]' || true)"
-    if [[ "$key" == pk_* || "$key" == pk* ]]; then
-      echo "$key"
-      return 0
-    fi
-    key="$(psql "$dburl" -tAc "SELECT token FROM api_key WHERE type = 'publishable' LIMIT 1" 2>/dev/null | tr -d '[:space:]' || true)"
-    if [[ -n "$key" && "$key" != "SELECT" ]]; then
-      echo "$key"
-      return 0
-    fi
-  fi
+  done < <(grep -rl --include='.env*' 'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_' /opt /home /var/www 2>/dev/null | grep -v "$DEPLOY_DIR" | head -20 || true)
   return 1
+}
+
+publishable_key_works() {
+  local key="$1" code
+  code="$(curl -sS -o /tmp/tradnest-regions.json -w '%{http_code}' \
+    -H "x-publishable-api-key: ${key}" \
+    "http://127.0.0.1:${API_PORT}/store/regions" || echo 000)"
+  [[ "$code" == "200" ]]
+}
+
+create_publishable_key() {
+  local out key
+  log "Creating a new publishable API key via Medusa (DB token is hashed; only create returns pk_)"
+  out="$(cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-publishable-key.ts 2>&1)" || {
+    echo "$out" >&2
+    return 1
+  }
+  echo "$out" >&2
+  key="$(printf '%s\n' "$out" | sed -n 's/.*TRADNEST_PUBLISHABLE_KEY=//p' | tail -1 | tr -d '[:space:]')"
+  if [[ "$key" != pk_* ]]; then
+    echo "ensure-publishable-key.ts did not print a pk_ token" >&2
+    return 1
+  fi
+  echo "$key"
 }
 
 ensure_storefront_publishable_key() {
@@ -109,15 +120,16 @@ ensure_storefront_publishable_key() {
   mkdir -p "$DEPLOY_DIR/apps/storefront"
   touch "$DEPLOY_DIR/apps/storefront/.env"
   if key="$(find_publishable_key)"; then
-    log "Using publishable key ${key:0:12}…"
-    upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY "$key"
-    upsert "$DEPLOY_DIR/apps/storefront/.env" MEDUSA_BACKEND_URL "http://127.0.0.1:${API_PORT}"
-    upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
-    return 0
+    log "Existing publishable key works against /store/regions (${key:0:12}…)"
+  elif key="$(create_publishable_key)"; then
+    log "Created publishable key (${key:0:12}…)"
+  else
+    echo "Could not obtain a working Medusa publishable API key." >&2
+    exit 1
   fi
-  echo "No Medusa publishable API key found (NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY / api_key table)." >&2
-  echo "Create one in Admin → Settings → Publishable API keys, then rerun nginx." >&2
-  exit 1
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY "$key"
+  upsert "$DEPLOY_DIR/apps/storefront/.env" MEDUSA_BACKEND_URL "http://127.0.0.1:${API_PORT}"
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
 }
 
 install_nginx_vhost() {
