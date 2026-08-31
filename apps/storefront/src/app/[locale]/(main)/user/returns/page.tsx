@@ -2,6 +2,8 @@ import { UserNavigation } from '@/components/molecules/UserNavigation/UserNaviga
 import { OrderReturnRequests } from '@/components/sections/OrderReturnRequests/OrderReturnRequests';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getReturns, retrieveReturnReasons } from '@/lib/data/orders';
+import { headers } from 'next/headers';
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
 
 export default async function ReturnsPage({
   searchParams
@@ -12,6 +14,9 @@ export default async function ReturnsPage({
   const returnReasons = await retrieveReturnReasons();
 
   const user = await retrieveCustomer();
+  const t = getCopy(
+    (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE
+  );
 
   const { page, return: returnId } = await searchParams;
 
@@ -20,7 +25,7 @@ export default async function ReturnsPage({
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
-          <h1 className="heading-md uppercase" data-testid="returns-heading">Returns</h1>
+          <h1 className="heading-md uppercase" data-testid="returns-heading">{t.returns}</h1>
           <OrderReturnRequests
             returns={order_return_requests.sort(
               (a, b) =>

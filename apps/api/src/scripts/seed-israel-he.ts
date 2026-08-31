@@ -37,7 +37,6 @@ import {
 import {
   ISRAEL_COUNTRY,
   ISRAEL_CURRENCY,
-  ISRAEL_PRIMARY_SELLER_EMAIL,
   israelCategories,
   israelProducts,
   israelSellers,
@@ -189,16 +188,6 @@ export default async function seedIsraelHebrew({
     )
   }
 
-  const { data: existingPrimary } = await query.graph({
-    entity: "seller",
-    fields: ["id"],
-    filters: { email: ISRAEL_PRIMARY_SELLER_EMAIL },
-  })
-  if (existingPrimary[0]) {
-    logger.info("Hebrew demo sellers already exist, skipping catalog seed.")
-    return
-  }
-
   let sharedShippingProfileId: string
   const { data: existingProfiles } = await query.graph({
     entity: "shipping_profile",
@@ -230,6 +219,37 @@ export default async function seedIsraelHebrew({
     `https://picsum.photos/seed/${key}/1200/320`
 
   for (const [index, sellerConfig] of israelSellers.entries()) {
+    const { data: existingSellerRows } = await query.graph({
+      entity: "seller",
+      fields: ["id", "email"],
+      filters: { email: sellerConfig.email },
+    })
+    if (existingSellerRows[0]) {
+      const { data: members } = await query.graph({
+        entity: "member",
+        fields: ["id"],
+        filters: { email: sellerConfig.email },
+      })
+      const { data: locations } = await query.graph({
+        entity: "stock_location",
+        fields: ["id", "name"],
+        filters: { name: `מחסן ${sellerConfig.name}` },
+      })
+      if (!members[0] || !locations[0]) {
+        throw new Error(
+          `Seller ${sellerConfig.email} exists but member or stock location is missing`
+        )
+      }
+      logger.info(`Seller "${sellerConfig.name}" already exists, reusing.`)
+      sellers.push({
+        id: existingSellerRows[0].id as string,
+        memberId: members[0].id as string,
+        stockLocationId: locations[0].id as string,
+        shippingProfileId: sharedShippingProfileId,
+      })
+      continue
+    }
+
     logger.info(`Seeding seller "${sellerConfig.name}"...`)
 
     let authIdentityId: string
@@ -407,7 +427,28 @@ export default async function seedIsraelHebrew({
     })
   }
 
-  const products: CreateProductDTO[] = israelProducts.map((item) => {
+  const { data: existingCatalog } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle"],
+    filters: {
+      handle: israelProducts.map((item) => item.handle),
+    },
+  })
+  const existingHandles = new Set(
+    (existingCatalog as { handle: string }[]).map((item) => item.handle)
+  )
+  const productsToCreate = israelProducts.filter(
+    (item) => !existingHandles.has(item.handle)
+  )
+
+  if (!productsToCreate.length) {
+    logger.info(
+      "All Hebrew catalog handles already exist. Nothing new to seed."
+    )
+    return
+  }
+
+  const products: CreateProductDTO[] = productsToCreate.map((item) => {
     const sku = item.handle.toUpperCase().replace(/-/g, "")
     const image = {
       url: `https://picsum.photos/seed/${item.handle}/800/800`,
@@ -447,7 +488,7 @@ export default async function seedIsraelHebrew({
     entity: "product",
     fields: ["id", "handle", "variants.id", "variants.sku"],
     filters: {
-      handle: israelProducts.map((item) => item.handle),
+      handle: productsToCreate.map((item) => item.handle),
     },
   })
 

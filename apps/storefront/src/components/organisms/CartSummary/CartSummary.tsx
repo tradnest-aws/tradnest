@@ -1,6 +1,7 @@
 "use client"
 
 import { convertToLocale } from "@/lib/helpers/money"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const CartSummary = ({
   item_total,
@@ -17,11 +18,12 @@ export const CartSummary = ({
   tax: number
   discount_total: number
 }) => {
+  const t = useCopy()
   return (
     <div data-testid="cart-summary">
       <div className="space-y-4 label-md text-secondary mb-4">
         <div className="flex justify-between" data-testid="cart-summary-items">
-          <span>Items:</span>
+          <span>{t.items}:</span>
           <span className="text-primary">
             {convertToLocale({
               amount: item_total,
@@ -30,7 +32,7 @@ export const CartSummary = ({
           </span>
         </div>
         <div className="flex justify-between" data-testid="cart-summary-delivery">
-          <span>Delivery:</span>
+          <span>{t.delivery}:</span>
           <span className="text-primary">
             {convertToLocale({
               amount: shipping_total,
@@ -39,7 +41,7 @@ export const CartSummary = ({
           </span>
         </div>
         <div className="flex justify-between" data-testid="cart-summary-tax">
-          <span>Tax:</span>
+          <span>{t.tax}:</span>
           <span className="text-primary">
             {convertToLocale({
               amount: tax,
@@ -48,7 +50,7 @@ export const CartSummary = ({
           </span>
         </div>
         <div className="flex justify-between" data-testid="cart-summary-discount">
-          <span>Discount:</span>
+          <span>{t.discount}:</span>
           <span className="text-primary">
             {convertToLocale({
               amount: discount_total,
@@ -57,7 +59,7 @@ export const CartSummary = ({
           </span>
         </div>
         <div className="flex justify-between border-t pt-4 items-center" data-testid="cart-summary-total">
-          <span>Total:</span>
+          <span>{t.total}:</span>
           <span className="label-xl text-primary">
             {convertToLocale({
               amount: total,

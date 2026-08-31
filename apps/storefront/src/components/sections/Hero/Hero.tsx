@@ -1,8 +1,8 @@
 import Image from "next/image"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
 import tailwindConfig from "../../../../tailwind.config"
 import { ArrowRightIcon } from "@/icons"
-import Link from "next/link"
 
 type HeroProps = {
   image: string
@@ -34,27 +34,49 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
             <p className="text-lg mb-8">{paragraph}</p>
           </div>
         </div>
-        {buttons.length && (
+        {buttons.length > 0 && (
           <div className="h-[72px] lg:h-[144px] flex font-bold uppercase">
-            {buttons.map(({ label, path }) => (
-              <Link
-                key={path}
-                href={path}
-                className="group flex border rounded-sm h-full w-1/2 bg-content hover:bg-action hover:text-tertiary transition-all duration-300 p-6 justify-between items-end"
-                aria-label={label}
-                title={label}
-              >
-                <span>
-                  <span className="group-hover:inline-flex hidden">#</span>
-                  {label}
-                </span>
-
-                <ArrowRightIcon
-                  color={tailwindConfig.theme.extend.backgroundColor.primary}
-                  aria-hidden
-                />
-              </Link>
-            ))}
+            {buttons.map(({ label, path }) => {
+              const className =
+                "group flex border rounded-sm h-full w-1/2 bg-content hover:bg-action hover:text-tertiary transition-all duration-300 p-6 justify-between items-end"
+              const inner = (
+                <>
+                  <span>
+                    <span className="group-hover:inline-flex hidden">#</span>
+                    {label}
+                  </span>
+                  <ArrowRightIcon
+                    color={tailwindConfig.theme.extend.backgroundColor.primary}
+                    aria-hidden
+                    className="rtl-flip"
+                  />
+                </>
+              )
+              if (path.startsWith("http")) {
+                return (
+                  <a
+                    key={path}
+                    href={path}
+                    className={className}
+                    aria-label={label}
+                    title={label}
+                  >
+                    {inner}
+                  </a>
+                )
+              }
+              return (
+                <LocalizedClientLink
+                  key={path}
+                  href={path}
+                  className={className}
+                  aria-label={label}
+                  title={label}
+                >
+                  {inner}
+                </LocalizedClientLink>
+              )
+            })}
           </div>
         )}
       </div>

@@ -9,6 +9,7 @@ import { Dropdown } from "@/components/molecules"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { ProfileIcon } from "@/icons"
 import { useState } from "react"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const UserDropdown = ({
   isLoggedIn,
@@ -16,6 +17,7 @@ export const UserDropdown = ({
   isLoggedIn: boolean
 }) => {
   const [open, setOpen] = useState(false)
+  const t = useCopy()
 
   return (
     <div
@@ -36,20 +38,20 @@ export const UserDropdown = ({
           <div className="p-1">
             <div className="lg:w-[200px]">
               <h3 className="uppercase heading-xs border-b p-4">
-                Buyer account
+                {t.buyerAccount}
               </h3>
             </div>
-            <NavigationItem href="/user/orders">Orders</NavigationItem>
-            <NavigationItem href="/user/quotes">Quote requests</NavigationItem>
-            <NavigationItem href="/user/addresses">Addresses</NavigationItem>
+            <NavigationItem href="/user/orders">{t.orders}</NavigationItem>
+            <NavigationItem href="/user/quotes">{t.quoteRequests}</NavigationItem>
+            <NavigationItem href="/user/addresses">{t.addresses}</NavigationItem>
             <Divider />
-            <NavigationItem href="/user/settings">Settings</NavigationItem>
+            <NavigationItem href="/user/settings">{t.settings}</NavigationItem>
             <LogoutButton />
           </div>
         ) : (
           <div className="p-1">
-            <NavigationItem href="/login">Login</NavigationItem>
-            <NavigationItem href="/register">Create buyer account</NavigationItem>
+            <NavigationItem href="/login">{t.login}</NavigationItem>
+            <NavigationItem href="/register">{t.createBuyerAccount}</NavigationItem>
           </div>
         )}
       </Dropdown>

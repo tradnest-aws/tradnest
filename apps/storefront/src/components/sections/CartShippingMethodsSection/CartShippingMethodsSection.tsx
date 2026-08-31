@@ -16,6 +16,7 @@ import { calculatePriceForShippingOption } from '@/lib/data/fulfillment';
 import { convertToLocale } from '@/lib/helpers/money';
 
 import { CartShippingMethodRow } from './CartShippingMethodRow';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 type ExtendedStoreProduct = HttpTypes.StoreProduct & {
   seller?: {
@@ -55,6 +56,7 @@ type ShippingProps = {
 };
 
 const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShippingMethods }) => {
+  const t = useCopy();
   const [isLoadingPrices, setIsLoadingPrices] = useState(false);
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -187,7 +189,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
           className="text-3xl-regular flex flex-row items-baseline gap-x-2"
         >
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && <CheckCircleSolid />}
-          Delivery
+          {t.delivery}
         </Heading>
         {isEditEnabled && (
           <Text>
@@ -195,7 +197,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
               onClick={handleEdit}
               variant="tonal"
             >
-              Edit
+              {t.edit}
             </Button>
           </Text>
         )}
@@ -206,7 +208,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
             <div data-testid="delivery-options-container">
               <div className="pb-8 pt-2 md:pt-0">
                 {filteredGroupedBySellerId.length === 0
-                  ? 'No shipping options available'
+                  ? t.noShipping
                   : filteredGroupedBySellerId.map(key => {
                       const selectedMethod = getSelectedMethodForSeller(key);
 

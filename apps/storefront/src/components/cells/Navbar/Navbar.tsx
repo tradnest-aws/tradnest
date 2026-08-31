@@ -15,7 +15,7 @@ export const Navbar = ({
           categories={categories}
           parentCategories={parentCategories}
         />
-        <div className="ml-auto max-w-[296px] w-full pl-4" data-testid="navbar-search-desktop">
+        <div className="ms-auto max-w-[296px] w-full ps-4" data-testid="navbar-search-desktop">
           <NavbarSearch />
         </div>
       </div>

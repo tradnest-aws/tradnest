@@ -15,6 +15,7 @@ import {
   getStorefrontLocales,
   toHreflang,
 } from "@/lib/helpers/hreflang"
+import { getCopy } from "@/lib/i18n/copy"
 
 const DEFAULT_SITE_NAME = "Tradnest — B2B multi-vendor marketplace"
 
@@ -24,6 +25,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const headersList = await headers()
   const host = headersList.get("host")
@@ -44,9 +46,8 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "שוק סיטונאי לישראל"
-  const description =
-    "טרדנסט הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ."
+  const title = t.homeTitle
+  const description = t.homeDescription
   const ogImage = "/tradnest-logo.png"
 
   return {
@@ -99,6 +100,7 @@ export default async function Home({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const headersList = await headers()
   const host = headersList.get("host")
@@ -145,23 +147,18 @@ export default async function Home({
 
       <Hero
         image="/images/hero/Image.jpg"
-        heading="רכש סיטונאי מספקים בישראל במקום אחד"
-        paragraph="השוו הצעות של ספקים על אותו מוצר, בקשו הצעת מחיר לכמויות, והשלימו הזמנה עם משלוח בארץ בלבד."
+        heading={t.heroHeading}
+        paragraph={t.heroParagraph}
         buttons={[
-          { label: "לקטלוג", path: "/categories" },
-          {
-            label: "להצטרף כספק",
-            path:
-              process.env.NEXT_PUBLIC_VENDOR_URL ||
-              "https://vendor.mercurjs.com",
-          },
+          { label: t.heroCatalog, path: "/categories" },
+          { label: t.heroSeller, path: "/seller" },
         ]}
       />
       <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="מוצרים נבחרים" locale={locale} home />
+        <HomeProductSection heading={t.featured} locale={locale} home />
       </div>
       <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading="לפי קטגוריה" />
+        <HomeCategories heading={t.byCategory} />
       </div>
       <BannerSection />
       <HowProcurementWorksSection />

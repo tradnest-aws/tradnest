@@ -3,28 +3,26 @@
 import { QuoteRequestDTO } from "@mercurjs/types"
 import { Card } from "@/components/atoms"
 import { Divider } from "@medusajs/ui"
-
-const statusLabel: Record<QuoteRequestDTO["status"], string> = {
-  pending: "Awaiting supplier",
-  quoted: "Quoted",
-  accepted: "Accepted",
-  declined: "Declined",
-  cancelled: "Cancelled",
-}
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const QuoteRequestList = ({
   quoteRequests,
 }: {
   quoteRequests: QuoteRequestDTO[]
 }) => {
+  const t = useCopy()
+  const statusLabel: Record<QuoteRequestDTO["status"], string> = {
+    pending: t.quotePending,
+    quoted: t.quoteQuoted,
+    accepted: t.quoteAccepted,
+    declined: t.quoteDeclined,
+    cancelled: t.quoteCancelled,
+  }
   if (!quoteRequests.length) {
     return (
       <Card className="p-6" data-testid="quote-requests-empty">
-        <p className="heading-sm mb-2">No quote requests yet</p>
-        <p className="label-md text-secondary">
-          Open a catalog item and send a quote request when you need volume
-          pricing or a custom lead time.
-        </p>
+        <p className="heading-sm mb-2">{t.noQuotes}</p>
+        <p className="label-md text-secondary">{t.noQuotesHint}</p>
       </Card>
     )
   }
@@ -39,7 +37,7 @@ export const QuoteRequestList = ({
                 {quote.product_title || quote.product_id}
               </p>
               <p className="label-md text-secondary mt-1">
-                Qty {quote.quantity}
+                {t.qty} {quote.quantity}
                 {quote.company_name ? ` · ${quote.company_name}` : ""}
               </p>
             </div>
@@ -57,7 +55,7 @@ export const QuoteRequestList = ({
             <>
               <Divider className="my-3" />
               <p className="label-md">
-                Quoted unit amount: {quote.quoted_unit_amount}
+                {t.quotedUnit} {quote.quoted_unit_amount}
               </p>
               {quote.seller_note && (
                 <p className="label-md text-secondary mt-1">{quote.seller_note}</p>

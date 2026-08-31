@@ -13,6 +13,7 @@ import {
   buildHreflangAlternates,
   getStorefrontLocales,
 } from "@/lib/helpers/hreflang"
+import { getCopy } from "@/lib/i18n/copy"
 
 export const revalidate = 60
 
@@ -41,7 +42,7 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "All Products"
+  const title = getCopy(locale).allProducts
   const description = `Browse all products on ${
     process.env.NEXT_PUBLIC_SITE_NAME || "our store"
   }`
@@ -70,6 +71,7 @@ async function AllCategories({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const ua = (await headers()).get("user-agent") || ""
   const bot = isBot(ua)
@@ -77,7 +79,7 @@ async function AllCategories({
   const breadcrumbsItems = [
     {
       path: "/",
-      label: "All Products",
+      label: t.allProducts,
     },
   ]
 
@@ -112,7 +114,7 @@ async function AllCategories({
               {
                 "@type": "ListItem",
                 position: 1,
-                name: "All Products",
+                name: t.allProducts,
                 item: `${baseUrl}/${locale}/categories`,
               },
             ],
@@ -134,7 +136,7 @@ async function AllCategories({
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
-      <h1 className="heading-xl uppercase">All Products</h1>
+      <h1 className="heading-xl uppercase">{t.allProducts}</h1>
 
       <Suspense fallback={<div data-testid="all-categories-page-loading"><ProductListingSkeleton /></div>}>
         {bot ? (

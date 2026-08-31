@@ -1,19 +1,20 @@
+"use client"
 import { Button } from "@/components/atoms"
 import { ArrowRightIcon } from "@/icons"
-import Link from "next/link"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const SellNowButton = () => {
+  const t = useCopy()
   return (
-    <Link
-      href={process.env.NEXT_PUBLIC_VENDOR_URL || "https://vendor.mercurjs.com"}
-    >
-      <Button className="group uppercase !font-bold pl-12 gap-1 flex items-center">
-        Sell now
+    <LocalizedClientLink href="/seller">
+      <Button className="group uppercase !font-bold ps-12 gap-1 flex items-center">
+        {t.becomeSupplier}
         <ArrowRightIcon
           color="white"
-          className="w-5 h-5 group-hover:opacity-100 opacity-0 transition-all duration-300"
+          className="w-5 h-5 group-hover:opacity-100 opacity-0 transition-all duration-300 rtl-flip"
         />
       </Button>
-    </Link>
+    </LocalizedClientLink>
   )
 }

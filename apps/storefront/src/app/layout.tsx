@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Heebo } from 'next/font/google';
+import { headers } from 'next/headers';
 
 import './globals.css';
 
@@ -8,6 +9,8 @@ import Head from 'next/head';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
+import { toHreflang } from '@/lib/helpers/hreflang';
+import { DEFAULT_STOREFRONT_LOCALE, isRtlLocale } from '@/lib/i18n/copy';
 
 import { Providers } from './providers';
 
@@ -40,14 +43,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cart = await retrieveCart();
-
-  // default lang updated by HtmlLangSetter
-  const htmlLang = 'en';
+  const localeHeader = (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE;
+  const htmlLang = toHreflang(localeHeader);
+  const dir = isRtlLocale(localeHeader) ? 'rtl' : 'ltr';
 
   return (
     <html
       lang={htmlLang}
-      className=""
+      dir={dir}
+      className={heebo.variable}
     >
       <Head>
         <link
@@ -115,10 +119,13 @@ export default async function RootLayout({
           href="https://api.mercurjs.com"
         />
       </Head>
-      <body className={`${heebo.className} relative bg-primary text-secondary antialiased`}>
+      <body
+        dir={dir}
+        className={`${heebo.className} relative bg-primary text-secondary antialiased`}
+      >
         <HtmlLangSetter />
         <Providers cart={cart}>{children}</Providers>
-        <Toaster position="top-right" />
+        <Toaster position={dir === 'rtl' ? 'top-left' : 'top-right'} />
       </body>
     </html>
   );

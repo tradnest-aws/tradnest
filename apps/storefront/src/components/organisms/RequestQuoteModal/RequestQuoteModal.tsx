@@ -13,6 +13,7 @@ import { Modal } from '@/components/molecules/Modal/Modal';
 import { createQuoteRequest } from '@/lib/data/quotes';
 import { readBuyerAccount } from '@/lib/helpers/buyer-account';
 import { toast } from '@/lib/helpers/toast';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 const schema = z.object({
   quantity: z.coerce.number().int().min(1, 'Enter a quantity of at least 1'),
@@ -39,6 +40,7 @@ export const RequestQuoteModal = ({
   user: HttpTypes.StoreCustomer;
   onClose: () => void;
 }) => {
+  const t = useCopy();
   const account = readBuyerAccount(user);
   const [submitting, setSubmitting] = useState(false);
   const {
@@ -69,13 +71,13 @@ export const RequestQuoteModal = ({
         company_name: account.company_name || null
       });
       toast.success({
-        title: 'Quote requested',
-        description: 'The supplier will respond with pricing and lead time.'
+        title: t.quoteRequested,
+        description: t.quoteRequestedHint
       });
       onClose();
     } catch (error) {
       toast.error({
-        title: 'Could not send quote request',
+        title: t.quoteFailed,
         description: (error as Error).message
       });
     } finally {
@@ -84,14 +86,13 @@ export const RequestQuoteModal = ({
   };
 
   return (
-    <Modal heading="Request a quote" onClose={onClose} data-testid="request-quote-modal">
+    <Modal heading={t.requestQuoteHeading} onClose={onClose} data-testid="request-quote-modal">
       <form onSubmit={handleSubmit(submit)} className="px-4 space-y-4" data-testid="request-quote-form">
         <p className="label-md text-secondary">
-          Ask this supplier for a volume price, MOQ, and delivery window. Your company
-          profile is included with the request.
+          {t.requestQuoteHint}
         </p>
         <LabeledInput
-          label="Quantity"
+          label={t.quantity}
           type="number"
           min={1}
           error={errors.quantity as FieldError}
@@ -99,17 +100,17 @@ export const RequestQuoteModal = ({
           {...register('quantity')}
         />
         <LabeledInput
-          label="Needed by (optional)"
-          placeholder="e.g. 30 days, Q4 2026"
+          label={t.neededBy}
+          placeholder={t.neededByPlaceholder}
           error={errors.target_delivery as FieldError}
           data-testid="quote-delivery-input"
           {...register('target_delivery')}
         />
         <label className="label-sm block">
-          <p>Notes for the supplier</p>
+          <p>{t.notesForSupplier}</p>
           <Textarea
             rows={4}
-            placeholder="Specs, packaging, Incoterms, payment terms…"
+            placeholder={t.notesPlaceholder}
             data-testid="quote-message-input"
             {...register('message')}
           />
@@ -120,7 +121,7 @@ export const RequestQuoteModal = ({
           disabled={submitting}
           data-testid="quote-submit-button"
         >
-          Send request
+          {t.sendRequest}
         </Button>
       </form>
     </Modal>

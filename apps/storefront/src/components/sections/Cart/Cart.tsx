@@ -4,8 +4,10 @@ import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CartEmpty, CartItems, CartSummary } from '@/components/organisms';
 import { useCartContext } from '@/components/providers';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const Cart = () => {
+  const t = useCopy();
   const { cart } = useCartContext();
 
   if (!cart || !cart.items?.length) {
@@ -29,7 +31,7 @@ export const Cart = () => {
             discount_total={cart?.discount_subtotal || 0}
           />
           <LocalizedClientLink href="/checkout?step=address">
-            <Button className="flex w-full items-center justify-center py-3">Go to checkout</Button>
+            <Button className="flex w-full items-center justify-center py-3">{t.goToCheckout}</Button>
           </LocalizedClientLink>
         </div>
       </div>

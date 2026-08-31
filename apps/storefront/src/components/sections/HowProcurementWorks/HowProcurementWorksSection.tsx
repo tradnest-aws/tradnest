@@ -1,25 +1,21 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { ArrowRightIcon } from "@/icons"
+import { headers } from "next/headers"
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
 
-const steps = [
-  {
-    title: "חשבון רוכש",
-    body: "נרשמים עם פרטי החברה כדי שספקים יוכלו לתת הצעת מחיר לעסק מאומת.",
-  },
-  {
-    title: "השוואת הצעות",
-    body: "מוצר אחד, כמה ספקים. משווים מחיר יחידה, מלאי וזמן אספקה לפני הזמנה או בקשת הצעה.",
-  },
-  {
-    title: "הזמנה או הצעת מחיר",
-    body: "מוסיפים הצעות במלאי לעגלה, או שולחים בקשת הצעת מחיר לכמויות ולחוזים.",
-  },
-]
+export async function HowProcurementWorksSection() {
+  const locale =
+    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
+  const t = getCopy(locale)
+  const steps = [
+    { title: t.how1Title, body: t.how1Body },
+    { title: t.how2Title, body: t.how2Body },
+    { title: t.how3Title, body: t.how3Body },
+  ]
 
-export function HowProcurementWorksSection() {
   return (
     <section className="bg-primary container" data-testid="how-procurement-works">
-      <h2 className="heading-lg text-primary mb-8 uppercase">איך הרכש עובד</h2>
+      <h2 className="heading-lg text-primary mb-8 uppercase">{t.howTitle}</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3">
         {steps.map((step, index) => (
           <div key={step.title} className="border rounded-sm p-6">
@@ -34,8 +30,8 @@ export function HowProcurementWorksSection() {
         className="inline-flex items-center gap-2 mt-8 heading-sm uppercase"
         data-testid="how-procurement-register-link"
       >
-        פתיחת חשבון רוכש
-        <ArrowRightIcon />
+        {t.howRegister}
+        <ArrowRightIcon className="rtl-flip" />
       </LocalizedClientLink>
     </section>
   )

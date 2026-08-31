@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { getProductPrice } from "@/lib/helpers/get-product-price"
 import { Product } from "@/types/product"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const ProductCard = ({
   product,
@@ -15,6 +16,7 @@ export const ProductCard = ({
   product: HttpTypes.StoreProduct | Product,
   className?: string
 }) => {
+  const t = useCopy()
   if (!product) {
     return null
   }
@@ -72,7 +74,7 @@ export const ProductCard = ({
           title={`See more about ${productName}`}
         >
           <Button className="absolute rounded-sm bg-action text-action-on-primary h-auto lg:h-[48px] lg:group-hover:block hidden w-full uppercase bottom-1 z-10" data-testid="product-card-see-more-button">
-            See More
+            {t.seeMore}
           </Button>
         </LocalizedClientLink>
       </div>

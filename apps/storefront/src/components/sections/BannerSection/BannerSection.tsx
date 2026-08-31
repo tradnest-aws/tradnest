@@ -1,33 +1,30 @@
 import { Button } from "@/components/atoms"
 import Image from "next/image"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { headers } from "next/headers"
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
 
-export const BannerSection = () => {
+export const BannerSection = async () => {
+  const locale =
+    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
+  const t = getCopy(locale)
+
   return (
     <section className="bg-tertiary container text-tertiary" data-testid="supplier-banner">
       <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
         <div className="py-6 px-6 flex flex-col h-full justify-between border border-secondary rounded-sm">
           <div className="mb-8 lg:mb-48">
             <span className="text-sm inline-block px-4 py-1 border border-secondary rounded-sm">
-              ספקים
+              {t.bannerKicker}
             </span>
-            <h2 className="display-sm">
-              פרסמו קטלוג. הגיעו לקונים עסקיים בישראל.
-            </h2>
-            <p className="text-lg text-tertiary max-w-lg">
-              פתחו חשבון ספק, פרסמו הצעות מול מוצרים משותפים, קבעו מחיר ומלאי,
-              וקבלו בקשות להצעת מחיר מחברות רשומות.
-            </p>
+            <h2 className="display-sm">{t.bannerTitle}</h2>
+            <p className="text-lg text-tertiary max-w-lg">{t.bannerBody}</p>
           </div>
-          <a
-            href={
-              process.env.NEXT_PUBLIC_VENDOR_URL ||
-              "https://vendor.mercurjs.com"
-            }
-          >
+          <LocalizedClientLink href="/seller">
             <Button size="large" className="w-fit bg-secondary/10">
-              להצטרף כספק
+              {t.bannerCta}
             </Button>
-          </a>
+          </LocalizedClientLink>
         </div>
         <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full flex justify-end rounded-sm">
           <Image

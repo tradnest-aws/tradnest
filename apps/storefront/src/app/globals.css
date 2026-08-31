@@ -151,3 +151,27 @@ button:disabled svg path {
 .no-arrows-number-input {
   -moz-appearance: textfield;
 }
+
+html[dir="rtl"] .product-details ul {
+  padding-left: 0;
+  padding-right: 1.25rem;
+}
+
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] [role="dialog"],
+html[dir="rtl"] [data-headlessui-portal],
+html[dir="rtl"] #headlessui-portal-root,
+html[dir="rtl"] [data-radix-portal],
+html[dir="rtl"] [data-radix-popper-content-wrapper],
+html[dir="rtl"] .rt-BaseDialogOverlay,
+html[dir="rtl"] .rt-DialogContent,
+html[dir="rtl"] .rt-PopoverContent,
+html[dir="rtl"] .rt-DropdownMenuContent,
+html[dir="rtl"] [data-sonner-toaster],
+html[dir="rtl"] [data-sonner-toast] {
+  direction: rtl;
+  text-align: start;
+}

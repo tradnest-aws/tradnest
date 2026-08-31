@@ -21,6 +21,7 @@ import { RequestQuoteModal } from "@/components/organisms/RequestQuoteModal/Requ
 import { SellerDTO } from "@mercurjs/types"
 import { toast } from "@/lib/helpers/toast"
 import { useCartContext } from "@/components/providers"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
@@ -51,6 +52,7 @@ export const ProductDetailsHeader = ({
   offers?: StoreOffer[]
   seller?: SellerDTO
 }) => {
+  const t = useCopy()
   const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext()
   const router = useRouter()
   const { allSearchParams } = useGetAllSearchParams()
@@ -141,8 +143,8 @@ export const ProductDetailsHeader = ({
       })
     } catch (error) {
       toast.error({
-        title: "Error adding to cart",
-        description: "This offer does not have the required inventory",
+        title: t.addToCartError,
+        description: t.addToCartErrorHint,
       })
     }
   }
@@ -163,12 +165,12 @@ export const ProductDetailsHeader = ({
               </span>
             ) : (
               <span className="label-md text-secondary pt-2 pb-4" data-testid="product-price-unavailable">
-                Not listed for your region
+                {t.notListedRegion}
               </span>
             )}
             {hasOffer && (
               <span className="label-sm text-secondary" data-testid="product-unit-price-hint">
-                Best available unit price · {offerStock} in stock from this supplier
+                {t.bestUnitPrice(offerStock)}
               </span>
             )}
           </div>
@@ -186,10 +188,10 @@ export const ProductDetailsHeader = ({
         data-testid="product-add-to-cart-button"
       >
         {!hasOffer
-          ? "NOT LISTED"
+          ? t.notListed
           : offerStock
-          ? "ADD TO ORDER"
-          : "OUT OF STOCK"}
+          ? t.addToOrder
+          : t.outOfStock}
       </Button>
       {seller && (
         <Button
@@ -204,7 +206,7 @@ export const ProductDetailsHeader = ({
           className="w-full uppercase mb-4"
           data-testid="request-quote-button"
         >
-          Request quote
+          {t.requestQuote}
         </Button>
       )}
       {otherOffersCount > 0 && (
@@ -214,7 +216,7 @@ export const ProductDetailsHeader = ({
           className="w-full uppercase mb-4"
           data-testid="compare-offers-button"
         >
-          {`Compare ${otherOffersCount} other supplier offers`}
+          {t.compareOffers(otherOffersCount)}
         </Button>
       )}
       {isCompareOpen && (

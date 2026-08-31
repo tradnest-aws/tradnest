@@ -3,8 +3,15 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import { retrieveCustomer } from "@/lib/data/customer"
 import { readBuyerAccount } from "@/lib/helpers/buyer-account"
 import { redirect } from "next/navigation"
+import { getCopy } from "@/lib/i18n/copy"
 
-export default async function UserPage() {
+export default async function UserPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = getCopy(locale)
   const user = await retrieveCustomer()
 
   if (!user) {
@@ -18,11 +25,11 @@ export default async function UserPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3" data-testid="buyer-dashboard">
-          <h1 className="heading-xl uppercase">Welcome {user.first_name}</h1>
+          <h1 className="heading-xl uppercase">{t.welcome(user.first_name || "")}</h1>
           <p className="label-md mt-2">
             {account.company_name
-              ? `Buyer account for ${account.company_name}.`
-              : "Your buyer account is ready. Add company details in Settings."}
+              ? t.buyerAccountFor(account.company_name)
+              : t.buyerAccountReady}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <LocalizedClientLink
@@ -30,9 +37,9 @@ export default async function UserPage() {
               className="border rounded-sm p-5"
               data-testid="dashboard-catalog-link"
             >
-              <p className="heading-sm uppercase mb-2">Browse catalog</p>
+              <p className="heading-sm uppercase mb-2">{t.browseCatalog}</p>
               <p className="label-md text-secondary">
-                Compare supplier offers on master products.
+                {t.browseCatalogHint}
               </p>
             </LocalizedClientLink>
             <LocalizedClientLink
@@ -40,9 +47,9 @@ export default async function UserPage() {
               className="border rounded-sm p-5"
               data-testid="dashboard-quotes-link"
             >
-              <p className="heading-sm uppercase mb-2">Quote requests</p>
+              <p className="heading-sm uppercase mb-2">{t.quoteRequests}</p>
               <p className="label-md text-secondary">
-                Track RFQs sent to suppliers.
+                {t.quoteRequestsHint}
               </p>
             </LocalizedClientLink>
           </div>

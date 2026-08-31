@@ -6,12 +6,14 @@ import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { redirect } from "next/navigation"
 import clsx from "clsx"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 interface Props {
   className?: string
 }
 
 export const NavbarSearch = ({ className }: Props) => {
+  const t = useCopy()
   const searchParams = useSearchParams()
 
   const [search, setSearch] = useState(searchParams.get("query") || "")
@@ -34,8 +36,8 @@ export const NavbarSearch = ({ className }: Props) => {
       <Input
         icon={<SearchIcon />}
         onIconClick={handleSearch}
-        iconAriaLabel="Search"
-        placeholder="Search catalog"
+        iconAriaLabel={t.searchAria}
+        placeholder={t.searchCatalog}
         value={search}
         changeValue={setSearch}
         type="search"

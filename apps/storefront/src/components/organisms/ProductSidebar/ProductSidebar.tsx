@@ -8,8 +8,10 @@ import { ProductListingActiveFilters } from '@/components/organisms';
 import useFilters from '@/hooks/useFilters';
 import { CloseIcon } from '@/icons';
 import { cn } from '@/lib/utils';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const ProductSidebar = () => {
+  const t = useCopy();
   const [filterModal, setFilterModal] = useState(false);
   const { clearAllFilters } = useFilters('');
 
@@ -30,7 +32,7 @@ export const ProductSidebar = () => {
               className="mb-4 flex items-center justify-between border-y p-4"
               data-testid="sidebar-filter-header"
             >
-              <h3 className="heading-md uppercase">Filters</h3>
+              <h3 className="heading-md uppercase">{t.filters}</h3>
               <div
                 onClick={() => setFilterModal(false)}
                 className="cursor-pointer"
@@ -64,14 +66,14 @@ export const ProductSidebar = () => {
             onClick={() => clearAllFilters()}
             data-testid="sidebar-clear-all-button"
           >
-            Clear all
+            {t.clearAll}
           </Button>
           <Button
             className="label-sm w-1/2 uppercase"
             onClick={() => setFilterModal(false)}
             data-testid="sidebar-view-listings-button"
           >
-            View listings
+            {t.viewListings}
           </Button>
         </div>
       </div>

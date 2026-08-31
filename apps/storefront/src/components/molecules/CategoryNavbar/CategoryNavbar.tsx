@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { useParams } from "next/navigation"
 import { CollapseIcon } from "@/icons"
 import { useMemo } from "react"
+import { useCopy } from "@/lib/i18n/useCopy"
 import {
   getActiveParentHandle,
   findParentCategoryHandle,
@@ -24,6 +25,7 @@ export const CategoryNavbar = ({
   parentCategories = [],
   onClose,
 }: CategoryNavbarProps) => {
+  const t = useCopy()
   const { category } = useParams<{ category?: string }>()
 
   const {
@@ -105,7 +107,7 @@ export const CategoryNavbar = ({
           )}
           data-testid="category-link-all-products"
         >
-          All Products
+          {t.allProducts}
         </LocalizedClientLink>
 
         {filteredCategories.map(({ id, handle, name, category_children }) => {

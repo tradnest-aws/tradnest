@@ -12,6 +12,8 @@ import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
+import { headers } from 'next/headers';
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
 
 export const metadata: Metadata = {
   title: 'Checkout',
@@ -19,10 +21,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }
 };
 
-export default async function CheckoutPage({}) {
+export default async function CheckoutPage() {
+  const t = getCopy(
+    (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE
+  );
   return (
     <Suspense
-      fallback={<div className="container flex items-center justify-center" data-testid="checkout-page-loading">Loading...</div>}
+      fallback={<div className="container flex items-center justify-center" data-testid="checkout-page-loading">{t.loading}</div>}
     >
       <CheckoutPageContent />
     </Suspense>

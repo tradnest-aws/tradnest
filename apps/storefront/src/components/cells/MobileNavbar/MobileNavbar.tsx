@@ -9,6 +9,7 @@ import { HeaderCategoryNavbar } from '@/components/molecules';
 import { CloseIcon, HamburgerMenuIcon } from '@/icons';
 
 import { MobileCategoryNavbar } from './components';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const MobileNavbar = ({
   categories,
@@ -17,6 +18,7 @@ export const MobileNavbar = ({
   categories: HttpTypes.StoreProductCategory[];
   parentCategories: HttpTypes.StoreProductCategory[];
 }) => {
+  const t = useCopy();
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenuHandler = () => {
@@ -48,14 +50,15 @@ export const MobileNavbar = ({
       </div>
       {isOpen && (
         <div
-          className="fixed left-0 top-0 z-20 h-full w-full bg-primary"
+          className="fixed inset-0 z-20 h-full w-full bg-primary"
+          dir="inherit"
           data-testid="mobile-menu-drawer"
         >
           <div
             className="flex items-center justify-between border-b p-4"
             data-testid="mobile-menu-header"
           >
-            <h2 className="heading-md uppercase text-primary">Menu</h2>
+            <h2 className="heading-md uppercase text-primary">{t.menu}</h2>
             <IconButton
               icon={<CloseIcon size={20} />}
               onClick={() => closeMenuHandler()}

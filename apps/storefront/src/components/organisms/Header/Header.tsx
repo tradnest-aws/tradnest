@@ -36,7 +36,7 @@ export const Header = async ({ locale } : {
             categories={categories}
           />
         </div>
-        <div className="flex lg:justify-center lg:w-1/3 items-center pl-4 lg:pl-0">
+        <div className="flex lg:justify-center lg:w-1/3 items-center ps-4 lg:ps-0">
           <LocalizedClientLink href="/" className="inline-flex items-center" data-testid="header-logo-link">
             <TradnestLogo height={40} priority />
           </LocalizedClientLink>

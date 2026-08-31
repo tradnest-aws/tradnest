@@ -18,6 +18,20 @@ const publicOrigin = (req: NextRequest) =>
     fallbackOrigin: req.nextUrl.origin,
   });
 
+const nextWithLocale = (request: NextRequest, locale: string) => {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-locale', locale.toLowerCase());
+  requestHeaders.set(
+    'x-locale-dir',
+    locale.toLowerCase() === 'il' ? 'rtl' : 'ltr'
+  );
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders
+    }
+  });
+};
+
 const makeAuthRedirect = (
   req: NextRequest,
   locale: string,
@@ -150,10 +164,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (looksLikeLocale && cacheIdCookie) {
-    return NextResponse.next();
+    return nextWithLocale(request, urlSegment);
   }
 
-  let response = NextResponse.next();
+  let response = nextWithLocale(
+    request,
+    looksLikeLocale ? urlSegment : DEFAULT_REGION
+  );
 
   if (!cacheIdCookie) {
     response.cookies.set('_medusa_cache_id', cacheId, {

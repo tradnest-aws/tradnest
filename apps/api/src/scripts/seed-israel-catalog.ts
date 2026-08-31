@@ -99,6 +99,20 @@ export const israelProducts: IsraelSeedProduct[] = [
     priceIls: 96,
   },
   {
+    title: "ניילון נצמד למשטחים — גליל 20 ק״ג",
+    handle: "stretch-film-20kg",
+    category: "אריזות",
+    description: "סרט מתיחה ידני לאריזת משטחים במחסן. מתאים לעומס כבד.",
+    priceIls: 118,
+  },
+  {
+    title: "ניילון בועות — גליל 50 מטר",
+    handle: "bubble-wrap-50m",
+    category: "אריזות",
+    description: "הגנה למשלוחי ציוד שביר. גליל סיטונאי למחסן אריזה.",
+    priceIls: 74,
+  },
+  {
     title: "עגבניות שרי — קרטון 5 ק״ג",
     handle: "cherry-tomatoes-5kg",
     category: "מזון סיטונאי",
@@ -118,6 +132,20 @@ export const israelProducts: IsraelSeedProduct[] = [
     category: "מזון סיטונאי",
     description: "שמן זית ישראלי לבישול מוסדי. מיכל פלסטיק עם פקק מזיגה.",
     priceIls: 98,
+  },
+  {
+    title: "אורז עגול — שק 25 ק״ג",
+    handle: "round-rice-25kg",
+    category: "מזון סיטונאי",
+    description: "אורז לבישול מוסדי ומסעדות. שק תעשייתי אטום.",
+    priceIls: 86,
+  },
+  {
+    title: "אפונה קפואה — קרטון 10 ק״ג",
+    handle: "frozen-peas-10kg",
+    category: "מזון סיטונאי",
+    description: "ירק קפוא למטבחים מוסדיים. שמירה בשרשרת קור.",
+    priceIls: 52,
   },
   {
     title: "ברזל בניין 12 מ״מ — צרור 1 טון",
@@ -141,6 +169,20 @@ export const israelProducts: IsraelSeedProduct[] = [
     priceIls: 54,
   },
   {
+    title: "מלט פורטלנד — שק 50 ק״ג",
+    handle: "portland-cement-50kg",
+    category: "חומרי בניין",
+    description: "מלט לאתרי בנייה. איסוף ממחסן או משלוח לאתר.",
+    priceIls: 28,
+  },
+  {
+    title: "בלוקי בטון — משטח 100",
+    handle: "concrete-blocks-100",
+    category: "חומרי בניין",
+    description: "בלוקים סטנדרטיים לקירות. מכירה במשטח מלא.",
+    priceIls: 620,
+  },
+  {
     title: "נייר A4 80 גרם — חבילת 5 רים",
     handle: "a4-paper-5ream",
     category: "ציוד משרדי",
@@ -162,6 +204,20 @@ export const israelProducts: IsraelSeedProduct[] = [
     priceIls: 32,
   },
   {
+    title: "קרטוני ארכיון — חבילת 25",
+    handle: "archive-boxes-25",
+    category: "ציוד משרדי",
+    description: "קופסאות קרטון לתיעוד משרדי. חבילת סיטונאות.",
+    priceIls: 64,
+  },
+  {
+    title: "טושי מחיקה ללוח — מארז 48",
+    handle: "whiteboard-markers-48",
+    category: "ציוד משרדי",
+    description: "טושים לחדרי ישיבות ולהדרכות. מארז מעורב צבעים.",
+    priceIls: 79,
+  },
+  {
     title: "חומר ניקוי רצפות תעשייתי — מיכל 10 ליטר",
     handle: "floor-cleaner-10l",
     category: "ניקיון תעשייתי",
@@ -181,5 +237,19 @@ export const israelProducts: IsraelSeedProduct[] = [
     category: "ניקיון תעשייתי",
     description: "כפפות חד־פעמיות ללא אבקה. קרטון סיטונאי למוסדות.",
     priceIls: 155,
+  },
+  {
+    title: "שקי אשפה תעשייתיים — גליל 200",
+    handle: "trash-bags-200",
+    category: "ניקיון תעשייתי",
+    description: "שקי ניילון עבים לפחים גדולים במחסן ובמפעל.",
+    priceIls: 91,
+  },
+  {
+    title: "אקונומיקה תעשייתית — מיכל 20 ליטר",
+    handle: "industrial-bleach-20l",
+    category: "ניקיון תעשייתי",
+    description: "תרכיז חיטוי למשטחים ולחדרי שירות. מיכל גדול למוסדות.",
+    priceIls: 58,
   },
 ]

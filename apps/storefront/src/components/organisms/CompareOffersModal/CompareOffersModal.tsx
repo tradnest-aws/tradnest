@@ -8,6 +8,7 @@ import { Modal } from "@/components/molecules/Modal/Modal"
 import { useCartContext } from "@/components/providers"
 import { convertToLocale } from "@/lib/helpers/money"
 import { toast } from "@/lib/helpers/toast"
+import { useCopy } from "@/lib/i18n/useCopy"
 import {
   getOfferAmount,
   getOfferStock,
@@ -27,6 +28,7 @@ export const CompareOffersModal = ({
   variantLabel?: string
   onClose: () => void
 }) => {
+  const t = useCopy()
   const { addToCart } = useCartContext()
   const [addingId, setAddingId] = useState<string | null>(null)
 
@@ -36,11 +38,11 @@ export const CompareOffersModal = ({
     setAddingId(offer.id)
     try {
       await addToCart({ offerId: offer.id, quantity: 1, countryCode: locale })
-      toast.success({ title: "Added to cart" })
+      toast.success({ title: t.addedToCart })
     } catch (error) {
       toast.error({
-        title: "Error adding to cart",
-        description: "This offer does not have the required inventory",
+        title: t.addToCartError,
+        description: t.addToCartErrorHint,
       })
     } finally {
       setAddingId(null)
@@ -49,7 +51,7 @@ export const CompareOffersModal = ({
 
   return (
     <Modal
-      heading={`Compare ${ranked.length} offers`}
+      heading={t.compareOffersHeading(ranked.length)}
       onClose={onClose}
       data-testid="compare-offers-modal"
     >
