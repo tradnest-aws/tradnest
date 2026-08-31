@@ -117,20 +117,13 @@ log "bun install (monorepo)"
 cd "$DEPLOY_DIR"
 bun install
 
-log "Build @mercurjs/types and @mercurjs/core"
-( cd "$DEPLOY_DIR/packages/types" && bun run build )
-( cd "$DEPLOY_DIR/packages/core" && bun run build )
-if [[ -f "$DEPLOY_DIR/packages/client/package.json" ]]; then
-  ( cd "$DEPLOY_DIR/packages/client" && bun run build )
-fi
+log "Build workspace packages (cli before core, plus storefront deps)"
+cd "$DEPLOY_DIR"
+bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client...
 
 log "Medusa migrate"
 cd "$DEPLOY_DIR/apps/api"
 bunx medusa db:migrate
-
-log "Build storefront"
-cd "$DEPLOY_DIR/apps/storefront"
-bun run build
 
 BUN_BIN="$(command -v bun)"
 log "Writing systemd units (bun=$BUN_BIN)"
