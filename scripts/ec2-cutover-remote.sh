@@ -121,9 +121,14 @@ log "Build workspace packages (cli before core, plus storefront deps)"
 cd "$DEPLOY_DIR"
 bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client...
 
-log "Medusa migrate"
+log "Medusa migrate (skip interactive link prompts; do not drop b2b-starter link tables)"
 cd "$DEPLOY_DIR/apps/api"
-bunx medusa db:migrate
+# The live DB is b2b-starter (company/approval/cart links). Mercur does not
+# define those links; an unattended "select all" would DELETE them.
+# --skip-links runs module migrations only (including quote_request).
+# --execute-safe then creates Mercur's new link tables and ignores deletes.
+bunx medusa db:migrate --skip-links
+bunx medusa db:sync-links --execute-safe
 
 BUN_BIN="$(command -v bun)"
 log "Writing systemd units (bun=$BUN_BIN)"
