@@ -165,6 +165,39 @@ NGINX
   fi
 }
 
+write_storefront_unit() {
+  local bun_bin
+  bun_bin="$(command -v bun 2>/dev/null || true)"
+  [[ -n "$bun_bin" ]] || bun_bin="/root/.bun/bin/bun"
+  [[ -x "$bun_bin" ]] || bun_bin="/home/ubuntu/.bun/bin/bun"
+  log "Writing tradnest-storefront.service (bun=$bun_bin)"
+  cat >/etc/systemd/system/tradnest-storefront.service <<EOF
+[Unit]
+Description=Tradnest B2B storefront
+After=network.target tradnest-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=$DEPLOY_DIR/apps/storefront
+EnvironmentFile=-$DEPLOY_DIR/apps/storefront/.env
+Environment=NODE_ENV=production
+Environment=PORT=$STORE_PORT
+Environment=HOSTNAME=127.0.0.1
+Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
+ExecStart=$bun_bin x next start -H 127.0.0.1 -p $STORE_PORT
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/tradnest-storefront.log
+StandardError=append:/var/log/tradnest-storefront.err.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tradnest-storefront >/dev/null
+  systemctl restart tradnest-storefront
+}
+
 health_check() {
   log "Health checks"
   local ok=0 i
@@ -181,7 +214,22 @@ health_check() {
     tail -n 80 /var/log/tradnest-api.err.log || true
     exit 1
   fi
-  curl -fsS -o /dev/null -w "storefront HTTP %{http_code}\n" "http://127.0.0.1:${STORE_PORT}/" || true
+  ok=0
+  for i in $(seq 1 20); do
+    if curl -fsS -o /dev/null "http://127.0.0.1:${STORE_PORT}/" 2>/dev/null; then
+      ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$ok" -ne 1 ]]; then
+    log "Storefront not listening on :$STORE_PORT"
+    systemctl status tradnest-storefront --no-pager || true
+    journalctl -u tradnest-storefront -n 80 --no-pager || true
+    tail -n 80 /var/log/tradnest-storefront.err.log || true
+    ls -la "$DEPLOY_DIR/apps/storefront/.next" 2>/dev/null | head || log "missing $DEPLOY_DIR/apps/storefront/.next"
+    exit 1
+  fi
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
   log "Cutover complete"
@@ -197,7 +245,7 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no rebuild)"
-  systemctl restart tradnest-api tradnest-storefront || true
+  write_storefront_unit
   sleep 4
   install_nginx_vhost
   health_check
@@ -296,27 +344,6 @@ StandardError=append:/var/log/tradnest-api.err.log
 WantedBy=multi-user.target
 EOF
 
-cat >/etc/systemd/system/tradnest-storefront.service <<EOF
-[Unit]
-Description=Tradnest B2B storefront
-After=network.target tradnest-api.service
-
-[Service]
-Type=simple
-WorkingDirectory=$DEPLOY_DIR/apps/storefront
-EnvironmentFile=$STORE_ENV
-Environment=NODE_ENV=production
-Environment=PORT=$STORE_PORT
-ExecStart=$BUN_BIN run start -- --hostname 127.0.0.1 --port $STORE_PORT
-Restart=on-failure
-RestartSec=5
-StandardOutput=append:/var/log/tradnest-storefront.log
-StandardError=append:/var/log/tradnest-storefront.err.log
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 ln -sfn "$BUN_BIN" /usr/local/bin/bun 2>/dev/null || true
 
 log "Stopping processes on :$API_PORT and :$STORE_PORT (old Medusa/Next)"
@@ -343,10 +370,10 @@ if command -v pm2 >/dev/null; then
 fi
 
 systemctl daemon-reload
-systemctl enable tradnest-api tradnest-storefront
+systemctl enable tradnest-api
 systemctl restart tradnest-api
 sleep 5
-systemctl restart tradnest-storefront
+write_storefront_unit
 
 install_nginx_vhost
 health_check
