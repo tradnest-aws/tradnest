@@ -278,9 +278,10 @@ server {
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
     proxy_set_header Accept-Encoding "";
-    sub_filter_types text/html application/javascript;
+    sub_filter_types application/javascript;
     sub_filter_once off;
     sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js?v=3"></script><script type="module" crossorigin src="/app/assets/';
+    sub_filter '.js"></script>' '.js?v=jwt3"></script>';
     sub_filter 'wje="session"' 'wje="jwt"';
     sub_filter 'auth:{type:"session"}' 'auth:{type:"jwt"}';
   }

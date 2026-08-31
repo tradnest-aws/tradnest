@@ -12,11 +12,8 @@ while IFS= read -r -d '' f; do
     echo "patched admin jwt: $f"
     patched=$((patched + 1))
   fi
-done < <(find \
-  "$ROOT/apps/api/.medusa" \
-  "$ROOT/apps/api/public" \
-  "$ROOT/node_modules/@medusajs/dashboard" \
-  "$ROOT/apps/api/node_modules/@medusajs/dashboard" \
+done < <(find "$ROOT" \
+  \( -path '*/.medusa/*' -o -path '*/@medusajs/dashboard/*' -o -path '*/public/admin/*' \) \
   -name '*.js' -print0 2>/dev/null || true)
 
 echo "admin jwt patches: $patched"
