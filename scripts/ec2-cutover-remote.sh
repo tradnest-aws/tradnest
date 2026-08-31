@@ -21,7 +21,7 @@ if [[ ! -d "$DEPLOY_DIR/.git" ]]; then
   exit 1
 fi
 
-if ! command -v bun >/dev/null; then
+if [[ "${TRADNEST_STEP:-}" != "nginx" ]] && ! command -v bun >/dev/null; then
   echo "bun not on PATH" >&2
   exit 1
 fi
@@ -58,6 +58,152 @@ copy_key() {
   printf '%s\n' "$line" >>"$dest"
 }
 
+install_nginx_vhost() {
+  log "Backing up nginx and installing Tradnest vhost (only enabled site on :80)"
+  BACKUP="/etc/nginx/tradnest-backup-$(date +%Y%m%d%H%M%S)"
+  mkdir -p "$BACKUP"
+  cp -a /etc/nginx/sites-enabled "$BACKUP/" 2>/dev/null || true
+  cp -a /etc/nginx/conf.d "$BACKUP/" 2>/dev/null || true
+
+  cat >/etc/nginx/sites-available/tradnest <<NGINX
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name $ORIGIN_HOST _;
+  client_max_body_size 32m;
+
+  location /health {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /admin {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /auth {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /store {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /hooks {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /static {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_set_header Host \$host;
+  }
+
+  location /app {
+    proxy_pass http://127.0.0.1:$API_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location / {
+    proxy_pass http://127.0.0.1:$STORE_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+}
+NGINX
+
+  # Duplicate default_server comes from the previous b2b-starter site still
+  # enabled next to tradnest. Clear sites-enabled, then enable only Tradnest.
+  find /etc/nginx/sites-enabled -mindepth 1 -delete
+  ln -sfn /etc/nginx/sites-available/tradnest /etc/nginx/sites-enabled/tradnest
+
+  shopt -s nullglob
+  for f in /etc/nginx/conf.d/*.conf; do
+    if grep -Eq 'listen[[:space:]]+\[?::\]?:?80.*default_server|listen[[:space:]]+80.*default_server' "$f"; then
+      log "Disabling $f (also default_server on :80)"
+      mv "$f" "${f}.tradnest-disabled"
+    fi
+  done
+  shopt -u nullglob
+
+  if nginx -t; then
+    systemctl reload nginx
+    log "nginx reloaded"
+  else
+    log "nginx -t failed — restoring $BACKUP"
+    find /etc/nginx/sites-enabled -mindepth 1 -delete
+    cp -a "$BACKUP/sites-enabled/." /etc/nginx/sites-enabled/ 2>/dev/null || true
+    for f in /etc/nginx/conf.d/*.tradnest-disabled; do
+      [[ -f "$f" ]] || continue
+      mv "$f" "${f%.tradnest-disabled}"
+    done
+    nginx -t && systemctl reload nginx
+    exit 1
+  fi
+}
+
+health_check() {
+  log "Health checks"
+  local ok=0 i
+  for i in $(seq 1 30); do
+    if curl -fsS "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1; then
+      ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$ok" -ne 1 ]]; then
+    log "API not healthy — journalctl -u tradnest-api -n 80"
+    journalctl -u tradnest-api -n 80 --no-pager || true
+    tail -n 80 /var/log/tradnest-api.err.log || true
+    exit 1
+  fi
+  curl -fsS -o /dev/null -w "storefront HTTP %{http_code}\n" "http://127.0.0.1:${STORE_PORT}/" || true
+  curl -fsS "http://127.0.0.1:${API_PORT}/health"
+  echo
+  log "Cutover complete"
+  echo "API:        $PUBLIC_ORIGIN/health"
+  echo "Storefront: $PUBLIC_ORIGIN/"
+  echo "Admin:      $PUBLIC_ORIGIN/app"
+  echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
+}
+
+ORIGIN_HOST="${PUBLIC_ORIGIN#http://}"
+ORIGIN_HOST="${ORIGIN_HOST#https://}"
+ORIGIN_HOST="${ORIGIN_HOST%/}"
+
+if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
+  log "nginx-only switch (no rebuild)"
+  systemctl restart tradnest-api tradnest-storefront || true
+  sleep 4
+  install_nginx_vhost
+  health_check
+  exit 0
+fi
+
 log "Discovering existing DATABASE_URL"
 OLD_ENV=""
 if OLD_ENV="$(find_env_file)"; then
@@ -68,9 +214,6 @@ fi
 
 API_ENV="$DEPLOY_DIR/apps/api/.env"
 STORE_ENV="$DEPLOY_DIR/apps/storefront/.env"
-ORIGIN_HOST="${PUBLIC_ORIGIN#http://}"
-ORIGIN_HOST="${ORIGIN_HOST#https://}"
-ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ -n "$OLD_ENV" ]]; then
   cp "$OLD_ENV" "$API_ENV"
@@ -205,116 +348,5 @@ systemctl restart tradnest-api
 sleep 5
 systemctl restart tradnest-storefront
 
-log "Backing up nginx and installing Tradnest vhost"
-BACKUP="/etc/nginx/tradnest-backup-$(date +%Y%m%d%H%M%S)"
-mkdir -p "$BACKUP"
-cp -a /etc/nginx/sites-enabled "$BACKUP/" 2>/dev/null || true
-cp -a /etc/nginx/conf.d "$BACKUP/" 2>/dev/null || true
-
-rm -f /etc/nginx/sites-enabled/default
-cat >/etc/nginx/sites-available/tradnest <<NGINX
-server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-  server_name $ORIGIN_HOST _;
-  client_max_body_size 32m;
-
-  location /health {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /admin {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /auth {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /store {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /hooks {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /static {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_set_header Host \$host;
-  }
-
-  location /app {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header Upgrade \$http_upgrade;
-    proxy_set_header Connection "upgrade";
-  }
-
-  location / {
-    proxy_pass http://127.0.0.1:$STORE_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header Upgrade \$http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-}
-NGINX
-ln -sfn /etc/nginx/sites-available/tradnest /etc/nginx/sites-enabled/tradnest
-
-if nginx -t; then
-  systemctl reload nginx
-  log "nginx reloaded"
-else
-  log "nginx -t failed — restoring $BACKUP"
-  rm -f /etc/nginx/sites-enabled/tradnest
-  cp -a "$BACKUP/sites-enabled/." /etc/nginx/sites-enabled/ 2>/dev/null || true
-  nginx -t && systemctl reload nginx
-  exit 1
-fi
-
-log "Health checks"
-ok=0
-for i in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1; then
-    ok=1
-    break
-  fi
-  sleep 2
-done
-if [[ "$ok" -ne 1 ]]; then
-  log "API not healthy — journalctl -u tradnest-api -n 80"
-  journalctl -u tradnest-api -n 80 --no-pager || true
-  tail -n 80 /var/log/tradnest-api.err.log || true
-  exit 1
-fi
-
-curl -fsS -o /dev/null -w "storefront HTTP %{http_code}\n" "http://127.0.0.1:${STORE_PORT}/" || true
-curl -fsS "http://127.0.0.1:${API_PORT}/health"
-echo
-log "Cutover complete"
-echo "API:        $PUBLIC_ORIGIN/health"
-echo "Storefront: $PUBLIC_ORIGIN/"
-echo "Admin:      $PUBLIC_ORIGIN/app"
-echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
+install_nginx_vhost
+health_check
