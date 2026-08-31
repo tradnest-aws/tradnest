@@ -44,9 +44,9 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "Wholesale marketplace"
+  const title = "שוק סיטונאי לישראל"
   const description =
-    "Tradnest is a B2B multi-vendor marketplace. Source from approved suppliers, compare offers, request quotes, and check out on one order."
+    "טרדנסט הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ."
   const ogImage = "/tradnest-logo.png"
 
   return {
@@ -145,12 +145,12 @@ export default async function Home({
 
       <Hero
         image="/images/hero/Image.jpg"
-        heading="Source from many suppliers in one marketplace"
-        paragraph="Tradnest is built for B2B procurement: compare vendor offers on the same product, request volume quotes, and check out across suppliers on a single order."
+        heading="רכש סיטונאי מספקים בישראל במקום אחד"
+        paragraph="השוו הצעות של ספקים על אותו מוצר, בקשו הצעת מחיר לכמויות, והשלימו הזמנה עם משלוח בארץ בלבד."
         buttons={[
-          { label: "Browse catalog", path: "/categories" },
+          { label: "לקטלוג", path: "/categories" },
           {
-            label: "Sell as a supplier",
+            label: "להצטרף כספק",
             path:
               process.env.NEXT_PUBLIC_VENDOR_URL ||
               "https://vendor.mercurjs.com",
@@ -158,10 +158,10 @@ export default async function Home({
         ]}
       />
       <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="featured catalog" locale={locale} home />
+        <HomeProductSection heading="מוצרים נבחרים" locale={locale} home />
       </div>
       <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading="SHOP BY CATEGORY" />
+        <HomeCategories heading="לפי קטגוריה" />
       </div>
       <BannerSection />
       <HowProcurementWorksSection />

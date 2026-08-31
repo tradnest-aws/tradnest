@@ -16,6 +16,7 @@ export function HtmlLangSetter() {
 
     if (typeof document !== 'undefined') {
       document.documentElement.lang = htmlLang;
+      document.documentElement.dir = locale.toLowerCase() === 'il' ? 'rtl' : 'ltr';
     }
   }, [pathname]);
 

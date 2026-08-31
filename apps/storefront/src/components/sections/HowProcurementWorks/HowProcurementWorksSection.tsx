@@ -3,23 +3,23 @@ import { ArrowRightIcon } from "@/icons"
 
 const steps = [
   {
-    title: "Create a buyer account",
-    body: "Register with your company details so suppliers can quote against a verified business profile.",
+    title: "חשבון רוכש",
+    body: "נרשמים עם פרטי החברה כדי שספקים יוכלו לתת הצעת מחיר לעסק מאומת.",
   },
   {
-    title: "Compare supplier offers",
-    body: "One master product, many vendors. Compare unit price, stock, and lead time before you buy or RFQ.",
+    title: "השוואת הצעות",
+    body: "מוצר אחד, כמה ספקים. משווים מחיר יחידה, מלאי וזמן אספקה לפני הזמנה או בקשת הצעה.",
   },
   {
-    title: "Order or request a quote",
-    body: "Add in-stock offers to a multi-vendor cart, or send a quote request for volume and contract pricing.",
+    title: "הזמנה או הצעת מחיר",
+    body: "מוסיפים הצעות במלאי לעגלה, או שולחים בקשת הצעת מחיר לכמויות ולחוזים.",
   },
 ]
 
 export function HowProcurementWorksSection() {
   return (
     <section className="bg-primary container" data-testid="how-procurement-works">
-      <h2 className="heading-lg text-primary mb-8 uppercase">How procurement works</h2>
+      <h2 className="heading-lg text-primary mb-8 uppercase">איך הרכש עובד</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3">
         {steps.map((step, index) => (
           <div key={step.title} className="border rounded-sm p-6">
@@ -34,7 +34,7 @@ export function HowProcurementWorksSection() {
         className="inline-flex items-center gap-2 mt-8 heading-sm uppercase"
         data-testid="how-procurement-register-link"
       >
-        Open a buyer account
+        פתיחת חשבון רוכש
         <ArrowRightIcon />
       </LocalizedClientLink>
     </section>

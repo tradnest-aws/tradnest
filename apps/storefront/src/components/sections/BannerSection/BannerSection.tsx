@@ -8,15 +8,14 @@ export const BannerSection = () => {
         <div className="py-6 px-6 flex flex-col h-full justify-between border border-secondary rounded-sm">
           <div className="mb-8 lg:mb-48">
             <span className="text-sm inline-block px-4 py-1 border border-secondary rounded-sm">
-              SUPPLIERS
+              ספקים
             </span>
             <h2 className="display-sm">
-              LIST YOUR CATALOG. REACH QUALIFIED BUYERS.
+              פרסמו קטלוג. הגיעו לקונים עסקיים בישראל.
             </h2>
             <p className="text-lg text-tertiary max-w-lg">
-              Open a vendor account to publish offers against master products,
-              set your own price and stock, and receive quote requests from
-              registered companies.
+              פתחו חשבון ספק, פרסמו הצעות מול מוצרים משותפים, קבעו מחיר ומלאי,
+              וקבלו בקשות להצעת מחיר מחברות רשומות.
             </p>
           </div>
           <a
@@ -26,7 +25,7 @@ export const BannerSection = () => {
             }
           >
             <Button size="large" className="w-fit bg-secondary/10">
-              BECOME A SUPPLIER
+              להצטרף כספק
             </Button>
           </a>
         </div>

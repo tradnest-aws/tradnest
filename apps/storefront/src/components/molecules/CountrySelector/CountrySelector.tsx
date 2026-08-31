@@ -47,7 +47,8 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
         }))
       })
       .flat()
-      .sort((a, b) => (a?.label ?? "").localeCompare(b?.label ?? ""))
+      .filter((option): option is CountryOption => Boolean(option?.country))
+      .sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""))
   }, [regions])
 
   useEffect(() => {
@@ -71,16 +72,33 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 
       router.push(result.newPath)
       router.refresh()
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update region. Please try again."
       toast.error({
         title: "Error switching region",
-        description: error?.message || "Failed to update region. Please try again.",
+        description: message,
       })
     }
   }
 
+  if ((options?.length ?? 0) <= 1) {
+    return (
+      <div className="md:flex gap-2 items-center justify-end relative">
+        <Label className="label-md hidden md:block">משלוחים ל</Label>
+        <span className="txt-compact-small flex items-center gap-x-2 h-10 px-2 border rounded-lg">
+          <ReactCountryFlag
+            alt="Israel"
+            svg
+            style={{ width: "16px", height: "16px" }}
+            countryCode="IL"
+          />
+          IL
+        </span>
+      </div>
+    )
+  }
+
   return (
-    <div className="md:flex gap-2 items-center justify-end relative">
       <Label className="label-md hidden md:block">Shipping to</Label>
       <div>
         <Listbox

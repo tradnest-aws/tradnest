@@ -371,6 +371,29 @@ bash scripts/ec2-cutover-remote.sh
 REMOTE
 )
 
+SEED_REMOTE=$(cat <<REMOTE
+set -eu
+REPO_URL='$REPO_URL'
+BRANCH='$BRANCH'
+DEPLOY_DIR='$DEPLOY_DIR'
+PUBLIC_IP='$PUBLIC_IP'
+log() { echo "[seed] \$*"; }
+
+export PATH="/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:\$PATH"
+cd "\$DEPLOY_DIR"
+git remote set-url origin "\$REPO_URL" || true
+git fetch --prune origin "+refs/heads/\$BRANCH:refs/remotes/origin/\$BRANCH"
+git checkout -B "\$BRANCH" "origin/\$BRANCH"
+git reset --hard "origin/\$BRANCH"
+log "Now at \$(git rev-parse --short HEAD)"
+chmod +x scripts/ec2-cutover-remote.sh
+export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
+export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
+export TRADNEST_STEP=seed
+bash scripts/ec2-cutover-remote.sh
+REMOTE
+)
+
 case "$ACTION" in
   ensure-ssm)
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) region $REGION profile $PROFILE"
@@ -403,8 +426,12 @@ case "$ACTION" in
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) nginx-only switch"
     run_remote "$NGINX_REMOTE"
     ;;
+  seed)
+    echo "Instance $INSTANCE_ID ($PUBLIC_IP) seed Israel/Hebrew demo catalog"
+    run_remote "$SEED_REMOTE"
+    ;;
   *)
-    echo "Usage: $0 inspect|deploy|cutover|nginx|ensure-ssm|open-ssh" >&2
+    echo "Usage: $0 inspect|deploy|cutover|nginx|seed|ensure-ssm|open-ssh" >&2
     exit 1
     ;;
 esac

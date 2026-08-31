@@ -130,6 +130,8 @@ ensure_storefront_publishable_key() {
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY "$key"
   upsert "$DEPLOY_DIR/apps/storefront/.env" MEDUSA_BACKEND_URL "http://127.0.0.1:${API_PORT}"
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_DEFAULT_REGION il
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_SITE_NAME "טרדנסט"
 }
 
 install_nginx_vhost() {
@@ -329,6 +331,12 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   exit 0
 fi
 
+if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
+  log "Seeding Israel / Hebrew demo catalog"
+  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/seed-israel-he.ts )
+  exit 0
+fi
+
 log "Discovering existing DATABASE_URL"
 OLD_ENV=""
 if OLD_ENV="$(find_env_file)"; then
@@ -373,7 +381,7 @@ if [[ -n "$OLD_ENV" ]]; then
 fi
 upsert "$STORE_ENV" MEDUSA_BACKEND_URL "http://127.0.0.1:${API_PORT}"
 upsert "$STORE_ENV" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
-upsert "$STORE_ENV" NEXT_PUBLIC_DEFAULT_REGION dk
+upsert "$STORE_ENV" NEXT_PUBLIC_DEFAULT_REGION il
 upsert "$STORE_ENV" NEXT_PUBLIC_SITE_NAME Tradnest
 upsert "$STORE_ENV" NEXT_PUBLIC_SITE_DESCRIPTION "Tradnest B2B wholesale marketplace"
 upsert "$STORE_ENV" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller"

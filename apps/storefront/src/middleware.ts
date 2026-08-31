@@ -7,7 +7,7 @@ import { resolvePublicOrigin } from './lib/helpers/public-origin';
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL;
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
-const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'us';
+const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'il';
 
 const publicOrigin = (req: NextRequest) =>
   resolvePublicOrigin({

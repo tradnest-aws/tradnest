@@ -14,6 +14,7 @@ export const toHreflang = (code: string): string => {
     se: "sv-SE",
     no: "nb-NO",
     dk: "da-DK",
+    il: "he-IL",
     cz: "cs-CZ",
     sk: "sk-SK",
     pt: "pt-PT",
@@ -31,7 +32,7 @@ export const toHreflang = (code: string): string => {
   return map[code] || code
 }
 
-const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "il"
 
 // The storefront serves every page under a locale prefix (/de, /se, ...);
 // requests without one are 307-redirected by the middleware. x-default must

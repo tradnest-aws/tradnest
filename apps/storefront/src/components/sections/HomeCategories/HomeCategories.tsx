@@ -2,31 +2,11 @@ import { Carousel } from "@/components/cells"
 import { CategoryCard } from "@/components/organisms"
 
 export const categories: { id: number; name: string; handle: string }[] = [
-  {
-    id: 1,
-    name: "Raw materials",
-    handle: "raw-materials",
-  },
-  {
-    id: 2,
-    name: "Packaging",
-    handle: "packaging",
-  },
-  {
-    id: 3,
-    name: "MRO",
-    handle: "mro",
-  },
-  {
-    id: 4,
-    name: "Electronics",
-    handle: "electronics",
-  },
-  {
-    id: 5,
-    name: "Safety",
-    handle: "safety",
-  },
+  { id: 1, name: "אריזות", handle: "packaging" },
+  { id: 2, name: "מזון סיטונאי", handle: "food" },
+  { id: 3, name: "חומרי בניין", handle: "building" },
+  { id: 4, name: "ציוד משרדי", handle: "office" },
+  { id: 5, name: "ניקיון תעשייתי", handle: "cleaning" },
 ]
 
 export const HomeCategories = async ({ heading }: { heading: string }) => {
