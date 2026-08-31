@@ -3,7 +3,7 @@ import {
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import { applyHttpSessionCookieFlags } from "../../utils/http-session-cookie"
+import { applyHttpSessionCookieFlags, signedConnectSidCookie } from "../../utils/http-session-cookie"
 
 type SessionCookieFlags = {
   secure: boolean
@@ -21,6 +21,10 @@ function sessionOf(req: AuthenticatedMedusaRequest): AuthSession {
   return req.session as AuthSession
 }
 
+type RequestWithSessionId = AuthenticatedMedusaRequest & {
+  sessionID?: string
+}
+
 export const POST = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse
@@ -32,6 +36,20 @@ export const POST = async (
   await new Promise<void>((resolve, reject) => {
     session.save((err) => (err ? reject(err) : resolve()))
   })
+
+  const sessionId = (req as RequestWithSessionId).sessionID
+  const secret = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+    .projectConfig.http?.cookieSecret
+  if (sessionId && secret) {
+    res.setHeader(
+      "Set-Cookie",
+      signedConnectSidCookie(
+        sessionId,
+        secret,
+        process.env.COOKIE_SECURE === "true"
+      )
+    )
+  }
 
   res.status(200).json({ user: req.auth_context })
 }

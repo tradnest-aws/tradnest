@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto"
 import type {
   MedusaNextFunction,
   MedusaRequest,
@@ -39,4 +40,26 @@ export function forceHttpSessionCookie(
 ): void {
   applyHttpSessionCookieFlags(req.session?.cookie, process.env.COOKIE_SECURE)
   next()
+}
+
+export function signedConnectSidCookie(
+  sessionId: string,
+  secret: string,
+  secure: boolean
+): string {
+  const sig = createHmac("sha256", secret)
+    .update(sessionId)
+    .digest("base64")
+    .replace(/=+$/g, "")
+  const value = encodeURIComponent(`s:${sessionId}.${sig}`)
+  const parts = [
+    `connect.sid=${value}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+  ]
+  if (secure) {
+    parts.push("Secure")
+  }
+  return parts.join("; ")
 }

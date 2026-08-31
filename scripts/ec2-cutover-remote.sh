@@ -276,6 +276,16 @@ server {
     proxy_set_header Cookie \$http_cookie;
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
+    proxy_set_header Accept-Encoding "";
+    sub_filter_types text/html;
+    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js"></script><script type="module" crossorigin src="/app/assets/';
+    sub_filter_once on;
+  }
+
+  location = /app-jwt-bridge.js {
+    default_type application/javascript;
+    add_header Cache-Control "no-store";
+    alias $DEPLOY_DIR/apps/api/static/app-jwt-bridge.js;
   }
 
   location / {
