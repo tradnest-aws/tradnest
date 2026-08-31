@@ -9,6 +9,13 @@ module.exports = withMercur({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: REDIS_URL,
+    // Production defaults to Secure cookies. This host is HTTP until TLS is
+    // on, so the admin SPA's POST /auth/session would never persist connect.sid
+    // and login would appear to succeed then bounce back to /app/login.
+    cookieOptions: {
+      sameSite: "lax",
+      secure: process.env.COOKIE_SECURE === "true",
+    },
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -17,6 +24,9 @@ module.exports = withMercur({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
+  },
+  admin: {
+    disable: false,
   },
   featureFlags: {
     seller_registration: true

@@ -163,6 +163,7 @@ server {
     proxy_set_header Host \$host;
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Cookie \$http_cookie;
   }
 
   location /auth {
@@ -171,6 +172,7 @@ server {
     proxy_set_header Host \$host;
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Cookie \$http_cookie;
   }
 
   location /store {
@@ -224,6 +226,9 @@ server {
     proxy_pass http://127.0.0.1:$API_PORT;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Cookie \$http_cookie;
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
   }
@@ -408,6 +413,9 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
+  log "Restart API so cookieOptions / admin.disable from this tree are loaded"
+  systemctl restart tradnest-api || true
+  sleep 8
   ensure_storefront_publishable_key
   build_vendor_spa
   write_vendor_unit
@@ -423,6 +431,9 @@ fi
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
   log "Ensuring Medusa /app admin user"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+  log "Restart API so session cookies work on HTTP /app"
+  systemctl restart tradnest-api || true
+  sleep 8
   log "Seeding Israel / Hebrew demo catalog"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/seed-israel-he.ts )
   exit 0
