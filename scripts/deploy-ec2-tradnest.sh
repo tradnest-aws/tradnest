@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # Inspect or deploy Tradnest on the eu-north-1 EC2 box.
 #
-# This cloud agent cannot use AWS profile `tradnest` (no credentials here).
-# Run the script on a machine that already has that profile, typically:
+# Run on a machine that has AWS profile `tradnest` (your Mac, not the cloud VM):
 #
+#   AWS_PROFILE=tradnest ./scripts/deploy-ec2-tradnest.sh ensure-ssm
 #   AWS_PROFILE=tradnest ./scripts/deploy-ec2-tradnest.sh inspect
 #   AWS_PROFILE=tradnest ./scripts/deploy-ec2-tradnest.sh deploy
+#   AWS_PROFILE=tradnest ./scripts/deploy-ec2-tradnest.sh open-ssh
 #
-# Prefers SSM Run Command (port 22 is closed from the public internet).
-# Falls back to SSH if TRADNEST_SSH_HOST is set (e.g. ubuntu@13.60.11.98).
+# Prefers SSM Run Command. `ensure-ssm` attaches AmazonSSMManagedInstanceCore
+# (creates profile TradnestEC2SSM if the instance has none). If SSM still
+# never comes Online, open SSH from your IP and set TRADNEST_SSH_HOST.
 set -euo pipefail
 
 PROFILE="${AWS_PROFILE:-tradnest}"
@@ -18,6 +20,7 @@ PUBLIC_IP="${TRADNEST_PUBLIC_IP:-13.60.11.98}"
 REPO_URL="${TRADNEST_REPO_URL:-https://github.com/tradnest-aws/tradnest.git}"
 BRANCH="${TRADNEST_BRANCH:-cursor/b2b-multi-vendor-storefront-81d5}"
 DEPLOY_DIR="${TRADNEST_DEPLOY_DIR:-/opt/tradnest}"
+SSM_PROFILE_NAME="${TRADNEST_SSM_PROFILE:-TradnestEC2SSM}"
 ACTION="${1:-inspect}"
 
 export AWS_PROFILE="$PROFILE"
@@ -29,9 +32,7 @@ log() { echo "→ $*"; }
 need_aws() {
   if ! aws sts get-caller-identity >/dev/null 2>&1; then
     echo "AWS profile '$PROFILE' is not usable from this machine." >&2
-    echo "Configure it locally (do not paste access keys into chat):" >&2
-    echo "  aws configure --profile tradnest" >&2
-    echo "  aws sts get-caller-identity --profile tradnest" >&2
+    echo "Configure it locally (do not paste access keys into chat)." >&2
     exit 1
   fi
 }
@@ -43,13 +44,135 @@ ssm_online() {
     --output text 2>/dev/null || echo "None"
 }
 
+instance_profile_arn() {
+  aws ec2 describe-instances \
+    --instance-ids "$INSTANCE_ID" \
+    --query 'Reservations[0].Instances[0].IamInstanceProfile.Arn' \
+    --output text
+}
+
+ensure_ssm_role() {
+  need_aws
+  local existing
+  existing="$(instance_profile_arn)"
+  if [[ -n "$existing" && "$existing" != "None" ]]; then
+    local pname
+    pname="${existing##*/}"
+    log "Instance already has profile $pname — attaching AmazonSSMManagedInstanceCore to its role(s)"
+    local roles
+    roles="$(aws iam get-instance-profile \
+      --instance-profile-name "$pname" \
+      --query 'InstanceProfile.Roles[].RoleName' \
+      --output text)"
+    local role
+    for role in $roles; do
+      aws iam attach-role-policy \
+        --role-name "$role" \
+        --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore \
+        2>/dev/null || true
+      log "Ensured SSM policy on role $role"
+    done
+    return
+  fi
+
+  log "No instance profile — creating $SSM_PROFILE_NAME"
+  local trust
+  trust="$(mktemp)"
+  cat >"$trust" <<'JSON'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+JSON
+  aws iam get-role --role-name "$SSM_PROFILE_NAME" >/dev/null 2>&1 || \
+    aws iam create-role \
+      --role-name "$SSM_PROFILE_NAME" \
+      --assume-role-policy-document "file://$trust" >/dev/null
+  rm -f "$trust"
+
+  aws iam attach-role-policy \
+    --role-name "$SSM_PROFILE_NAME" \
+    --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore \
+    2>/dev/null || true
+
+  aws iam get-instance-profile --instance-profile-name "$SSM_PROFILE_NAME" >/dev/null 2>&1 || \
+    aws iam create-instance-profile --instance-profile-name "$SSM_PROFILE_NAME" >/dev/null
+
+  aws iam add-role-to-instance-profile \
+    --instance-profile-name "$SSM_PROFILE_NAME" \
+    --role-name "$SSM_PROFILE_NAME" \
+    2>/dev/null || true
+
+  log "Waiting 12s for IAM to propagate"
+  sleep 12
+
+  aws ec2 associate-iam-instance-profile \
+    --instance-id "$INSTANCE_ID" \
+    --iam-instance-profile "Name=$SSM_PROFILE_NAME" >/dev/null
+  log "Associated instance profile $SSM_PROFILE_NAME with $INSTANCE_ID"
+}
+
+wait_for_ssm() {
+  local ping tries="${1:-36}"
+  log "Waiting for SSM Online (up to $((tries * 10))s)"
+  for _ in $(seq 1 "$tries"); do
+    ping="$(ssm_online)"
+    if [[ "$ping" == "Online" ]]; then
+      log "SSM is Online"
+      return 0
+    fi
+    printf '.'
+    sleep 10
+  done
+  echo
+  return 1
+}
+
+open_ssh() {
+  need_aws
+  local my_ip sg
+  my_ip="$(curl -fsS --max-time 10 https://checkip.amazonaws.com | tr -d '[:space:]')"
+  if [[ ! "$my_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Could not determine your public IP ($my_ip)" >&2
+    exit 1
+  fi
+  sg="$(aws ec2 describe-instances \
+    --instance-ids "$INSTANCE_ID" \
+    --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId' \
+    --output text)"
+  log "Authorizing tcp/22 from ${my_ip}/32 on $sg"
+  aws ec2 authorize-security-group-ingress \
+    --group-id "$sg" \
+    --protocol tcp \
+    --port 22 \
+    --cidr "${my_ip}/32" \
+    >/dev/null 2>&1 || log "Rule may already exist (ok)"
+  local key
+  key="$(aws ec2 describe-instances \
+    --instance-ids "$INSTANCE_ID" \
+    --query 'Reservations[0].Instances[0].KeyName' \
+    --output text)"
+  echo
+  echo "SSH from this Mac (use the .pem that matches key pair: $key):"
+  echo "  TRADNEST_SSH_HOST=ubuntu@$PUBLIC_IP AWS_PROFILE=$PROFILE $0 inspect"
+  echo "  ssh -i ~/.ssh/${key}.pem ubuntu@$PUBLIC_IP"
+}
+
 run_remote() {
   local script="$1"
   if [[ -n "${TRADNEST_SSH_HOST:-}" ]]; then
     log "SSH ${TRADNEST_SSH_HOST}"
-    # shellcheck disable=SC2029
-    ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new \
-      "$TRADNEST_SSH_HOST" "sudo bash -s" <<<"$script"
+    local ssh_opts=(-o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new)
+    if [[ -n "${TRADNEST_SSH_KEY:-}" ]]; then
+      ssh_opts+=(-i "$TRADNEST_SSH_KEY")
+    fi
+    ssh "${ssh_opts[@]}" "$TRADNEST_SSH_HOST" "sudo bash -s" <<<"$script"
     return
   fi
 
@@ -57,21 +180,37 @@ run_remote() {
   local ping
   ping="$(ssm_online)"
   if [[ "$ping" != "Online" ]]; then
-    echo "SSM is not Online for $INSTANCE_ID (got: $ping)." >&2
-    echo "Fix on the instance: AmazonSSMManagedInstanceCore IAM role + SSM agent." >&2
-    echo "Or open SSH and rerun with TRADNEST_SSH_HOST=ubuntu@$PUBLIC_IP" >&2
-    exit 1
+    log "SSM not Online ($ping) — attaching IAM and waiting"
+    ensure_ssm_role
+    if ! wait_for_ssm 36; then
+      echo "SSM still not Online. The agent may be missing on the AMI." >&2
+      echo "Open SSH from this Mac, then rerun:" >&2
+      echo "  AWS_PROFILE=$PROFILE $0 open-ssh" >&2
+      echo "  TRADNEST_SSH_HOST=ubuntu@$PUBLIC_IP TRADNEST_SSH_KEY=~/.ssh/<keypair>.pem AWS_PROFILE=$PROFILE $0 $ACTION" >&2
+      exit 1
+    fi
   fi
 
   log "SSM SendCommand on $INSTANCE_ID"
+  local payload
+  payload="$(mktemp)"
+  python3 - "$INSTANCE_ID" "$ACTION" "$script" "$payload" <<'PY'
+import json, sys
+instance_id, action, script, out = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+with open(out, "w") as f:
+    json.dump({
+        "InstanceIds": [instance_id],
+        "DocumentName": "AWS-RunShellScript",
+        "Comment": f"tradnest {action}",
+        "Parameters": {"commands": [script]},
+    }, f)
+PY
   local cmd_id
   cmd_id="$(aws ssm send-command \
-    --instance-ids "$INSTANCE_ID" \
-    --document-name AWS-RunShellScript \
-    --comment "tradnest $ACTION" \
-    --parameters commands=["$script"] \
+    --cli-input-json "file://$payload" \
     --query 'Command.CommandId' \
     --output text)"
+  rm -f "$payload"
 
   log "Waiting for command $cmd_id"
   local status="Pending"
@@ -80,7 +219,7 @@ run_remote() {
       --command-id "$cmd_id" \
       --instance-id "$INSTANCE_ID" \
       --query 'Status' \
-      --output text)"
+      --output text 2>/dev/null || echo Pending)"
     case "$status" in
       Success|Failed|Cancelled|TimedOut) break ;;
     esac
@@ -183,6 +322,19 @@ REMOTE
 )
 
 case "$ACTION" in
+  ensure-ssm)
+    echo "Instance $INSTANCE_ID ($PUBLIC_IP) region $REGION profile $PROFILE"
+    ensure_ssm_role
+    if wait_for_ssm 36; then
+      echo "SSM ready. Next: AWS_PROFILE=$PROFILE $0 deploy"
+    else
+      echo "SSM still not Online after attaching IAM. Run: AWS_PROFILE=$PROFILE $0 open-ssh" >&2
+      exit 1
+    fi
+    ;;
+  open-ssh)
+    open_ssh
+    ;;
   inspect)
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) region $REGION profile $PROFILE"
     run_remote "$INSPECT_REMOTE"
@@ -193,7 +345,7 @@ case "$ACTION" in
     run_remote "$DEPLOY_REMOTE"
     ;;
   *)
-    echo "Usage: $0 inspect|deploy" >&2
+    echo "Usage: $0 inspect|deploy|ensure-ssm|open-ssh" >&2
     exit 1
     ;;
 esac
