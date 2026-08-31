@@ -201,6 +201,7 @@ server {
     proxy_pass http://127.0.0.1:$STORE_PORT;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-Host \$host;
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -256,7 +257,6 @@ WorkingDirectory=$DEPLOY_DIR/apps/storefront
 EnvironmentFile=-$DEPLOY_DIR/apps/storefront/.env
 Environment=NODE_ENV=production
 Environment=PORT=$STORE_PORT
-Environment=HOSTNAME=127.0.0.1
 Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
 ExecStart=$bun_bin x next start -H 127.0.0.1 -p $STORE_PORT
 Restart=on-failure

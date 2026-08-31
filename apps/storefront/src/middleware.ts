@@ -3,17 +3,27 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { PROTECTED_ROUTES } from './lib/constants';
 import { isTokenExpired } from './lib/helpers/token';
+import { resolvePublicOrigin } from './lib/helpers/public-origin';
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL;
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'us';
+
+const publicOrigin = (req: NextRequest) =>
+  resolvePublicOrigin({
+    configuredBaseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+    forwardedHost: req.headers.get('x-forwarded-host'),
+    forwardedProto: req.headers.get('x-forwarded-proto'),
+    host: req.headers.get('host'),
+    fallbackOrigin: req.nextUrl.origin,
+  });
 
 const makeAuthRedirect = (
   req: NextRequest,
   locale: string,
   reason: 'sessionRequired' | 'sessionExpired'
 ) => {
-  const redirectUrl = new URL(`/${locale}/login`, req.url);
+  const redirectUrl = new URL(`/${locale}/login`, `${publicOrigin(req)}/`);
 
   redirectUrl.searchParams.set(reason, 'true');
 
@@ -158,7 +168,7 @@ export async function middleware(request: NextRequest) {
   if (!urlHasCountryCode && countryCode) {
     const redirectPath = pathname === '/' ? '' : pathname;
     const queryString = request.nextUrl.search ? request.nextUrl.search : '';
-    const redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`;
+    const redirectUrl = `${publicOrigin(request)}/${countryCode}${redirectPath}${queryString}`;
     return NextResponse.redirect(redirectUrl, 307);
   }
 
