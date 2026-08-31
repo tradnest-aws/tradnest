@@ -14,9 +14,10 @@ session detail aggressively. The per-spec source of truth lives in
   `bun run test:integration:http -- <pattern>`
 - **Current blocker**: AWS deploy cannot run from this cloud agent (no profile
   `tradnest`, no SSH to `13.60.11.98:22`). Instance is live in `eu-north-1`.
-  `/app` login 401s on HTTP because Medusa 2.18 sets `Secure` session cookies;
-  deploy now forces `COOKIE_SECURE=false` and patches `express-loader`. Redeploy
-  with `./scripts/deploy-ec2-tradnest.sh nginx` then `seed`.
+  `/app` login 401s on HTTP because Medusa 2.18 sets `Secure` session cookies.
+  Live probe 2026-08-31: `POST /auth/session` still has no Set-Cookie. Next
+  deploy is `./scripts/deploy-ec2-tradnest.sh api` (API restart, no storefront
+  rebuild) after the session-route override that clears `cookie.secure` on HTTP.
 
 ## Session — Tradnest B2B storefront
 

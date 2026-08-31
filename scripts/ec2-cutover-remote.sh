@@ -456,6 +456,20 @@ ORIGIN_HOST="${PUBLIC_ORIGIN#http://}"
 ORIGIN_HOST="${ORIGIN_HOST#https://}"
 ORIGIN_HOST="${ORIGIN_HOST%/}"
 
+if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
+  log "API+nginx only (no storefront rebuild)"
+  ensure_http_session_cookies
+  log "Restart API so /auth/session can Set-Cookie on HTTP"
+  systemctl restart tradnest-api || true
+  sleep 8
+  install_nginx_vhost
+  verify_admin_session_cookie
+  curl -fsS "http://127.0.0.1:${API_PORT}/health"
+  echo
+  log "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
+  exit 0
+fi
+
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
   ensure_http_session_cookies
