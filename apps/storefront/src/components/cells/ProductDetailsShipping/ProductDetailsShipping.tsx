@@ -1,22 +1,18 @@
-import { ProductPageAccordion } from '@/components/molecules';
-import { headers } from 'next/headers';
-import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
+"use client"
 
-export const ProductDetailsShipping = async () => {
-  const locale =
-    (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE;
-  const t = getCopy(locale);
+import { ProductPageAccordion } from "@/components/molecules"
+import { useCopy } from "@/lib/i18n/useCopy"
+
+export const ProductDetailsShipping = () => {
+  const t = useCopy()
 
   return (
-    <ProductPageAccordion
-      heading={t.shippingReturns}
-      defaultOpen={false}
-    >
-      <div className='product-details'>
+    <ProductPageAccordion heading={t.shippingReturns} defaultOpen={false}>
+      <div className="product-details">
         <ul>
           <li>{t.shippingReturnsBody}</li>
         </ul>
       </div>
     </ProductPageAccordion>
-  );
-};
+  )
+}

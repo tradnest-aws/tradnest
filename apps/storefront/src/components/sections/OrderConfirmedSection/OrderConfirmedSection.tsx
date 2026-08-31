@@ -1,20 +1,19 @@
+"use client"
+
 import OrderDetails from "@/components/organisms/OrderDefails/OrderDetails"
 import OrderShipping from "@/components/organisms/OrderDefails/OrderShipping"
 import OrderTotals from "@/components/organisms/OrderDefails/OrderTotals"
 import OrderItems from "@/components/organisms/OrderItems/OrderItems"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
-import { headers } from "next/headers"
-import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
+import { useCopy } from "@/lib/i18n/useCopy"
 
-export const OrderConfirmedSection = async ({
+export const OrderConfirmedSection = ({
   order,
 }: {
   order: HttpTypes.StoreOrder
 }) => {
-  const t = getCopy(
-    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
-  )
+  const t = useCopy()
   return (
     <div className="py-6">
       <div className="content-container flex flex-col justify-center items-center gap-y-10 max-w-4xl h-full w-full mx-auto">

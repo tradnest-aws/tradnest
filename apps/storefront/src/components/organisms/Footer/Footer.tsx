@@ -1,13 +1,11 @@
-import { headers } from "next/headers"
+"use client"
 
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import footerLinks from "@/data/footerLinks"
-import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
+import { useCopy } from "@/lib/i18n/useCopy"
 
-export async function Footer() {
-  const locale =
-    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
-  const t = getCopy(locale)
+export function Footer() {
+  const t = useCopy()
 
   return (
     <footer className="bg-primary container" data-testid="footer">

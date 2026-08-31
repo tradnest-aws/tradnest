@@ -20,7 +20,7 @@ export const ProductDetailsPage = async ({
   if (!prod) return null
 
   if (prod.seller?.store_status === "SUSPENDED") {
-    return NotFound()
+    return <NotFound />
   }
 
   const { offers } = await listOffers({

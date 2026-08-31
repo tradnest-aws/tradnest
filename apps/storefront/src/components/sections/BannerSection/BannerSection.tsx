@@ -1,13 +1,12 @@
+"use client"
+
 import { Button } from "@/components/atoms"
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import { headers } from "next/headers"
-import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
+import { useCopy } from "@/lib/i18n/useCopy"
 
-export const BannerSection = async () => {
-  const locale =
-    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
-  const t = getCopy(locale)
+export const BannerSection = () => {
+  const t = useCopy()
 
   return (
     <section className="bg-tertiary container text-tertiary" data-testid="supplier-banner">

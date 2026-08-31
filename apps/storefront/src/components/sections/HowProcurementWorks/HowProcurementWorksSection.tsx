@@ -1,12 +1,11 @@
+"use client"
+
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { ArrowRightIcon } from "@/icons"
-import { headers } from "next/headers"
-import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
+import { useCopy } from "@/lib/i18n/useCopy"
 
-export async function HowProcurementWorksSection() {
-  const locale =
-    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
-  const t = getCopy(locale)
+export function HowProcurementWorksSection() {
+  const t = useCopy()
   const steps = [
     { title: t.how1Title, body: t.how1Body },
     { title: t.how2Title, body: t.how2Body },
