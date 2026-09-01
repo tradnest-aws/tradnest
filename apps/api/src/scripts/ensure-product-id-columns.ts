@@ -23,7 +23,6 @@ function loadPgClient(): PgClientConstructor {
     join(process.cwd(), "package.json"),
     join(process.cwd(), "..", "..", "package.json"),
   ]
-  let lastError: unknown
   for (const from of candidates) {
     try {
       const require = createRequire(from)
@@ -35,8 +34,8 @@ function loadPgClient(): PgClientConstructor {
       if (Client) {
         return Client
       }
-    } catch (error: unknown) {
-      lastError = error
+    } catch {
+      // try the next resolution root
     }
   }
   throw new Error(
