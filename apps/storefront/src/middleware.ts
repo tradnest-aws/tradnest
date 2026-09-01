@@ -113,28 +113,20 @@ export async function middleware(request: NextRequest) {
   const cacheIdCookie = request.cookies.get('_medusa_cache_id');
   const cacheId = cacheIdCookie?.value || crypto.randomUUID();
 
-  const urlSegment = pathname.split('/')[1];
-  const looksLikeLocale = /^[a-z]{2}$/i.test(urlSegment || '');
+  const urlSegment = pathname.split('/')[1] || '';
+  const looksLikeLocale = /^[a-z]{2}$/i.test(urlSegment);
+  const pathnameWithoutLocale = looksLikeLocale
+    ? pathname.replace(/^\/[^/]+/, '') || '/'
+    : pathname;
 
-  if (
-    pathname === '/il/seller' ||
-    pathname === '/il/seller/'
-  ) {
+  if (pathname === '/il/seller' || pathname === '/il/seller/') {
     const redirectUrl = `${publicOrigin(request)}/join-as-seller${queryString}`;
-    return NextResponse.redirect(redirectUrl, 308);
-  }
-
-  if (looksLikeLocale) {
-    const stripped = pathname.replace(/^\/[a-z]{2}/i, '') || '/';
-    const redirectUrl = `${publicOrigin(request)}${stripped}${queryString}`;
     return NextResponse.redirect(redirectUrl, 308);
   }
 
   if (urlSegment && PASSTHROUGH_FIRST_SEGMENTS.has(urlSegment)) {
     return NextResponse.next();
   }
-
-  const pathnameWithoutLocale = pathname;
 
   const isProtectedRoute = PROTECTED_ROUTES.some(route =>
     pathnameWithoutLocale.startsWith(route)
@@ -159,25 +151,47 @@ export async function middleware(request: NextRequest) {
     // Region fetch is used to warm the cache; Israel is the only public locale.
   }
 
-  const rewriteUrl = request.nextUrl.clone();
-  rewriteUrl.pathname = pathname === '/' ? `/${DEFAULT_REGION}` : `/${DEFAULT_REGION}${pathname}`;
-
   const requestHeaders = new Headers(request.headers);
   withLocaleHeaders(requestHeaders, DEFAULT_REGION);
 
-  const response = NextResponse.rewrite(rewriteUrl, {
-    request: {
-      headers: requestHeaders
+  const withCacheCookie = (response: NextResponse) => {
+    if (!cacheIdCookie) {
+      response.cookies.set('_medusa_cache_id', cacheId, {
+        maxAge: 60 * 60 * 24
+      });
     }
-  });
+    return response;
+  };
 
-  if (!cacheIdCookie) {
-    response.cookies.set('_medusa_cache_id', cacheId, {
-      maxAge: 60 * 60 * 24
-    });
+  // App routes live under [locale]=il. Public URLs have no prefix, so `/` is
+  // rewritten to `/il`. Next then runs this middleware again on `/il`. A 308
+  // back to `/` here created an infinite redirect (location `/` + rewrite `/il`).
+  if (looksLikeLocale && urlSegment.toLowerCase() === DEFAULT_REGION) {
+    return withCacheCookie(
+      NextResponse.next({
+        request: {
+          headers: requestHeaders
+        }
+      })
+    );
   }
 
-  return response;
+  if (looksLikeLocale) {
+    const redirectUrl = `${publicOrigin(request)}${pathnameWithoutLocale}${queryString}`;
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
+  const rewriteUrl = request.nextUrl.clone();
+  rewriteUrl.pathname =
+    pathname === '/' ? `/${DEFAULT_REGION}` : `/${DEFAULT_REGION}${pathname}`;
+
+  return withCacheCookie(
+    NextResponse.rewrite(rewriteUrl, {
+      request: {
+        headers: requestHeaders
+      }
+    })
+  );
 }
 
 export const config = {

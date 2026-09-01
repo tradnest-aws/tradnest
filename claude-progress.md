@@ -12,7 +12,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Live storefront still needs `./scripts/deploy-ec2-tradnest.sh nginx` to pick up Next rebuilds (root URLs, favicon, Hebrew B2B UI, gated prices).
+- **Current blocker**: Live `/` 308-looped (`/` rewrite to `/il`, then `/il` 308 to `/`). Fix is on the branch; redeploy with `nginx`.
 - **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
 
 ## Session — Tradnest B2B storefront
