@@ -137,6 +137,46 @@ print(f"GET /admin/products/:id?fields=*options {status}")
 PY
 }
 
+verify_store_products() {
+  local env="$DEPLOY_DIR/apps/storefront/.env"
+  local pk status
+  pk="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_' "$env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'")"
+  if [[ "$pk" != pk_* ]]; then
+    log "WARN: no publishable key in storefront .env — skip store product check"
+    return 0
+  fi
+  local fields='*variants.calculated_price,+variants.inventory_quantity,*variants.options,*attribute_values,*attribute_values.attribute'
+  status="$(curl -sS -o /tmp/tradnest-store-products.json -w '%{http_code}' \
+    -H "x-publishable-api-key: ${pk}" \
+    -G "http://127.0.0.1:${API_PORT}/store/products" \
+    --data-urlencode "limit=2" \
+    --data-urlencode "fields=${fields}")"
+  python3 - "$status" <<'PY'
+import json, sys
+status = sys.argv[1]
+raw = open("/tmp/tradnest-store-products.json").read()
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    print(f"GET /store/products -> {status} {raw[:400]}", file=sys.stderr)
+    sys.exit(1)
+products = data.get("products") or []
+if status != "200" or not isinstance(products, list):
+    print(f"GET /store/products -> {status} {data}", file=sys.stderr)
+    sys.exit(1)
+print(f"GET /store/products {status} count={data.get('count')} listed={len(products)}")
+if data.get("count", 0) < 1:
+    print("store catalog is empty", file=sys.stderr)
+    sys.exit(1)
+PY
+}
+
+build_mercur_core() {
+  log "Build @mercurjs/core so API route changes load"
+  export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=3072}"
+  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/core )
+}
+
 verify_admin_session_cookie() {
   local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
   local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
@@ -548,6 +588,7 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   log "API+nginx only (no storefront rebuild)"
   ensure_product_id_columns
+  build_mercur_core
   ensure_http_session_cookies
   log "Restart API so /auth/session can Set-Cookie on HTTP"
   systemctl restart tradnest-api || true
@@ -555,6 +596,7 @@ if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   install_nginx_vhost
   verify_admin_session_cookie
   verify_admin_products
+  verify_store_products
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
   log "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
@@ -563,6 +605,8 @@ fi
 
 if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
+  ensure_product_id_columns
+  build_mercur_core
   ensure_http_session_cookies
   log "Restart API so HTTP session cookies / admin.disable from this tree are loaded"
   systemctl restart tradnest-api || true
@@ -570,12 +614,13 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   ensure_storefront_publishable_key
   build_vendor_spa
   write_vendor_unit
-  log "Rebuild storefront so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and vendor CTA URL are inlined"
+  log "Rebuild storefront so catalog fields and publishable key are inlined"
   ( cd "$DEPLOY_DIR/apps/storefront" && bun run build )
   write_storefront_unit
   sleep 6
   install_nginx_vhost
   verify_admin_session_cookie
+  verify_store_products
   health_check
   exit 0
 fi

@@ -12,10 +12,11 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Live `/app` product 400s (missing `product_id`). 2026-09-01
-  deploy of `58f0fd91` failed at `Cannot find module 'pg'` (api step does not
-  `bun install`). Next deploy uses `psql` + `scripts/ensure-product-id-columns.sql`
-  against `localhost:5432/medusa_b2b`. Agent cannot SSH.
+- **Current blocker**: Storefront `/il/categories` is empty because
+  `searchProducts` requests `*attribute_values` and the API 500s; the client
+  catches that as zero products. 23 published products exist on `/store/products`
+  with `fields=id,title`. Next deploy: `./scripts/deploy-ec2-tradnest.sh nginx`
+  (rebuilds storefront + `@mercurjs/core`).
 
 ## Session — Tradnest B2B storefront
 

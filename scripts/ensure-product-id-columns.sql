@@ -132,3 +132,26 @@ BEGIN
     RAISE EXCEPTION 'still missing:%', missing;
   END IF;
 END $$;
+
+-- Pivot for Product ↔ ProductAttributeValue. Missing table 500s store
+-- `fields=*attribute_values` / `product_attribute_values.*`.
+DO $$
+BEGIN
+  IF to_regclass('public.product_attribute_value_link') IS NULL THEN
+    CREATE TABLE product_attribute_value_link (
+      id text NOT NULL,
+      product_id text NOT NULL,
+      product_attribute_value_id text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      deleted_at timestamptz NULL,
+      CONSTRAINT product_attribute_value_link_pkey PRIMARY KEY (id)
+    );
+    CREATE UNIQUE INDEX IDX_product_attribute_value_link_unique
+      ON product_attribute_value_link (product_id, product_attribute_value_id)
+      WHERE deleted_at IS NULL;
+    RAISE NOTICE 'created product_attribute_value_link';
+  ELSE
+    RAISE NOTICE 'ok product_attribute_value_link';
+  END IF;
+END $$;
