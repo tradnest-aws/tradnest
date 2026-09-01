@@ -64,6 +64,79 @@ ensure_http_session_cookies() {
   bash "$DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh" "$DEPLOY_DIR" || true
 }
 
+ensure_product_id_columns() {
+  log "Ensure product_id columns (fixes /app product 400: product_option, product_attribute, offer)"
+  chmod +x "$DEPLOY_DIR/scripts/ensure-product-id-columns.sh"
+  bash "$DEPLOY_DIR/scripts/ensure-product-id-columns.sh" "$DEPLOY_DIR/apps/api/.env"
+}
+
+verify_admin_products() {
+  local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
+  local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
+  local token body status pid
+  token="$(curl -sS -X POST "http://127.0.0.1:${API_PORT}/auth/user/emailpass" \
+    -H 'content-type: application/json' \
+    -d "{\"email\":\"${email}\",\"password\":\"${pass}\"}" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || true)"
+  if [[ -z "$token" ]]; then
+    echo "ensure-product-id-columns: could not mint admin JWT for ${email}" >&2
+    exit 1
+  fi
+  body="$(mktemp)"
+  status="$(curl -sS -o "$body" -w '%{http_code}' \
+    -H "authorization: Bearer ${token}" \
+    "http://127.0.0.1:${API_PORT}/admin/products?limit=1")"
+  python3 - "$status" "$body" <<'PY'
+import json, sys
+status, path = sys.argv[1], sys.argv[2]
+raw = open(path).read()
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    print(f"GET /admin/products -> {status} {raw[:400]}", file=sys.stderr)
+    sys.exit(1)
+if status != "200" or "products" not in data:
+    print(f"GET /admin/products -> {status} {data}", file=sys.stderr)
+    sys.exit(1)
+print(f"GET /admin/products list {status} count={data.get('count')}")
+PY
+  pid="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print((d.get("products") or [{}])[0].get("id",""))' "$body")"
+  rm -f "$body"
+  if [[ -z "$pid" ]]; then
+    log "WARN: no products to retrieve — list is empty"
+    return 0
+  fi
+  status="$(curl -sS -o /tmp/tradnest-product.json -w '%{http_code}' \
+    -H "authorization: Bearer ${token}" \
+    "http://127.0.0.1:${API_PORT}/admin/products/${pid}")"
+  python3 - "$status" <<'PY'
+import json, sys
+status = sys.argv[1]
+data = json.load(open("/tmp/tradnest-product.json"))
+if status != "200" or "product" not in data:
+    print(f"GET /admin/products/:id -> {status} {data}", file=sys.stderr)
+    sys.exit(1)
+print(f"GET /admin/products/:id {status} id={data['product'].get('id')}")
+PY
+  status="$(curl -sS -o /tmp/tradnest-product-options.json -w '%{http_code}' \
+    -H "authorization: Bearer ${token}" \
+    "http://127.0.0.1:${API_PORT}/admin/products/${pid}?fields=id,title,%2Aoptions")"
+  python3 - "$status" <<'PY'
+import json, sys
+status = sys.argv[1]
+raw = open("/tmp/tradnest-product-options.json").read()
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    data = {"message": raw[:400]}
+msg = str(data.get("message", data))
+if status == "400" and "product_id" in msg:
+    print(f"GET /admin/products/:id?fields=*options still missing product_id: {data}", file=sys.stderr)
+    sys.exit(1)
+print(f"GET /admin/products/:id?fields=*options {status}")
+PY
+}
+
 verify_admin_session_cookie() {
   local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
   local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
@@ -459,6 +532,7 @@ health_check() {
   fi
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
+  verify_admin_products
   log "Cutover complete"
   echo "API:        $PUBLIC_ORIGIN/health"
   echo "Storefront: $PUBLIC_ORIGIN/"
@@ -473,14 +547,14 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   log "API+nginx only (no storefront rebuild)"
-  log "Ensure product_id columns on product_attribute and offer (admin product 400)"
-  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-product-id-columns.ts ) || true
+  ensure_product_id_columns
   ensure_http_session_cookies
   log "Restart API so /auth/session can Set-Cookie on HTTP"
   systemctl restart tradnest-api || true
   sleep 8
   install_nginx_vhost
   verify_admin_session_cookie
+  verify_admin_products
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
   log "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
@@ -509,13 +583,13 @@ fi
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
   log "Ensuring Medusa /app admin user"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
-  log "Ensure product_id columns on product_attribute and offer"
-  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-product-id-columns.ts ) || true
+  ensure_product_id_columns
   ensure_http_session_cookies
   log "Restart API so session cookies work on HTTP /app"
   systemctl restart tradnest-api || true
   sleep 8
   verify_admin_session_cookie
+  verify_admin_products
   log "Seeding Israel / Hebrew demo catalog"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/seed-israel-he.ts )
   exit 0
@@ -592,6 +666,7 @@ cd "$DEPLOY_DIR/apps/api"
 # --execute-safe then creates Mercur's new link tables and ignores deletes.
 bunx medusa db:migrate --skip-links
 bunx medusa db:sync-links --execute-safe
+ensure_product_id_columns
 
 BUN_BIN="$(command -v bun)"
 log "Writing systemd units (bun=$BUN_BIN)"
