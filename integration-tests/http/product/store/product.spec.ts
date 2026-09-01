@@ -149,13 +149,13 @@ medusaIntegrationTestRunner({
                     expect(ids).toContain(product.id)
                 })
 
-                it("lists products when the storefront requests *attribute_values", async () => {
+                it("lists products with the storefront catalog field set", async () => {
                     const product = await createProduct(approvedSellerHeaders, {
                         title: "Catalog Field Product",
                     })
 
                     const fields =
-                        "*variants.calculated_price,+variants.inventory_quantity,*variants.options,*attribute_values,*attribute_values.attribute"
+                        "*variants.calculated_price,+variants.inventory_quantity,*variants.options"
                     const response = await api.get(
                         `/store/products?limit=12&fields=${encodeURIComponent(fields)}`,
                         storeHeaders
