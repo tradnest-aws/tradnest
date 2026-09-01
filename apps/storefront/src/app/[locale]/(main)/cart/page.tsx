@@ -5,8 +5,8 @@ import { headers } from 'next/headers';
 import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
 
 export const metadata: Metadata = {
-  title: 'Cart',
-  description: 'My cart page',
+  title: 'עגלה',
+  description: 'עגלת ההזמנה',
   robots: { index: false, follow: false },
 };
 

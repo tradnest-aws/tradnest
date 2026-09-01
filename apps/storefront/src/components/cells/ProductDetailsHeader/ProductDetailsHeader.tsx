@@ -11,6 +11,7 @@ import { convertToLocale } from "@/lib/helpers/money"
 import {
   getBuyboxWinner,
   getOfferAmount,
+  getOfferCurrency,
   getOfferStock,
   getVariantOffers,
   StoreOffer,
@@ -58,6 +59,7 @@ export const ProductDetailsHeader = ({
   const { allSearchParams } = useGetAllSearchParams()
   const [isCompareOpen, setIsCompareOpen] = useState(false)
   const [isQuoteOpen, setIsQuoteOpen] = useState(false)
+  const isLoggedIn = Boolean(user)
 
   const { cheapestVariant, cheapestPrice } = getProductPrice({
     product,
@@ -73,50 +75,59 @@ export const ProductDetailsHeader = ({
     : allSearchParams
 
   const variantId =
-    product.variants?.find(({ options }: { options: any }) =>
-      options?.every((option: any) =>
+    product.variants?.find((variant) =>
+      variant.options?.every((option) =>
         selectedVariant[option.option?.title.toLowerCase() || ""]?.includes(
           option.value
         )
       )
-    )?.id || ""
+    )?.id || product.variants?.[0]?.id || ""
 
   const { variantPrice } = getProductPrice({
     product,
     variantId,
   })
 
-  // Buybox: the winning offer for the selected variant sets the price shown and
-  // the offer that add-to-cart uses. Products are sold through offers, not the
-  // variant's base price.
-  const variantOffers = getVariantOffers(offers, variantId)
-  const winnerOffer = getBuyboxWinner(variantOffers)
-  const otherOffersCount = Math.max(variantOffers.length - 1, 0)
+  const variantOffers = variantId
+    ? getVariantOffers(offers, variantId)
+    : offers
+  const rankedVariantOffers =
+    variantOffers.length > 0 ? variantOffers : offers
+  const winnerOffer = getBuyboxWinner(rankedVariantOffers)
+  const otherOffersCount = Math.max(rankedVariantOffers.length - 1, 0)
 
   const offerAmount = winnerOffer ? getOfferAmount(winnerOffer) : null
-  const offerCurrency =
-    winnerOffer?.calculated_price?.currency_code ||
-    variantPrice?.currency_code ||
-    "eur"
+  const offerCurrency = winnerOffer
+    ? getOfferCurrency(
+        winnerOffer,
+        variantPrice?.currency_code || "ils"
+      )
+    : variantPrice?.currency_code || "ils"
   const offerStock = winnerOffer ? getOfferStock(winnerOffer) : 0
-  const hasOffer = !!winnerOffer && offerAmount !== null
+  const hasOffer = Boolean(winnerOffer)
 
-  const displayPrice = hasOffer
-    ? convertToLocale({ amount: offerAmount as number, currency_code: offerCurrency })
-    : variantPrice?.calculated_price
+  const displayPrice =
+    offerAmount !== null
+      ? convertToLocale({ amount: offerAmount, currency_code: offerCurrency })
+      : variantPrice?.calculated_price
 
   const quantityInCart =
     cart?.items?.find((item) => item.metadata?.offer_id === winnerOffer?.id)
       ?.quantity ?? 0
-  const isStockMaxLimitReached = quantityInCart >= offerStock
+  const isStockMaxLimitReached =
+    offerStock !== Number.POSITIVE_INFINITY && quantityInCart >= offerStock
 
   const isAddToCartDisabled =
-    !hasOffer || !offerStock || isStockMaxLimitReached
+    !isLoggedIn || !hasOffer || !offerStock || isStockMaxLimitReached
 
   const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      router.push("/login?sessionRequired=true")
+      return
+    }
     if (!winnerOffer || isAddToCartDisabled) return
 
-    const total = offerAmount as number
+    const total = offerAmount ?? 0
     const subtotal =
       winnerOffer.calculated_price?.calculated_amount_without_tax ?? total
 
@@ -141,7 +152,7 @@ export const ProductDetailsHeader = ({
         quantity: 1,
         countryCode: locale,
       })
-    } catch (error) {
+    } catch {
       toast.error({
         title: t.addToCartError,
         description: t.addToCartErrorHint,
@@ -149,26 +160,38 @@ export const ProductDetailsHeader = ({
     }
   }
 
+  const addToCartLabel = !isLoggedIn
+    ? t.loginToOrder
+    : !hasOffer
+      ? t.noOffers
+      : offerStock
+        ? t.addToOrder
+        : t.outOfStock
+
   return (
-    <div className="border rounded-sm p-5" data-testid="product-details-header">
+    <div className="border border-primary/10 rounded-2xl p-6 bg-primary shadow-sm" data-testid="product-details-header">
       <div className="flex justify-between">
         <div>
           <h1 className="heading-lg text-primary" data-testid="product-title">{product.title}</h1>
           <div className="mt-2 flex flex-col gap-1" data-testid="product-price-container">
-            {hasOffer ? (
+            {!isLoggedIn ? (
+              <span className="label-md text-secondary pt-2 pb-4" data-testid="product-price-login">
+                {t.loginToSeePrice}
+              </span>
+            ) : displayPrice ? (
               <span className="heading-md text-primary" data-testid="product-price-current">
                 {displayPrice}
               </span>
-            ) : hasAnyPrice && variantPrice ? (
-              <span className="heading-md text-primary" data-testid="product-price-current">
-                {variantPrice.calculated_price}
+            ) : hasOffer ? (
+              <span className="label-md text-secondary pt-2 pb-4" data-testid="product-price-offer-only">
+                {t.loginToSeePrice}
               </span>
             ) : (
               <span className="label-md text-secondary pt-2 pb-4" data-testid="product-price-unavailable">
-                {t.notListedRegion}
+                {t.noOffers}
               </span>
             )}
-            {hasOffer && (
+            {isLoggedIn && hasOffer && offerAmount !== null && (
               <span className="label-sm text-secondary" data-testid="product-unit-price-hint">
                 {t.bestUnitPrice(offerStock)}
               </span>
@@ -176,22 +199,18 @@ export const ProductDetailsHeader = ({
           </div>
         </div>
       </div>
-      {hasAnyPrice && (
+      {(hasAnyPrice || (product.variants?.length ?? 0) > 1) && (
         <ProductVariants product={product} selectedVariant={selectedVariant} />
       )}
       <Button
         onClick={handleAddToCart}
-        disabled={isAddToCartDisabled}
+        disabled={isLoggedIn && isAddToCartDisabled}
         loading={isAddingItem}
-        className="w-full uppercase mb-4 py-3 flex justify-center"
+        className="w-full mb-4 py-3 flex justify-center rounded-xl"
         size="large"
         data-testid="product-add-to-cart-button"
       >
-        {!hasOffer
-          ? t.notListed
-          : offerStock
-          ? t.addToOrder
-          : t.outOfStock}
+        {addToCartLabel}
       </Button>
       {seller && (
         <Button
@@ -203,7 +222,7 @@ export const ProductDetailsHeader = ({
             }
             setIsQuoteOpen(true)
           }}
-          className="w-full uppercase mb-4"
+          className="w-full mb-4 rounded-xl"
           data-testid="request-quote-button"
         >
           {t.requestQuote}
@@ -213,7 +232,7 @@ export const ProductDetailsHeader = ({
         <Button
           variant="tonal"
           onClick={() => setIsCompareOpen(true)}
-          className="w-full uppercase mb-4"
+          className="w-full mb-4 rounded-xl"
           data-testid="compare-offers-button"
         >
           {t.compareOffers(otherOffersCount)}
@@ -221,7 +240,7 @@ export const ProductDetailsHeader = ({
       )}
       {isCompareOpen && (
         <CompareOffersModal
-          offers={variantOffers}
+          offers={rankedVariantOffers}
           locale={locale}
           variantLabel={
             product.variants?.find(({ id }) => id === variantId)?.title ||
@@ -245,7 +264,7 @@ export const ProductDetailsHeader = ({
         <Chat
           user={user}
           seller={seller}
-          buttonClassNames="w-full uppercase"
+          buttonClassNames="w-full rounded-xl"
           product={product}
         />
       )}

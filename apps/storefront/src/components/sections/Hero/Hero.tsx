@@ -1,8 +1,10 @@
+"use client"
+
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 
-import tailwindConfig from "../../../../tailwind.config"
 import { ArrowRightIcon } from "@/icons"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 type HeroProps = {
   image: string
@@ -12,49 +14,60 @@ type HeroProps = {
 }
 
 export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
+  const t = useCopy()
+
   return (
-    <section className="w-full flex container mt-5 flex-col lg:flex-row text-primary">
-      <Image
-        src={decodeURIComponent(image)}
-        width={700}
-        height={600}
-        alt={`Hero banner - ${heading}`}
-        className="w-full order-2 lg:order-1"
-        priority
-        fetchPriority="high"
-        quality={50}
-        sizes="(min-width: 1024px) 50vw, 100vw"
-      />
-      <div className="w-full lg:order-2">
-        <div className="border rounded-sm w-full px-6 flex items-end h-[calc(100%-144px)]">
-          <div>
-            <h2 className="font-bold mb-6 uppercase display-md max-w-[652px] text-4xl md:text-5xl leading-tight">
-              {heading}
-            </h2>
-            <p className="text-lg mb-8">{paragraph}</p>
-          </div>
-        </div>
-        {buttons.length > 0 && (
-          <div className="h-[72px] lg:h-[144px] flex font-bold uppercase">
-            {buttons.map(({ label, path }) => {
-              const className =
-                "group flex border rounded-sm h-full w-1/2 bg-content hover:bg-action hover:text-tertiary transition-all duration-300 p-6 justify-between items-end"
-              const inner = (
-                <>
-                  <span>
-                    <span className="group-hover:inline-flex hidden">#</span>
-                    {label}
-                  </span>
-                  <ArrowRightIcon
-                    color={tailwindConfig.theme.extend.backgroundColor.primary}
-                    aria-hidden
-                    className="rtl-flip"
-                  />
-                </>
-              )
-              if (path.startsWith("http")) {
+    <section className="w-full container mt-4">
+      <div className="relative overflow-hidden rounded-3xl bg-tertiary text-tertiary min-h-[420px] lg:min-h-[520px]">
+        <Image
+          src={decodeURIComponent(image)}
+          fill
+          alt={t.heroBannerAlt(heading)}
+          className="object-cover opacity-40"
+          priority
+          fetchPriority="high"
+          quality={60}
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-tertiary via-tertiary/80 to-tertiary/40" />
+        <div className="relative z-10 flex flex-col justify-end gap-6 p-6 md:p-12 lg:p-16 max-w-3xl">
+          <p className="label-sm tracking-wide text-action">{t.bannerKicker}</p>
+          <h1 className="font-semibold text-4xl md:text-5xl leading-tight">
+            {heading}
+          </h1>
+          <p className="text-lg text-tertiary/90 max-w-xl">{paragraph}</p>
+          {buttons.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+              {buttons.map(({ label, path }, index) => {
+                const className =
+                  index === 0
+                    ? "inline-flex items-center justify-between gap-3 rounded-2xl bg-action text-action-on-primary px-6 py-4 font-semibold hover:opacity-90 transition-opacity"
+                    : "inline-flex items-center justify-between gap-3 rounded-2xl border border-tertiary/40 px-6 py-4 font-semibold hover:bg-tertiary/40 transition-colors"
+                const inner = (
+                  <>
+                    <span>{label}</span>
+                    <ArrowRightIcon
+                      color="currentColor"
+                      aria-hidden
+                      className="rtl-flip w-5 h-5"
+                    />
+                  </>
+                )
+                if (path.startsWith("http")) {
+                  return (
+                    <a
+                      key={path}
+                      href={path}
+                      className={className}
+                      aria-label={label}
+                      title={label}
+                    >
+                      {inner}
+                    </a>
+                  )
+                }
                 return (
-                  <a
+                  <LocalizedClientLink
                     key={path}
                     href={path}
                     className={className}
@@ -62,23 +75,12 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
                     title={label}
                   >
                     {inner}
-                  </a>
+                  </LocalizedClientLink>
                 )
-              }
-              return (
-                <LocalizedClientLink
-                  key={path}
-                  href={path}
-                  className={className}
-                  aria-label={label}
-                  title={label}
-                >
-                  {inner}
-                </LocalizedClientLink>
-              )
-            })}
-          </div>
-        )}
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )

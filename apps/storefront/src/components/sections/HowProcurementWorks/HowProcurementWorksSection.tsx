@@ -13,11 +13,11 @@ export function HowProcurementWorksSection() {
   ]
 
   return (
-    <section className="bg-primary container" data-testid="how-procurement-works">
-      <h2 className="heading-lg text-primary mb-8 uppercase">{t.howTitle}</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3">
+    <section className="container" data-testid="how-procurement-works">
+      <h2 className="heading-lg text-primary mb-8">{t.howTitle}</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {steps.map((step, index) => (
-          <div key={step.title} className="border rounded-sm p-6">
+          <div key={step.title} className="border border-primary/10 rounded-2xl p-6 bg-primary shadow-sm">
             <p className="label-sm text-secondary mb-3">0{index + 1}</p>
             <h3 className="heading-md mb-3">{step.title}</h3>
             <p className="label-md text-secondary">{step.body}</p>
@@ -26,7 +26,7 @@ export function HowProcurementWorksSection() {
       </div>
       <LocalizedClientLink
         href="/register"
-        className="inline-flex items-center gap-2 mt-8 heading-sm uppercase"
+        className="inline-flex items-center gap-2 mt-8 heading-sm"
         data-testid="how-procurement-register-link"
       >
         {t.howRegister}

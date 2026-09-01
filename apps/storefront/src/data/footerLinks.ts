@@ -8,7 +8,7 @@ const links = {
   ],
   about: [
     { key: 'aboutTradnest' as const, path: '/' },
-    { key: 'becomeSupplier' as const, path: '/seller' },
+    { key: 'becomeSupplier' as const, path: '/join-as-seller' },
     { key: 'privacy' as const, path: '#' },
     { key: 'terms' as const, path: '#' },
   ],

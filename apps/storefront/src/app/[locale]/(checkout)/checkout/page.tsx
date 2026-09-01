@@ -16,8 +16,8 @@ import { headers } from 'next/headers';
 import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
 
 export const metadata: Metadata = {
-  title: 'Checkout',
-  description: 'My cart page - Checkout',
+  title: 'תשלום',
+  description: 'השלמת הזמנה',
   robots: { index: false, follow: false }
 };
 

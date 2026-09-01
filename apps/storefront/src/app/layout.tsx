@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Heebo } from 'next/font/google';
-import { headers } from 'next/headers';
 
 import './globals.css';
 
@@ -9,8 +8,7 @@ import Head from 'next/head';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
-import { toHreflang } from '@/lib/helpers/hreflang';
-import { DEFAULT_STOREFRONT_LOCALE, isRtlLocale } from '@/lib/i18n/copy';
+import { retrieveCustomer } from '@/lib/data/customer';
 
 import { Providers } from './providers';
 
@@ -23,16 +21,19 @@ const heebo = Heebo({
 export const metadata: Metadata = {
   title: {
     template: `%s | ${
-      process.env.NEXT_PUBLIC_SITE_NAME || 'Tradnest — B2B multi-vendor marketplace'
+      process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
     }`,
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Tradnest — B2B multi-vendor marketplace'
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
   },
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    'Tradnest B2B multi-vendor marketplace — source from suppliers, compare offers, and request quotes.',
+    'טרדנסט הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   icons: {
-    icon: '/tradnest-icon.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/tradnest-icon.png', type: 'image/png' }
+    ],
     apple: '/tradnest-icon.png'
   }
 };
@@ -42,10 +43,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cart = await retrieveCart();
-  const localeHeader = (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE;
-  const htmlLang = toHreflang(localeHeader);
-  const dir = isRtlLocale(localeHeader) ? 'rtl' : 'ltr';
+  const [cart, customer] = await Promise.all([
+    retrieveCart(),
+    retrieveCustomer()
+  ]);
+  const htmlLang = 'he-IL';
+  const dir = 'rtl';
 
   return (
     <html
@@ -124,7 +127,9 @@ export default async function RootLayout({
         className={`${heebo.className} relative bg-primary text-secondary antialiased`}
       >
         <HtmlLangSetter />
-        <Providers cart={cart}>{children}</Providers>
+        <Providers cart={cart} isLoggedIn={Boolean(customer)}>
+          {children}
+        </Providers>
         <Toaster position={dir === 'rtl' ? 'top-left' : 'top-right'} />
       </body>
     </html>

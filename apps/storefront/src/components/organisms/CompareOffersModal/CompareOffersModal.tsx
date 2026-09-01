@@ -1,16 +1,18 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { Badge, Button } from "@/components/atoms"
 import { SellerAvatar } from "@/components/cells/SellerAvatar/SellerAvatar"
 import { Modal } from "@/components/molecules/Modal/Modal"
-import { useCartContext } from "@/components/providers"
+import { useCartContext, useSession } from "@/components/providers"
 import { convertToLocale } from "@/lib/helpers/money"
 import { toast } from "@/lib/helpers/toast"
 import { useCopy } from "@/lib/i18n/useCopy"
 import {
   getOfferAmount,
+  getOfferCurrency,
   getOfferStock,
   isPurchasable,
   rankOffers,
@@ -29,17 +31,23 @@ export const CompareOffersModal = ({
   onClose: () => void
 }) => {
   const t = useCopy()
+  const router = useRouter()
+  const { isLoggedIn } = useSession()
   const { addToCart } = useCartContext()
   const [addingId, setAddingId] = useState<string | null>(null)
 
   const ranked = rankOffers(offers)
 
   const handleAdd = async (offer: StoreOffer) => {
+    if (!isLoggedIn) {
+      router.push("/login?sessionRequired=true")
+      return
+    }
     setAddingId(offer.id)
     try {
       await addToCart({ offerId: offer.id, quantity: 1, countryCode: locale })
       toast.success({ title: t.addedToCart })
-    } catch (error) {
+    } catch {
       toast.error({
         title: t.addToCartError,
         description: t.addToCartErrorHint,
@@ -69,7 +77,7 @@ export const CompareOffersModal = ({
           return (
             <div
               key={offer.id}
-              className="flex items-center justify-between gap-4 border rounded-sm p-4"
+              className="flex items-center justify-between gap-4 border border-primary/10 rounded-2xl p-4"
               data-testid="compare-offer-row"
               data-offer-id={offer.id}
             >
@@ -77,43 +85,44 @@ export const CompareOffersModal = ({
                 <SellerAvatar
                   photo={offer.seller?.logo || ""}
                   size={40}
-                  alt={offer.seller?.name || "Seller"}
+                  alt={offer.seller?.name || t.sellerFallback}
                 />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="label-lg text-primary truncate">
-                      {offer.seller?.name || "Seller"}
+                      {offer.seller?.name || t.sellerFallback}
                     </p>
                     {index === 0 && buyable && (
-                      <Badge className="bg-positive">Best price</Badge>
+                      <Badge className="bg-positive">{t.bestPrice}</Badge>
                     )}
                     {offer.seller?.is_premium && (
-                      <Badge className="bg-warning">Premium</Badge>
+                      <Badge className="bg-warning">{t.premium}</Badge>
                     )}
                   </div>
                   <p className="label-sm text-secondary">
-                    {buyable ? `${stock} in stock` : "Out of stock"}
+                    {buyable ? t.inStockCount(stock) : t.outOfStock}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4 shrink-0">
                 <span className="heading-sm text-primary" data-testid="compare-offer-price">
-                  {amount !== null
+                  {!isLoggedIn
+                    ? t.loginToSeePrice
+                    : amount !== null
                     ? convertToLocale({
                         amount,
-                        currency_code:
-                          offer.calculated_price?.currency_code || "eur",
+                        currency_code: getOfferCurrency(offer, "ils"),
                       })
                     : "—"}
                 </span>
                 <Button
                   size="small"
                   onClick={() => handleAdd(offer)}
-                  disabled={!buyable || addingId !== null}
+                  disabled={isLoggedIn && (!buyable || addingId !== null)}
                   loading={addingId === offer.id}
                   data-testid="compare-offer-add-to-cart"
                 >
-                  Add to cart
+                  {isLoggedIn ? t.addToCart : t.loginToOrder}
                 </Button>
               </div>
             </div>

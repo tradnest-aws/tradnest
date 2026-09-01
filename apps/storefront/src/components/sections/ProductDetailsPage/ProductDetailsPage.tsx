@@ -44,7 +44,7 @@ export const ProductDetailsPage = async ({
       </div>
       <div className="my-8">
         <HomeProductSection
-          heading="Similar catalog items"
+          heading={t.similarProducts}
           products={prod.seller?.products}
           locale={locale}
         />

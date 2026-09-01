@@ -1,13 +1,17 @@
+"use client"
+
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import LocalizedClientLink from "../../LocalizedLink/LocalizedLink"
 import { ArrowRightIcon } from "@/icons"
+import { useCopy } from "@/lib/i18n/useCopy"
 interface Props {
   category: HttpTypes.StoreProductCategory
   onLinkClick?: () => void
 }
 
 export const FeaturedCategory = ({ category, onLinkClick }: Props) => {
+  const t = useCopy()
 
   return (
     <LocalizedClientLink
@@ -29,9 +33,9 @@ export const FeaturedCategory = ({ category, onLinkClick }: Props) => {
       </div>
 
         <div className="p-4 flex flex-col gap-y-2 mt-auto bg-initial">
-          <h3 className="heading-md text-primary uppercase">{category.name}</h3>
+          <h3 className="heading-md text-primary">{category.name}</h3>
           <div className="flex items-center gap-x-2">
-            <p className="label-md uppercase">Shop Now</p>
+            <p className="label-md">{t.shopNow}</p>
             <ArrowRightIcon className="w-4 h-4" />
           </div>
         </div>

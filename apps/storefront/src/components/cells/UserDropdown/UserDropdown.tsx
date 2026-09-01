@@ -29,7 +29,7 @@ export const UserDropdown = ({
       <LocalizedClientLink
         href={isLoggedIn ? "/user" : "/login"}
         className="relative"
-        aria-label="Go to user profile"
+        aria-label={t.profileAria}
       >
         <ProfileIcon size={20} />
       </LocalizedClientLink>
@@ -37,7 +37,7 @@ export const UserDropdown = ({
         {isLoggedIn ? (
           <div className="p-1">
             <div className="lg:w-[200px]">
-              <h3 className="uppercase heading-xs border-b p-4">
+          <h3 className="heading-xs border-b p-4">
                 {t.buyerAccount}
               </h3>
             </div>

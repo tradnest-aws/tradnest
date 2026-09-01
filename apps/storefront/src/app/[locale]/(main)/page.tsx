@@ -16,8 +16,9 @@ import {
   toHreflang,
 } from "@/lib/helpers/hreflang"
 import { getCopy } from "@/lib/i18n/copy"
+import { publicPageUrl } from "@/lib/helpers/locale-path"
 
-const DEFAULT_SITE_NAME = "Tradnest — B2B multi-vendor marketplace"
+const DEFAULT_SITE_NAME = "טרדנסט — שוק סיטונאי B2B"
 
 export async function generateMetadata({
   params,
@@ -126,7 +127,7 @@ export default async function Home({
             "@context": "https://schema.org",
             "@type": "Organization",
             name: siteName,
-            url: `${baseUrl}/${locale}`,
+            url: publicPageUrl(baseUrl, locale, "/"),
             logo: `${baseUrl}/tradnest-icon.png`,
           }),
         }}
@@ -139,7 +140,7 @@ export default async function Home({
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: siteName,
-            url: `${baseUrl}/${locale}`,
+            url: publicPageUrl(baseUrl, locale, "/"),
             inLanguage: toHreflang(locale),
           }),
         }}
@@ -151,7 +152,7 @@ export default async function Home({
         paragraph={t.heroParagraph}
         buttons={[
           { label: t.heroCatalog, path: "/categories" },
-          { label: t.heroSeller, path: "/seller" },
+          { label: t.heroSeller, path: "/join-as-seller" },
         ]}
       />
       <div className="px-4 lg:px-8 w-full">

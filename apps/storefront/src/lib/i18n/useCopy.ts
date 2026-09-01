@@ -1,10 +1,5 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { getCopy } from "./copy"
 
-import { getCopy, localeFromPathname } from "./copy"
-
-export const useCopy = () => {
-  const pathname = usePathname()
-  return getCopy(localeFromPathname(pathname))
-}
+export const useCopy = () => getCopy("il")

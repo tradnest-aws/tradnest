@@ -1,32 +1,25 @@
 "use client"
 
 import Link from "next/link"
-import { useParams, usePathname } from "next/navigation"
-import React, { MouseEventHandler } from "react"
+import { useParams } from "next/navigation"
+import { ComponentProps } from "react"
 
-/**
- * Use this component to create a Next.js `<LocalizedClientLink />` that persists the current country code in the url,
- * without having to explicitly pass it as a prop.
- */
+import { DEFAULT_STOREFRONT_LOCALE } from "@/lib/i18n/copy"
+import { localizeHref } from "@/lib/helpers/locale-path"
+
 const LocalizedClientLink = ({
   children,
   href,
   ...props
-}: {
-  children?: React.ReactNode
-  href: string
-  className?: string
-  onClick?: MouseEventHandler<HTMLAnchorElement> | undefined
-  passHref?: true
-  [x: string]: any
-}) => {
+}: Omit<ComponentProps<typeof Link>, "href"> & { href: string }) => {
   const params = useParams()
-  const pathname = usePathname()
-  
-  const locale = params?.locale || pathname?.split('/')[1] || 'en'
+  const localeParam = params?.locale
+  const locale =
+    (typeof localeParam === "string" ? localeParam : localeParam?.[0]) ||
+    DEFAULT_STOREFRONT_LOCALE
 
   return (
-    <Link href={`/${locale}${href}`} {...props}>
+    <Link href={localizeHref(href, locale)} {...props}>
       {children}
     </Link>
   )

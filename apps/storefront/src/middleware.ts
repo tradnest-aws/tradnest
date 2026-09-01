@@ -9,6 +9,16 @@ const BACKEND_URL = process.env.MEDUSA_BACKEND_URL;
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'il';
 
+const PASSTHROUGH_FIRST_SEGMENTS = new Set([
+  'seller',
+  'app',
+  'vendor',
+  'store',
+  'hooks',
+  'static',
+  'auth'
+]);
+
 const publicOrigin = (req: NextRequest) =>
   resolvePublicOrigin({
     configuredBaseUrl: process.env.NEXT_PUBLIC_BASE_URL,
@@ -18,26 +28,19 @@ const publicOrigin = (req: NextRequest) =>
     fallbackOrigin: req.nextUrl.origin,
   });
 
-const nextWithLocale = (request: NextRequest, locale: string) => {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-locale', locale.toLowerCase());
-  requestHeaders.set(
+const withLocaleHeaders = (headers: Headers, locale: string) => {
+  headers.set('x-locale', locale.toLowerCase());
+  headers.set(
     'x-locale-dir',
     locale.toLowerCase() === 'il' ? 'rtl' : 'ltr'
   );
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders
-    }
-  });
 };
 
 const makeAuthRedirect = (
   req: NextRequest,
-  locale: string,
   reason: 'sessionRequired' | 'sessionExpired'
 ) => {
-  const redirectUrl = new URL(`/${locale}/login`, `${publicOrigin(req)}/`);
+  const redirectUrl = new URL('/login', `${publicOrigin(req)}/`);
 
   redirectUrl.searchParams.set(reason, 'true');
 
@@ -65,7 +68,6 @@ async function getRegionMap(cacheId: string) {
   }
 
   if (!regionMap.keys().next().value || regionMapUpdated < Date.now() - 3600 * 1000) {
-    // We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
     const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
       headers: {
         'x-publishable-api-key': PUBLISHABLE_API_KEY!
@@ -101,92 +103,78 @@ async function getRegionMap(cacheId: string) {
   return regionMapCache.regionMap;
 }
 
-async function getCountryCode(
-  request: NextRequest,
-  regionMap: Map<string, HttpTypes.StoreRegion | number>
-) {
-  try {
-    let countryCode;
-
-    const vercelCountryCode = request.headers.get('x-vercel-ip-country')?.toLowerCase();
-
-    const urlCountryCode = request.nextUrl.pathname.split('/')[1]?.toLowerCase();
-
-    if (urlCountryCode && regionMap.has(urlCountryCode)) {
-      countryCode = urlCountryCode;
-    } else if (vercelCountryCode && regionMap.has(vercelCountryCode)) {
-      countryCode = vercelCountryCode;
-    } else if (regionMap.has(DEFAULT_REGION)) {
-      countryCode = DEFAULT_REGION;
-    } else if (regionMap.keys().next().value) {
-      countryCode = regionMap.keys().next().value;
-    }
-
-    return countryCode;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error(
-        'Middleware.ts: Error getting the country code. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL.'
-      );
-    }
-  }
-}
-
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.includes('.')) {
     return NextResponse.next();
   }
 
   const { pathname } = request.nextUrl;
+  const queryString = request.nextUrl.search ? request.nextUrl.search : '';
   const cacheIdCookie = request.cookies.get('_medusa_cache_id');
   const cacheId = cacheIdCookie?.value || crypto.randomUUID();
 
   const urlSegment = pathname.split('/')[1];
   const looksLikeLocale = /^[a-z]{2}$/i.test(urlSegment || '');
 
-  const pathnameWithoutLocale = looksLikeLocale ? pathname.replace(/^\/[^/]+/, '') : pathname;
+  if (
+    pathname === '/il/seller' ||
+    pathname === '/il/seller/'
+  ) {
+    const redirectUrl = `${publicOrigin(request)}/join-as-seller${queryString}`;
+    return NextResponse.redirect(redirectUrl, 308);
+  }
 
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathnameWithoutLocale.startsWith(route));
+  if (looksLikeLocale) {
+    const stripped = pathname.replace(/^\/[a-z]{2}/i, '') || '/';
+    const redirectUrl = `${publicOrigin(request)}${stripped}${queryString}`;
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
+  if (urlSegment && PASSTHROUGH_FIRST_SEGMENTS.has(urlSegment)) {
+    return NextResponse.next();
+  }
+
+  const pathnameWithoutLocale = pathname;
+
+  const isProtectedRoute = PROTECTED_ROUTES.some(route =>
+    pathnameWithoutLocale.startsWith(route)
+  );
 
   if (isProtectedRoute) {
     const jwtCookie = request.cookies.get('_medusa_jwt');
     const token = jwtCookie?.value;
 
-    const locale = looksLikeLocale ? urlSegment : DEFAULT_REGION;
-
     if (!jwtCookie) {
-      return makeAuthRedirect(request, locale, 'sessionRequired');
+      return makeAuthRedirect(request, 'sessionRequired');
     }
 
     if (token && isTokenExpired(token)) {
-      return makeAuthRedirect(request, locale, 'sessionExpired');
+      return makeAuthRedirect(request, 'sessionExpired');
     }
   }
 
-  if (looksLikeLocale && cacheIdCookie) {
-    return nextWithLocale(request, urlSegment);
+  try {
+    await getRegionMap(cacheId);
+  } catch {
+    // Region fetch is used to warm the cache; Israel is the only public locale.
   }
 
-  let response = nextWithLocale(
-    request,
-    looksLikeLocale ? urlSegment : DEFAULT_REGION
-  );
+  const rewriteUrl = request.nextUrl.clone();
+  rewriteUrl.pathname = pathname === '/' ? `/${DEFAULT_REGION}` : `/${DEFAULT_REGION}${pathname}`;
+
+  const requestHeaders = new Headers(request.headers);
+  withLocaleHeaders(requestHeaders, DEFAULT_REGION);
+
+  const response = NextResponse.rewrite(rewriteUrl, {
+    request: {
+      headers: requestHeaders
+    }
+  });
 
   if (!cacheIdCookie) {
     response.cookies.set('_medusa_cache_id', cacheId, {
       maxAge: 60 * 60 * 24
     });
-  }
-
-  const regionMap = await getRegionMap(cacheId);
-  const countryCode = regionMap && (await getCountryCode(request, regionMap));
-  const urlHasCountryCode = countryCode && pathname.split('/')[1].includes(countryCode);
-
-  if (!urlHasCountryCode && countryCode) {
-    const redirectPath = pathname === '/' ? '' : pathname;
-    const queryString = request.nextUrl.search ? request.nextUrl.search : '';
-    const redirectUrl = `${publicOrigin(request)}/${countryCode}${redirectPath}${queryString}`;
-    return NextResponse.redirect(redirectUrl, 307);
   }
 
   return response;

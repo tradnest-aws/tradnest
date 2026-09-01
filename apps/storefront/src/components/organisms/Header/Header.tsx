@@ -3,29 +3,31 @@ import { HttpTypes } from "@medusajs/types"
 
 import { CartDropdown, MobileNavbar, Navbar } from "@/components/cells"
 import { UserDropdown } from "@/components/cells/UserDropdown/UserDropdown"
-import CountrySelector from "@/components/molecules/CountrySelector/CountrySelector"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { MessageButton } from "@/components/molecules/MessageButton/MessageButton"
 import { listCategories } from "@/lib/data/categories"
-import { listRegions } from "@/lib/data/regions"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { ParentCategoryLinks } from "@/components/molecules/ParentCategoryLinks/ParentCategoryLinks"
+import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path"
+import { getCopy } from "@/lib/i18n/copy"
 
 export const Header = async ({ locale } : {
   locale: string
 }) => {
+  const t = getCopy(locale)
   const user = await retrieveCustomer().catch(() => null)
   const isLoggedIn = Boolean(user)
-
-  const regions = await listRegions()
 
   const { categories, parentCategories } = (await listCategories({ query: { include_ancestors_tree: true } })) as {
     categories: HttpTypes.StoreProductCategory[]
     parentCategories: HttpTypes.StoreProductCategory[]
   }
   return (
-    <header data-testid="header">
-      <div className="flex py-2 lg:px-8 px-4 md:px-5" data-testid="header-top">
+    <header
+      className="sticky top-0 z-50 bg-primary/95 backdrop-blur border-b border-primary/10"
+      data-testid="header"
+    >
+      <div className="flex py-3 lg:px-8 px-4 md:px-5" data-testid="header-top">
         <div className="flex items-center lg:w-1/3">
           <MobileNavbar
             parentCategories={parentCategories}
@@ -42,7 +44,12 @@ export const Header = async ({ locale } : {
           </LocalizedClientLink>
         </div>
         <div className="flex items-center justify-end gap-2 lg:gap-4 w-full lg:w-1/3 py-2" data-testid="header-actions">
-          <CountrySelector regions={regions} />
+          <LocalizedClientLink
+            href={JOIN_AS_SELLER_PATH}
+            className="hidden md:inline-flex label-md text-primary hover:text-action"
+          >
+            {t.becomeSupplier}
+          </LocalizedClientLink>
           {isLoggedIn && <MessageButton />}
           <UserDropdown isLoggedIn={isLoggedIn} />
           <CartDropdown />

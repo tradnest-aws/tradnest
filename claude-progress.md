@@ -12,11 +12,8 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Storefront `/il/categories` is empty because
-  `searchProducts` requests `*attribute_values` and the API 500s; the client
-  catches that as zero products. 23 published products exist on `/store/products`
-  with `fields=id,title`. Next deploy: `./scripts/deploy-ec2-tradnest.sh nginx`
-  (rebuilds storefront + `@mercurjs/core`).
+- **Current blocker**: Live storefront still needs `./scripts/deploy-ec2-tradnest.sh nginx` to pick up Next rebuilds (root URLs, favicon, Hebrew B2B UI, gated prices).
+- **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
 
 ## Session — Tradnest B2B storefront
 
@@ -24,7 +21,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Landed.** Quote-request module (store + vendor APIs); buyer company registration; RFQ on product pages; wholesale homepage/copy; `/user/quotes`. Spec: `docs/specs/SPEC-001-b2b-multi-vendor-storefront.md`.
 - **2026-08-31.** Storefront production build was failing because `next/headers` ran in modules that client barrels re-export (`not-found`, Footer, BannerSection, ProductDetailsShipping, ProductPageDetails). Those are Client Components using `useCopy()`; a few client files now import by path instead of the barrel.
 - **Verified.** `bun run lint` (oxlint) passed. `@mercurjs/types` + `@mercurjs/core` built. `bun run test:integration:http -- quote-request`: 7/7 passed. Storefront `tsc` still has pre-existing errors unrelated to this change.
-- **2026-08-31.** Seller landing CTA "כניסה לפאנל ספקים" was a nested `<button>` inside an `<a href="…/seller">`, and nginx sent `/seller` to the storefront (same marketing page). CTA is now a real link; `/seller` (no locale) is the vendor panel, `/il/seller` stays the landing page. `/vendor` API is proxied to Medusa.
+- **2026-09-01.** Seller landing is `/join-as-seller`. `/seller` (no locale) remains the vendor panel. `/il/...` 308-redirects to the unprefixed path.
 
 ## Session — Admin Inventory (MER-139), branch `feat/admin-inventory`
 

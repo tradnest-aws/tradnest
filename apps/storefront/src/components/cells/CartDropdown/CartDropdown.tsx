@@ -62,7 +62,7 @@ export const CartDropdown = () => {
     if (
       previousItemCount !== undefined &&
       cartItemsCount > previousItemCount &&
-      pathname.split("/")[2] !== "cart"
+      !pathname.split("/").includes("cart")
     ) {
       setOpen(true)
     }
@@ -77,7 +77,7 @@ export const CartDropdown = () => {
       <LocalizedClientLink
         href="/cart"
         className="relative"
-        aria-label="Go to cart"
+        aria-label={t.cartAria}
       >
         <CartIcon size={20} />
         {Boolean(cartItemsCount) && (
@@ -88,7 +88,7 @@ export const CartDropdown = () => {
       </LocalizedClientLink>
       <Dropdown show={open}>
         <div className="lg:w-[460px] shadow-lg">
-          <h3 className="uppercase heading-md border-b p-4">{t.cart}</h3>
+          <h3 className="heading-md border-b p-4">{t.cart}</h3>
           <div className="p-4">
             {Boolean(cartItemsCount) ? (
               <div>
@@ -121,7 +121,7 @@ export const CartDropdown = () => {
               </div>
             ) : (
               <div className="px-8">
-                <h4 className="heading-md uppercase text-center">
+                <h4 className="heading-md text-center">
                   {t.cartEmpty}
                 </h4>
                 <p className="text-lg text-center py-4">
