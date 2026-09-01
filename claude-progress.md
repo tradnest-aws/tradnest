@@ -12,7 +12,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Vendor `/seller/onboarding` 404ed because the route loader called `retrieveActiveStore()`, which throws ClientError 404 when a new supplier has no store. Fixed: loader returns `{}`; store step uses ILS fallback currencies. Redeploy `nginx`.
+- **Current blocker**: Vendor reset-password toasted `Unexpected token 'C', "Created" is not valid JSON` because Medusa returns HTTP 201 with body `Created` and the Mercur client always called `response.json()`. Fixed in `@mercurjs/client`. Redeploy `nginx` (vendor) after API/client rebuild — `nginx` rebuilds vendor; if only vendor is rebuilt against new client that's enough. Use `nginx` or full deploy.
 - **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
 
 ## Session — Tradnest B2B storefront
