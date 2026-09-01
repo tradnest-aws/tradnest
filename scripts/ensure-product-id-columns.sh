@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Add missing product_id columns that make GET /admin/products 400.
+# Uses psql + DATABASE_URL (no Node `pg` package).
 # Usage: ensure-product-id-columns.sh /path/to/apps/api/.env
 set -euo pipefail
 
@@ -9,10 +10,10 @@ if [[ -z "$ENV_FILE" || ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-API_DIR="$(cd "$(dirname "$ENV_FILE")" && pwd)"
-SCRIPT="$API_DIR/src/scripts/ensure-product-id-columns.ts"
-if [[ ! -f "$SCRIPT" ]]; then
-  echo "Missing $SCRIPT" >&2
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SQL_FILE="$ROOT/scripts/ensure-product-id-columns.sql"
+if [[ ! -f "$SQL_FILE" ]]; then
+  echo "Missing $SQL_FILE" >&2
   exit 1
 fi
 
@@ -43,5 +44,12 @@ print(f"{u.hostname}:{u.port or 5432}/{u.path.lstrip('/')}")
 PY
 )"
 
-cd "$API_DIR"
-bun --env-file="$ENV_FILE" "$SCRIPT"
+if ! command -v psql >/dev/null 2>&1; then
+  echo "ensure-product-id-columns: installing postgresql-client"
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -y
+  apt-get install -y postgresql-client
+fi
+
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SQL_FILE"
+echo "ensure-product-id-columns: SQL applied"

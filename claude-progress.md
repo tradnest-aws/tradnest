@@ -12,14 +12,10 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: AWS deploy cannot run from this cloud agent (no SSH to
-  `13.60.11.98`). Live `/app` product pages still 400: `GET /admin/products`
-  → `column p0.product_id does not exist`; retrieve → `column o3.product_id
-  does not exist`; `fields=*options` → `o1.product_id`. Previous
-  `medusa exec` ensure script was swallowed with `|| true` and never altered
-  Postgres. Redeploy: `./scripts/deploy-ec2-tradnest.sh api` after this
-  revision — cutover now runs `scripts/ensure-product-id-columns.sh` against
-  `DATABASE_URL` (must succeed) and curls list/retrieve before finishing.
+- **Current blocker**: Live `/app` product 400s (missing `product_id`). 2026-09-01
+  deploy of `58f0fd91` failed at `Cannot find module 'pg'` (api step does not
+  `bun install`). Next deploy uses `psql` + `scripts/ensure-product-id-columns.sql`
+  against `localhost:5432/medusa_b2b`. Agent cannot SSH.
 
 ## Session — Tradnest B2B storefront
 

@@ -1,4 +1,5 @@
 import { createRequire } from "module"
+import { join } from "node:path"
 import { ExecArgs } from "@medusajs/framework/types"
 
 type QueryResult = { rows: Array<Record<string, string>> }
@@ -18,16 +19,29 @@ type PgClientConstructor = new (opts: {
 }) => PgClient
 
 function loadPgClient(): PgClientConstructor {
-  const require = createRequire(import.meta.url)
-  const pg = require("pg") as {
-    Client?: PgClientConstructor
-    default?: { Client: PgClientConstructor }
+  const candidates = [
+    join(process.cwd(), "package.json"),
+    join(process.cwd(), "..", "..", "package.json"),
+  ]
+  let lastError: unknown
+  for (const from of candidates) {
+    try {
+      const require = createRequire(from)
+      const pg = require("pg") as {
+        Client?: PgClientConstructor
+        default?: { Client: PgClientConstructor }
+      }
+      const Client = pg.Client ?? pg.default?.Client
+      if (Client) {
+        return Client
+      }
+    } catch (error: unknown) {
+      lastError = error
+    }
   }
-  const Client = pg.Client ?? pg.default?.Client
-  if (!Client) {
-    throw new Error("ensure-product-id-columns: package 'pg' has no Client export")
-  }
-  return Client
+  throw new Error(
+    "ensure-product-id-columns: package 'pg' not found (deploy uses scripts/ensure-product-id-columns.sql via psql)",
+  )
 }
 
 const KNOWN_TABLES = [
