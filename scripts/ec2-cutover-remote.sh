@@ -473,6 +473,8 @@ ORIGIN_HOST="${ORIGIN_HOST%/}"
 
 if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   log "API+nginx only (no storefront rebuild)"
+  log "Ensure product_id columns on product_attribute and offer (admin product 400)"
+  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-product-id-columns.ts ) || true
   ensure_http_session_cookies
   log "Restart API so /auth/session can Set-Cookie on HTTP"
   systemctl restart tradnest-api || true
@@ -507,6 +509,8 @@ fi
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
   log "Ensuring Medusa /app admin user"
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+  log "Ensure product_id columns on product_attribute and offer"
+  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-product-id-columns.ts ) || true
   ensure_http_session_cookies
   log "Restart API so session cookies work on HTTP /app"
   systemctl restart tradnest-api || true
