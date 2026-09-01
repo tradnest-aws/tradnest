@@ -283,7 +283,7 @@ ensure_storefront_publishable_key() {
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_DEFAULT_REGION il
   upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_SITE_NAME "טרדנסט"
-  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller"
+  upsert "$DEPLOY_DIR/apps/storefront/.env" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller/"
 }
 
 install_nginx_vhost() {
@@ -374,11 +374,7 @@ server {
   }
 
   location = /seller {
-    proxy_pass http://127.0.0.1:$VENDOR_PORT/seller/;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
+    return 301 /seller/;
   }
 
   location /app {
@@ -577,7 +573,7 @@ health_check() {
   echo "API:        $PUBLIC_ORIGIN/health"
   echo "Storefront: $PUBLIC_ORIGIN/"
   echo "Admin:      $PUBLIC_ORIGIN/app"
-  echo "Vendor:     $PUBLIC_ORIGIN/seller"
+    echo "Vendor:     $PUBLIC_ORIGIN/seller/"
   echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
 }
 
@@ -664,7 +660,7 @@ upsert "$API_ENV" ADMIN_CORS "$PUBLIC_ORIGIN,http://127.0.0.1:9000"
 upsert "$API_ENV" VENDOR_CORS "$PUBLIC_ORIGIN"
 upsert "$API_ENV" AUTH_CORS "$PUBLIC_ORIGIN,http://127.0.0.1:9000,http://127.0.0.1:7001,http://127.0.0.1:7002"
 upsert "$API_ENV" FILE_BACKEND_URL "${PUBLIC_ORIGIN}/static"
-upsert "$API_ENV" MERCUR_VENDOR_URL "${PUBLIC_ORIGIN}/seller"
+upsert "$API_ENV" MERCUR_VENDOR_URL "${PUBLIC_ORIGIN}/seller/"
 upsert "$API_ENV" STOREFRONT_REVALIDATE_URL "$PUBLIC_ORIGIN"
 grep -q '^JWT_SECRET=' "$API_ENV" || upsert "$API_ENV" JWT_SECRET supersecret
 grep -q '^COOKIE_SECRET=' "$API_ENV" || upsert "$API_ENV" COOKIE_SECRET supersecret
@@ -688,7 +684,7 @@ upsert "$STORE_ENV" NEXT_PUBLIC_BASE_URL "$PUBLIC_ORIGIN"
 upsert "$STORE_ENV" NEXT_PUBLIC_DEFAULT_REGION il
 upsert "$STORE_ENV" NEXT_PUBLIC_SITE_NAME Tradnest
 upsert "$STORE_ENV" NEXT_PUBLIC_SITE_DESCRIPTION "Tradnest B2B wholesale marketplace"
-upsert "$STORE_ENV" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller"
+upsert "$STORE_ENV" NEXT_PUBLIC_VENDOR_URL "${PUBLIC_ORIGIN}/seller/"
 upsert "$STORE_ENV" REVALIDATE_SECRET "$(grep -E '^STOREFRONT_REVALIDATE_SECRET=' "$API_ENV" | cut -d= -f2- || echo supersecret)"
 ensure_storefront_publishable_key
 

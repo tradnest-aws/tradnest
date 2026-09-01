@@ -180,7 +180,7 @@ const en = {
   sellerStep3Title: "Quote and fulfill",
   sellerStep3Body:
     "Respond to RFQs, confirm orders, and ship inside Israel with your own rates.",
-  vendorFallback: "/seller",
+  vendorFallback: "/seller/",
   thankYou: "Thank you!",
   orderPlaced: "Your order was placed successfully.",
   orderEmailSent: "We have sent the order confirmation details to",
@@ -420,7 +420,7 @@ const he: typeof en = {
   sellerStep3Title: "הצעות מחיר ואספקה",
   sellerStep3Body:
     "משיבים לבקשות, מאשרים הזמנות ומשלחים בישראל לפי תעריפי המשלוח שלכם.",
-  vendorFallback: "/seller",
+  vendorFallback: "/seller/",
   thankYou: "תודה!",
   orderPlaced: "ההזמנה בוצעה בהצלחה.",
   orderEmailSent: "פרטי האישור נשלחו אל",
