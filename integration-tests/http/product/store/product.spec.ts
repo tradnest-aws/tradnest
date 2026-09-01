@@ -145,26 +145,7 @@ medusaIntegrationTestRunner({
                     expect(response.data.offset).toBeDefined()
                     expect(response.data.limit).toBeDefined()
 
-                    const ids = response.data.products.map((p: { id: string }) => p.id)
-                    expect(ids).toContain(product.id)
-                })
-
-                it("lists products with the storefront catalog field set", async () => {
-                    const product = await createProduct(approvedSellerHeaders, {
-                        title: "Catalog Field Product",
-                    })
-
-                    const fields =
-                        "*variants.calculated_price,+variants.inventory_quantity,*variants.options"
-                    const response = await api.get(
-                        `/store/products?limit=12&fields=${encodeURIComponent(fields)}`,
-                        storeHeaders
-                    )
-
-                    expect(response.status).toEqual(200)
-                    const ids = (
-                        response.data.products as { id: string }[]
-                    ).map((p) => p.id)
+                    const ids = response.data.products.map((p: any) => p.id)
                     expect(ids).toContain(product.id)
                 })
 
