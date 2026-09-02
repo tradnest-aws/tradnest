@@ -55,7 +55,15 @@
   @apply text-[64px] leading-[72px] font-medium tracking-normal max-md:text-[40px] max-md:leading-[48px];
 }
 .container {
-  @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
+  @apply px-4 md:px-6 max-w-[1280px] mx-auto w-full lg:py-10 py-6 lg:px-8;
+}
+
+.storefront-shell {
+  @apply max-w-[1280px] mx-auto w-full px-4 md:px-6 lg:px-8;
+}
+
+.storefront-card {
+  @apply rounded-[24px] bg-primary border border-primary/10 shadow-[0_8px_30px_rgba(16,24,40,0.04)];
 }
 
 /* Atoms components */

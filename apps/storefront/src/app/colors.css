@@ -1,8 +1,8 @@
 :root {
     /* Neutral colors are the foundation of the color system. Almost everything in UI design — text, fields, backgrounds, dividers — are usually gray. */
     --neutral-0: 255, 255, 255;
-    --neutral-25: 246, 243, 236;
-    --neutral-50: 230, 224, 212;
+    --neutral-25: 244, 246, 248;
+    --neutral-50: 232, 236, 240;
     --neutral-100: 214, 206, 190;
     --neutral-200: 198, 198, 198;
     --neutral-300: 163, 163, 163;
@@ -92,9 +92,9 @@
     --bg-component-secondary-hover: var(--neutral-50);
     --bg-component-secondary-pressed: var(--neutral-100);
 
-    --bg-action-primary: var(--brand-900);
-    --bg-action-primary-hover: var(--brand-800);
-    --bg-action-primary-pressed: var(--brand-700);
+    --bg-action-primary: var(--brand-700);
+    --bg-action-primary-hover: var(--brand-600);
+    --bg-action-primary-pressed: var(--brand-800);
     --bg-action-secondary: rgba(var(--neutral-1000), 0.05);
     --bg-action-secondary-hover: rgba(var(--neutral-1000), 0.1);
     --bg-action-secondary-pressed: rgba(var(--neutral-1000), 0.2);
@@ -132,7 +132,7 @@
     --content-action-primary: var(--brand-900);
     --content-action-primary-hover: var(--brand-100);
     --content-action-primary-pressed: var(--brand-200);
-    --content-action-on-primary: var(--brand-25);
+    --content-action-on-primary: var(--neutral-0);
     --content-action-on-secondary: var(--neutral-1000);
     --content-action-on-tertiary: var(--neutral-0);
 

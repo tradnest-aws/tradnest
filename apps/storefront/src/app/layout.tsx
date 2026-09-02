@@ -15,7 +15,7 @@ import { Providers } from './providers';
 const heebo = Heebo({
   variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
-  weight: ['400', '500', '600', '700']
+  weight: ['400', '500', '600', '700', '800']
 });
 
 export const metadata: Metadata = {
@@ -124,7 +124,7 @@ export default async function RootLayout({
       </Head>
       <body
         dir={dir}
-        className={`${heebo.className} relative bg-primary text-secondary antialiased`}
+        className={`${heebo.className} relative bg-secondary text-secondary antialiased`}
       >
         <HtmlLangSetter />
         <Providers cart={cart} isLoggedIn={Boolean(customer)}>

@@ -12,17 +12,16 @@ export function CategoryCard({
   return (
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
-      className="relative flex flex-col items-center border border-primary/10 rounded-2xl bg-component transition-all hover:shadow-md w-[233px] aspect-square"
+      className="group flex flex-col items-center gap-3 rounded-[24px] bg-primary border border-primary/10 px-4 py-6 hover:shadow-[0_12px_32px_rgba(16,24,40,0.08)] hover:-translate-y-0.5 transition-all"
     >
-      <div className="flex relative aspect-square overflow-hidden w-[200px]">
+      <div className="relative size-24 overflow-hidden rounded-full bg-secondary">
         <Image
           loading="lazy"
           src={iconSrc}
           alt=""
-          width={200}
-          height={200}
-          sizes="(min-width: 1024px) 200px, 40vw"
-          className="object-cover scale-90 rounded-full"
+          fill
+          sizes="96px"
+          className="object-cover"
         />
       </div>
       <h3 className="w-full text-center label-lg text-primary">

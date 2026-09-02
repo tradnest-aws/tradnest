@@ -30,13 +30,13 @@ export const ProductCard = ({
   return (
     <div
       className={cn(
-        "relative group border border-primary/10 rounded-2xl flex flex-col justify-between p-2 w-full lg:w-[calc(25%-1rem)] min-w-[250px] bg-primary shadow-sm hover:shadow-md transition-shadow",
+        "relative group border border-primary/10 rounded-[24px] flex flex-col justify-between p-2 w-full min-w-0 bg-primary shadow-[0_8px_30px_rgba(16,24,40,0.04)] hover:shadow-[0_16px_40px_rgba(16,24,40,0.08)] transition-shadow",
         className
       )}
       data-testid="product-card"
       data-product-handle={product.handle}
     >
-      <div className="relative w-full h-full bg-secondary aspect-square rounded-xl overflow-hidden" data-testid="product-card-image-container">
+      <div className="relative w-full h-full bg-secondary aspect-square rounded-[18px] overflow-hidden" data-testid="product-card-image-container">
         <LocalizedClientLink
           href={`/products/${product.handle}`}
           aria-label={t.viewProduct(productName)}
@@ -75,7 +75,7 @@ export const ProductCard = ({
           aria-label={t.seeMoreAbout(productName)}
           title={t.seeMoreAbout(productName)}
         >
-          <Button className="absolute rounded-xl bg-action text-action-on-primary h-auto lg:h-[48px] lg:group-hover:block hidden w-[calc(100%-0.5rem)] mx-1 bottom-1 z-10" data-testid="product-card-see-more-button">
+          <Button className="absolute rounded-full bg-action text-action-on-primary h-auto lg:h-[44px] lg:group-hover:block hidden w-[calc(100%-1rem)] mx-2 bottom-2 z-10" data-testid="product-card-see-more-button">
             {t.seeMore}
           </Button>
         </LocalizedClientLink>

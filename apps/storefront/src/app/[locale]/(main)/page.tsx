@@ -3,6 +3,7 @@ import {
   Hero,
   HomeCategories,
   HomeProductSection,
+  HomeStats,
   HowProcurementWorksSection,
 } from "@/components/sections"
 
@@ -111,7 +112,7 @@ export default async function Home({
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME
 
   return (
-    <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+    <main className="flex w-full flex-col gap-10 lg:gap-14 items-stretch text-primary">
       <link
         rel="preload"
         as="image"
@@ -155,12 +156,9 @@ export default async function Home({
           { label: t.heroSeller, path: "/join-as-seller" },
         ]}
       />
-      <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading={t.featured} locale={locale} home />
-      </div>
-      <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading={t.byCategory} />
-      </div>
+      <HomeStats />
+      <HomeCategories heading={t.byCategory} locale={locale} />
+      <HomeProductSection heading={t.featured} locale={locale} home />
       <BannerSection />
       <HowProcurementWorksSection />
     </main>

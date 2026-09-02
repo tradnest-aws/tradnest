@@ -26,8 +26,8 @@ export default async function SellerLandingPage({
     process.env.NEXT_PUBLIC_VENDOR_URL || t.vendorFallback
 
   return (
-    <main className="container" data-testid="seller-landing">
-      <section className="rounded-3xl bg-tertiary text-tertiary p-8 md:p-12 max-w-4xl">
+    <main className="storefront-shell py-10" data-testid="seller-landing">
+      <section className="rounded-[32px] bg-tertiary text-tertiary p-8 md:p-12 max-w-4xl">
         <p className="label-sm mb-3">{t.bannerKicker}</p>
         <h1 className="heading-xl mb-4">{t.sellerPageTitle}</h1>
         <p className="text-lg mb-4">{t.sellerHero}</p>
@@ -35,7 +35,7 @@ export default async function SellerLandingPage({
         <Button
           href={vendorUrl}
           size="large"
-          className="rounded-2xl"
+          className="rounded-full"
           data-testid="seller-vendor-cta"
         >
           {t.sellerCta}
@@ -44,17 +44,17 @@ export default async function SellerLandingPage({
       <section className="mt-10">
         <h2 className="heading-lg mb-6">{t.sellerHowTitle}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="border border-primary/10 rounded-2xl p-6 bg-primary shadow-sm">
+          <div className="storefront-card p-6">
             <p className="label-sm text-secondary mb-3">01</p>
             <h3 className="heading-md mb-3">{t.sellerStep1Title}</h3>
             <p className="label-md text-secondary">{t.sellerStep1Body}</p>
           </div>
-          <div className="border border-primary/10 rounded-2xl p-6 bg-primary shadow-sm">
+          <div className="storefront-card p-6">
             <p className="label-sm text-secondary mb-3">02</p>
             <h3 className="heading-md mb-3">{t.sellerStep2Title}</h3>
             <p className="label-md text-secondary">{t.sellerStep2Body}</p>
           </div>
-          <div className="border border-primary/10 rounded-2xl p-6 bg-primary shadow-sm">
+          <div className="storefront-card p-6">
             <p className="label-sm text-secondary mb-3">03</p>
             <h3 className="heading-md mb-3">{t.sellerStep3Title}</h3>
             <p className="label-md text-secondary">{t.sellerStep3Body}</p>

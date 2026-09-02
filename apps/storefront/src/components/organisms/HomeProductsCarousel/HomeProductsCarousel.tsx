@@ -27,18 +27,29 @@ export const HomeProductsCarousel = async ({
 
   if (!products.length && !sellerProducts.length) return null
 
+  const items = sellerProducts.length ? sellerProducts : products
+
+  if (home) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        {items.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="flex justify-center w-full">
       <Carousel
         align="start"
-        items={(sellerProducts.length ? sellerProducts : products).map(
-          (product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          )
-        )}
+        items={items.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            className="min-w-[250px] lg:w-[calc(25%-1rem)]"
+          />
+        ))}
       />
     </div>
   )
