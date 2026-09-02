@@ -46,9 +46,7 @@ export const EditProfileForm = () => {
     },
   })
 
-  const sortedLanguages = languages.sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  )
+  const sortedLanguages = [...languages]
 
   const { mutateAsync: updateMe, isPending } = useUpdateMe()
 

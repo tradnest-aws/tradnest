@@ -12,7 +12,8 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Storefront homepage restyle to match Dribbble B2B landing (split hero, stats, category tiles, product grid, dark footer). Redeploy `nginx`.
+- **Current blocker**: Live seller onboarding `POST /vendor/sellers` returns Express HTML 404 until the host runs `./scripts/deploy-ec2-tradnest.sh api` (nginx-only deploys do not load Mercur vendor routes). Seller login locales: Hebrew default, English, Arabic only — redeploy `nginx` after pull.
+- **2026-09-02.** Vendor login: only `he` / `en` / `ar`, default Hebrew, Medusa/Mercur copy removed from those locales. Onboarding 404 on EC2 is an API rebuild, not a missing route in this repo.
 - **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
 
 ## Session — Tradnest B2B storefront

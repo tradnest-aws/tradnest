@@ -204,9 +204,7 @@ export const ThemeToggle = () => {
 export const LanguageToggle = () => {
   const { t, i18n } = useTranslation();
 
-  const sortedLanguages = languages.sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  );
+  const sortedLanguages = [...languages]
 
   const currentLanguage = sortedLanguages.find(
     (lang) => lang.code === i18n.language

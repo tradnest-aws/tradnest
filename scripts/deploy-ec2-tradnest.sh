@@ -447,10 +447,13 @@ case "$ACTION" in
     ;;
   nginx)
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) nginx-only switch"
+    echo "Rebuilds storefront + vendor + nginx. Does not rebuild the Medusa API."
+    echo "Seller onboarding POST /vendor/sellers needs the API target if that route 404s."
     run_remote "$NGINX_REMOTE"
     ;;
   api)
     echo "Instance $INSTANCE_ID ($PUBLIC_IP) API restart + nginx (no storefront rebuild)"
+    echo "Rebuilds @mercurjs/core and restarts Medusa so /vendor/* routes are loaded."
     run_remote "$API_REMOTE"
     ;;
   seed)
