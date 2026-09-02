@@ -20,6 +20,10 @@ export const CustomCarousel = ({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align,
+    direction:
+      typeof document !== "undefined" && document.documentElement.dir === "rtl"
+        ? "rtl"
+        : "ltr",
   })
 
   const [selectedIndex, setSelectedIndex] = useState(0)

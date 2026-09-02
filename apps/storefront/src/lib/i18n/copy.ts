@@ -170,6 +170,7 @@ const en = {
   sellerBody:
     "Open a supplier account, list offers against shared products, set price and stock, and receive quote requests from registered companies. Shipping is limited to Israel.",
   sellerCta: "Open supplier panel",
+  sellerRegisterCta: "Create supplier account",
   sellerHowTitle: "How selling works",
   sellerStep1Title: "Apply as a supplier",
   sellerStep1Body:
@@ -419,6 +420,7 @@ const he: typeof en = {
   sellerBody:
     "פתחו חשבון ספק, פרסמו הצעות מול מוצרים משותפים, קבעו מחיר ומלאי, וקבלו בקשות להצעת מחיר מחברות רשומות. המשלוח לישראל בלבד.",
   sellerCta: "כניסה לפאנל ספקים",
+  sellerRegisterCta: "הרשמה כספק",
   sellerHowTitle: "איך המכירה עובדת",
   sellerStep1Title: "הרשמה כספק",
   sellerStep1Body:

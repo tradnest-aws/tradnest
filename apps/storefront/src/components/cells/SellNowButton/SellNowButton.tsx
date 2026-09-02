@@ -2,13 +2,13 @@
 import { Button } from "@/components/atoms"
 import { ArrowRightIcon } from "@/icons"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path"
+import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path"
 import { useCopy } from "@/lib/i18n/useCopy"
 
 export const SellNowButton = () => {
   const t = useCopy()
   return (
-    <LocalizedClientLink href={JOIN_AS_SELLER_PATH}>
+    <LocalizedClientLink href={SELLER_REGISTER_PATH}>
       <Button className="group !font-bold ps-12 gap-1 flex items-center rounded-2xl">
         {t.becomeSupplier}
         <ArrowRightIcon

@@ -8,6 +8,7 @@ import { CartItemsProducts } from './CartItemsProducts/CartItemsProducts';
 import { ColorFilter } from './ColorFilter/ColorFilter';
 import { ConditionFilter } from './ConditionFilter/ConditionFilter';
 import { HeadingCategories } from './HeadingCategories/HeadingCategories';
+import { HomeSnapRow } from './HomeSnapRow/HomeSnapRow';
 import { LabeledInput } from './LabeledInput/LabeledInput';
 import { MobileNavbar } from './MobileNavbar/MobileNavbar';
 import { Navbar } from './Navbar/Navbar';
@@ -54,6 +55,7 @@ export {
   CartItemsFooter,
   CartItemsProducts,
   HeadingCategories,
+  HomeSnapRow,
   CartDropdown,
   LabeledInput,
   OrderAddresses,

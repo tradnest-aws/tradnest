@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       backgroundColor: {
-        primary: "rgba(var(--bg-primary))",
-        secondary: "rgba(var(--bg-secondary))",
-        tertiary: "rgba(var(--bg-tertiary))",
+        primary: "rgb(var(--bg-primary) / <alpha-value>)",
+        secondary: "rgb(var(--bg-secondary) / <alpha-value>)",
+        tertiary: "rgb(var(--bg-tertiary) / <alpha-value>)",
         disabled: "rgba(var(--bg-disabled))",
         component: {
           DEFAULT: "rgba(var(--bg-component-primary))",

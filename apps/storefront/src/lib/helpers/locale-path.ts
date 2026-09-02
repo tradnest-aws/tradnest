@@ -1,6 +1,11 @@
 import { DEFAULT_STOREFRONT_LOCALE } from "@/lib/i18n/copy"
 
 export const JOIN_AS_SELLER_PATH = "/join-as-seller"
+export const SELLER_LOGIN_PATH = "/seller/login"
+export const SELLER_REGISTER_PATH = "/seller/register"
+
+export const isVendorPanelPath = (path: string) =>
+  path === "/seller" || path.startsWith("/seller/")
 
 export const isDefaultStorefrontLocale = (locale: string) =>
   locale.toLowerCase() === DEFAULT_STOREFRONT_LOCALE.toLowerCase()
@@ -16,7 +21,7 @@ export const localizeHref = (href: string, locale: string): string => {
   }
 
   const path = href.startsWith("/") ? href : `/${href}`
-  if (isDefaultStorefrontLocale(locale)) {
+  if (isVendorPanelPath(path) || isDefaultStorefrontLocale(locale)) {
     return path
   }
 

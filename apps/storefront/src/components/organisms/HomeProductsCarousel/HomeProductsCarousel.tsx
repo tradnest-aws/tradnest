@@ -1,4 +1,4 @@
-import { Carousel } from "@/components/cells"
+import { Carousel, HomeSnapRow } from "@/components/cells"
 import { ProductCard } from "../ProductCard/ProductCard"
 import { listProducts } from "@/lib/data/products"
 import { Product } from "@/types/product"
@@ -31,11 +31,15 @@ export const HomeProductsCarousel = async ({
 
   if (home) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+      <HomeSnapRow desktopClassName="md:grid-cols-2 lg:grid-cols-4">
         {items.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            className="max-md:w-[78vw] max-md:max-w-[320px] max-md:snap-start max-md:shrink-0"
+          />
         ))}
-      </div>
+      </HomeSnapRow>
     )
   }
 

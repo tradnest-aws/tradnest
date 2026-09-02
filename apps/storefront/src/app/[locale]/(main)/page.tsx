@@ -153,7 +153,7 @@ export default async function Home({
         paragraph={t.heroParagraph}
         buttons={[
           { label: t.heroCatalog, path: "/categories" },
-          { label: t.heroSeller, path: "/join-as-seller" },
+          { label: t.heroSeller, path: "/seller/register" },
         ]}
       />
       <HomeStats />

@@ -1,4 +1,5 @@
 import { CategoryCard } from "@/components/organisms"
+import { HomeSnapRow } from "@/components/cells"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { getCopy } from "@/lib/i18n/copy"
 
@@ -32,11 +33,15 @@ export const HomeCategories = async ({
           {t.seeAll}
         </LocalizedClientLink>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+      <HomeSnapRow desktopClassName="md:grid-cols-3 lg:grid-cols-5">
         {categories.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+          <CategoryCard
+            key={category.id}
+            category={category}
+            className="max-md:w-[42vw] max-md:min-w-[148px] max-md:snap-start max-md:shrink-0"
+          />
         ))}
-      </div>
+      </HomeSnapRow>
     </section>
   )
 }

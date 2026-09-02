@@ -1,5 +1,9 @@
 import { Button } from "@/components/atoms"
 import { getCopy } from "@/lib/i18n/copy"
+import {
+  SELLER_LOGIN_PATH,
+  SELLER_REGISTER_PATH,
+} from "@/lib/helpers/locale-path"
 import type { Metadata } from "next"
 
 export async function generateMetadata({
@@ -22,8 +26,6 @@ export default async function SellerLandingPage({
 }) {
   const { locale } = await params
   const t = getCopy(locale)
-  const vendorUrl =
-    process.env.NEXT_PUBLIC_VENDOR_URL || t.vendorFallback
 
   return (
     <main className="storefront-shell py-10" data-testid="seller-landing">
@@ -32,14 +34,25 @@ export default async function SellerLandingPage({
         <h1 className="heading-xl mb-4">{t.sellerPageTitle}</h1>
         <p className="text-lg mb-4">{t.sellerHero}</p>
         <p className="label-md opacity-80 mb-8">{t.sellerBody}</p>
-        <Button
-          href={vendorUrl}
-          size="large"
-          className="rounded-full"
-          data-testid="seller-vendor-cta"
-        >
-          {t.sellerCta}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            href={SELLER_REGISTER_PATH}
+            size="large"
+            className="rounded-full"
+            data-testid="seller-register-cta"
+          >
+            {t.sellerRegisterCta}
+          </Button>
+          <Button
+            href={SELLER_LOGIN_PATH}
+            variant="tonal"
+            size="large"
+            className="rounded-full !bg-transparent border border-current !text-tertiary hover:!bg-tertiary/10"
+            data-testid="seller-vendor-cta"
+          >
+            {t.sellerCta}
+          </Button>
+        </div>
       </section>
       <section className="mt-10">
         <h2 className="heading-lg mb-6">{t.sellerHowTitle}</h2>

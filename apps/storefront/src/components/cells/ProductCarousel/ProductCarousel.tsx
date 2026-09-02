@@ -12,14 +12,16 @@ export const ProductCarousel = ({
   slides: HttpTypes.StoreProduct["images"]
 }) => {
   const screenSize = useScreenSize()
+  const isMobileAxis =
+    screenSize === "xs" || screenSize === "sm" || screenSize === "md"
+  const isRtl =
+    typeof document !== "undefined" && document.documentElement.dir === "rtl"
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    axis:
-      screenSize === "xs" || screenSize === "sm" || screenSize === "md"
-        ? "x"
-        : "y",
+    axis: isMobileAxis ? "x" : "y",
     loop: true,
     align: "start",
+    direction: isRtl ? "rtl" : "ltr",
   })
 
   return (

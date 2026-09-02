@@ -3,7 +3,7 @@
 import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { NavbarSearch } from "@/components/molecules/NavbarSearch/NavbarSearch"
-import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path"
+import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path"
 import { useCopy } from "@/lib/i18n/useCopy"
 
 type HeroProps = {
@@ -35,7 +35,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
                   index === 0
                     ? "inline-flex items-center justify-center rounded-full bg-action text-action-on-primary px-6 py-3 font-semibold hover:bg-action-hover transition-colors"
                     : "inline-flex items-center justify-center rounded-full border border-primary/15 bg-primary px-6 py-3 font-semibold text-primary hover:bg-secondary transition-colors"
-                if (path.startsWith("http")) {
+                if (path.startsWith("http") || path.startsWith("/seller")) {
                   return (
                     <a key={path} href={path} className={className}>
                       {label}
@@ -70,7 +70,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
             <p className="heading-sm text-primary mt-1">{t.statSuppliersValue}</p>
           </div>
           <LocalizedClientLink
-            href={JOIN_AS_SELLER_PATH}
+            href={SELLER_REGISTER_PATH}
             className="absolute end-4 top-8 rounded-full bg-primary px-4 py-2 label-md font-semibold text-primary shadow-[0_8px_24px_rgba(16,24,40,0.12)]"
           >
             {t.becomeSupplier}

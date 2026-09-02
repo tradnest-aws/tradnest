@@ -2,10 +2,13 @@
 
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { ComponentProps } from "react"
+import { AnchorHTMLAttributes, ComponentProps } from "react"
 
 import { DEFAULT_STOREFRONT_LOCALE } from "@/lib/i18n/copy"
-import { localizeHref } from "@/lib/helpers/locale-path"
+import {
+  isVendorPanelPath,
+  localizeHref,
+} from "@/lib/helpers/locale-path"
 
 const LocalizedClientLink = ({
   children,
@@ -17,6 +20,15 @@ const LocalizedClientLink = ({
   const locale =
     (typeof localeParam === "string" ? localeParam : localeParam?.[0]) ||
     DEFAULT_STOREFRONT_LOCALE
+
+  if (href.startsWith("http") || isVendorPanelPath(href)) {
+    const anchorProps = props as AnchorHTMLAttributes<HTMLAnchorElement>
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    )
+  }
 
   return (
     <Link href={localizeHref(href, locale)} {...props}>

@@ -8,7 +8,7 @@ import { MessageButton } from "@/components/molecules/MessageButton/MessageButto
 import { NavbarSearch } from "@/components/molecules/NavbarSearch/NavbarSearch"
 import { listCategories } from "@/lib/data/categories"
 import { retrieveCustomer } from "@/lib/data/customer"
-import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path"
+import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path"
 import { getCopy } from "@/lib/i18n/copy"
 
 export const Header = async ({ locale }: { locale: string }) => {
@@ -24,7 +24,7 @@ export const Header = async ({ locale }: { locale: string }) => {
   }
   return (
     <header
-      className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-primary/8 shadow-[0_1px_0_rgba(16,24,40,0.04)]"
+      className="sticky top-0 z-50 bg-[rgb(var(--bg-primary))]/95 backdrop-blur-md border-b border-primary/8 shadow-[0_1px_0_rgba(16,24,40,0.04)]"
       data-testid="header"
     >
       <div
@@ -53,7 +53,7 @@ export const Header = async ({ locale }: { locale: string }) => {
           data-testid="header-actions"
         >
           <LocalizedClientLink
-            href={JOIN_AS_SELLER_PATH}
+            href={SELLER_REGISTER_PATH}
             className="hidden lg:inline-flex items-center rounded-full border border-primary/15 px-4 py-2 label-md text-primary hover:bg-secondary transition-colors"
           >
             {t.becomeSupplier}
