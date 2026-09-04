@@ -460,11 +460,103 @@ NGINX
   fi
 }
 
+resolve_bun_bin() {
+  local cand
+  for cand in /root/.bun/bin/bun /home/ubuntu/.bun/bin/bun /usr/local/bin/bun "$(command -v bun 2>/dev/null || true)"; do
+    [[ -n "$cand" ]] || continue
+    [[ -x "$cand" && ! -d "$cand" ]] || continue
+    if [[ -L "$cand" && ! -e "$cand" ]]; then
+      continue
+    fi
+    printf '%s\n' "$cand"
+    return 0
+  done
+  echo "Could not find an executable bun binary" >&2
+  return 1
+}
+
+write_api_unit() {
+  local bun_bin api_env
+  bun_bin="$(resolve_bun_bin)"
+  api_env="$DEPLOY_DIR/apps/api/.env"
+  mkdir -p /usr/local/bin
+  ln -sfn "$bun_bin" /usr/local/bin/bun
+  log "Writing tradnest-api.service (bun=$bun_bin)"
+  cat >/etc/systemd/system/tradnest-api.service <<EOF
+[Unit]
+Description=Tradnest Medusa API
+After=network.target postgresql.service redis-server.service redis.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=$DEPLOY_DIR/apps/api
+EnvironmentFile=$api_env
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
+ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh $DEPLOY_DIR
+ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh $DEPLOY_DIR
+ExecStart=$bun_bin run start
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/tradnest-api.log
+StandardError=append:/var/log/tradnest-api.err.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tradnest-api >/dev/null
+}
+
+start_tradnest_api() {
+  systemctl reset-failed tradnest-api 2>/dev/null || true
+  systemctl restart tradnest-api
+}
+
+wait_for_api_health() {
+  local ok=0 i
+  log "Waiting for API /health on :$API_PORT"
+  for i in $(seq 1 40); do
+    if curl -fsS "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1; then
+      ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$ok" -ne 1 ]]; then
+    log "API not healthy — systemctl/journal for tradnest-api"
+    systemctl status tradnest-api --no-pager || true
+    journalctl -u tradnest-api -n 80 --no-pager || true
+    tail -n 80 /var/log/tradnest-api.err.log || true
+    ls -l /usr/local/bin/bun /root/.bun/bin/bun /home/ubuntu/.bun/bin/bun 2>/dev/null || true
+    exit 1
+  fi
+  curl -fsS "http://127.0.0.1:${API_PORT}/health"
+  echo
+}
+
+verify_vendor_sellers_route() {
+  local code body
+  body="$(mktemp)"
+  code="$(curl -sS -o "$body" -w '%{http_code}' \
+    -X POST "http://127.0.0.1:${API_PORT}/vendor/sellers" \
+    -H 'content-type: application/json' \
+    -d '{}' || echo 000)"
+  if [[ "$code" == "000" || "$code" == "404" ]] || grep -qiE 'Cannot POST|Cannot GET|<html' "$body"; then
+    log "POST /vendor/sellers is not served by Medusa (HTTP $code)"
+    head -c 400 "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    exit 1
+  fi
+  log "POST /vendor/sellers reached Mercur (HTTP $code, not Express HTML 404)"
+  rm -f "$body"
+}
+
 write_storefront_unit() {
   local bun_bin
-  bun_bin="$(command -v bun 2>/dev/null || true)"
-  [[ -n "$bun_bin" ]] || bun_bin="/root/.bun/bin/bun"
-  [[ -x "$bun_bin" ]] || bun_bin="/home/ubuntu/.bun/bin/bun"
+  bun_bin="$(resolve_bun_bin)"
   log "Writing tradnest-storefront.service (bun=$bun_bin)"
   cat >/etc/systemd/system/tradnest-storefront.service <<EOF
 [Unit]
@@ -507,9 +599,7 @@ build_vendor_spa() {
 
 write_vendor_unit() {
   local bun_bin
-  bun_bin="$(command -v bun 2>/dev/null || true)"
-  [[ -n "$bun_bin" ]] || bun_bin="/root/.bun/bin/bun"
-  [[ -x "$bun_bin" ]] || bun_bin="/home/ubuntu/.bun/bin/bun"
+  bun_bin="$(resolve_bun_bin)"
   log "Writing tradnest-vendor.service (bun=$bun_bin port=$VENDOR_PORT)"
   cat >/etc/systemd/system/tradnest-vendor.service <<EOF
 [Unit]
@@ -538,19 +628,8 @@ EOF
 health_check() {
   log "Health checks"
   local ok=0 i
-  for i in $(seq 1 30); do
-    if curl -fsS "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1; then
-      ok=1
-      break
-    fi
-    sleep 2
-  done
-  if [[ "$ok" -ne 1 ]]; then
-    log "API not healthy — journalctl -u tradnest-api -n 80"
-    journalctl -u tradnest-api -n 80 --no-pager || true
-    tail -n 80 /var/log/tradnest-api.err.log || true
-    exit 1
-  fi
+  wait_for_api_health
+  verify_vendor_sellers_route
   ok=0
   for i in $(seq 1 20); do
     if curl -fsS -o /dev/null "http://127.0.0.1:${STORE_PORT}/" 2>/dev/null; then
@@ -602,15 +681,14 @@ if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   ensure_product_id_columns
   build_mercur_core
   ensure_http_session_cookies
-  log "Restart API so /auth/session can Set-Cookie on HTTP"
-  systemctl restart tradnest-api || true
-  sleep 8
+  write_api_unit
+  start_tradnest_api
+  wait_for_api_health
+  verify_vendor_sellers_route
   install_nginx_vhost
   verify_admin_session_cookie
   verify_admin_products
   verify_store_products
-  curl -fsS "http://127.0.0.1:${API_PORT}/health"
-  echo
   log "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
   exit 0
 fi
@@ -620,9 +698,9 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   ensure_product_id_columns
   build_mercur_core
   ensure_http_session_cookies
-  log "Restart API so HTTP session cookies / admin.disable from this tree are loaded"
-  systemctl restart tradnest-api || true
-  sleep 8
+  write_api_unit
+  start_tradnest_api
+  wait_for_api_health
   ensure_storefront_publishable_key
   build_vendor_spa
   write_vendor_unit
@@ -642,9 +720,9 @@ if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
   ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
   ensure_product_id_columns
   ensure_http_session_cookies
-  log "Restart API so session cookies work on HTTP /app"
-  systemctl restart tradnest-api || true
-  sleep 8
+  write_api_unit
+  start_tradnest_api
+  wait_for_api_health
   verify_admin_session_cookie
   verify_admin_products
   log "Seeding Israel / Hebrew demo catalog"
@@ -725,32 +803,7 @@ bunx medusa db:migrate --skip-links
 bunx medusa db:sync-links --execute-safe
 ensure_product_id_columns
 
-BUN_BIN="$(command -v bun)"
-log "Writing systemd units (bun=$BUN_BIN)"
-cat >/etc/systemd/system/tradnest-api.service <<EOF
-[Unit]
-Description=Tradnest Medusa API
-After=network.target postgresql.service redis-server.service redis.service
-Wants=postgresql.service
-
-[Service]
-Type=simple
-WorkingDirectory=$DEPLOY_DIR/apps/api
-EnvironmentFile=$API_ENV
-Environment=NODE_ENV=production
-ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh $DEPLOY_DIR
-ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh $DEPLOY_DIR
-ExecStart=$BUN_BIN run start
-Restart=on-failure
-RestartSec=5
-StandardOutput=append:/var/log/tradnest-api.log
-StandardError=append:/var/log/tradnest-api.err.log
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-ln -sfn "$BUN_BIN" /usr/local/bin/bun 2>/dev/null || true
+write_api_unit
 
 log "Stopping processes on :$API_PORT and :$STORE_PORT (old Medusa/Next)"
 for port in "$API_PORT" "$STORE_PORT"; do
@@ -775,9 +828,7 @@ if command -v pm2 >/dev/null; then
   pm2 stop all 2>/dev/null || true
 fi
 
-systemctl daemon-reload
-systemctl enable tradnest-api
-systemctl restart tradnest-api
+start_tradnest_api
 sleep 5
 write_storefront_unit
 write_vendor_unit

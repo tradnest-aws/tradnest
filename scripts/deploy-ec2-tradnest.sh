@@ -300,9 +300,15 @@ if ! command -v bun >/dev/null; then
   log "Installing bun"
   curl -fsSL https://bun.sh/install | bash
   export PATH="\$HOME/.bun/bin:/root/.bun/bin:\$PATH"
-  ln -sfn "\$HOME/.bun/bin/bun" /usr/local/bin/bun 2>/dev/null || ln -sfn /root/.bun/bin/bun /usr/local/bin/bun
 fi
-export PATH="/usr/local/bin:\$HOME/.bun/bin:/root/.bun/bin:\$PATH"
+export PATH="\$HOME/.bun/bin:/root/.bun/bin:/usr/local/bin:\$PATH"
+# systemd ExecStart often points at /usr/local/bin/bun (203/EXEC if missing/dangling)
+mkdir -p /usr/local/bin
+if [ -x /root/.bun/bin/bun ]; then
+  ln -sfn /root/.bun/bin/bun /usr/local/bin/bun
+elif [ -x "\$HOME/.bun/bin/bun" ]; then
+  ln -sfn "\$HOME/.bun/bin/bun" /usr/local/bin/bun
+fi
 
 mkdir -p "\$DEPLOY_DIR"
 if [ -d "\$DEPLOY_DIR/.git" ]; then

@@ -12,7 +12,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard startup path**: `bun install && bun run dev`
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
-- **Current blocker**: Redeploy storefront with `nginx` so join-as-seller register CTAs and mobile header/carousels go live. Seller onboarding `POST /vendor/sellers` still needs `./scripts/deploy-ec2-tradnest.sh api` if that route 404s.
+- **Current blocker**: Live `tradnest-api` crash-loops with systemd `203/EXEC` (`ExecStart=/usr/local/bin/bun` missing/dangling). Cutover now rewrites the API unit to a real bun binary. Redeploy with `./scripts/deploy-ec2-tradnest.sh api`. Until `/health` is `OK`, the storefront error page and `/vendor/sellers` 404s remain.
 - **2026-09-02.** `/join-as-seller` register CTA → `/seller/register`; “להצטרף כספק” links open the vendor register form. Mobile: portal menu with solid background; home category/product rows snap-scroll on phone.
 - **2026-09-02.** Vendor login: only `he` / `en` / `ar`, default Hebrew, Medusa/Mercur copy removed from those locales. Onboarding 404 on EC2 is an API rebuild, not a missing route in this repo.
 - **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
