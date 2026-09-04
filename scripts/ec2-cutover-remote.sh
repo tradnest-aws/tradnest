@@ -476,29 +476,33 @@ resolve_bun_bin() {
 }
 
 write_api_unit() {
-  local bun_bin api_env
+  local bun_bin api_env start_sh
   bun_bin="$(resolve_bun_bin)"
   api_env="$DEPLOY_DIR/apps/api/.env"
+  start_sh="$DEPLOY_DIR/scripts/tradnest-api-start.sh"
+  chmod +x "$start_sh" "$DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh" \
+    "$DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh"
   mkdir -p /usr/local/bin
   ln -sfn "$bun_bin" /usr/local/bin/bun
-  log "Writing tradnest-api.service (bun=$bun_bin)"
+  log "Writing tradnest-api.service (bun=$bun_bin start=$start_sh)"
   cat >/etc/systemd/system/tradnest-api.service <<EOF
 [Unit]
 Description=Tradnest Medusa API
 After=network.target postgresql.service redis-server.service redis.service
 Wants=postgresql.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 WorkingDirectory=$DEPLOY_DIR/apps/api
 EnvironmentFile=$api_env
-Environment=NODE_ENV=production
 Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
+Environment=TRADNEST_DEPLOY_DIR=$DEPLOY_DIR
 ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-session-cookie.sh $DEPLOY_DIR
 ExecStartPre=/bin/bash $DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh $DEPLOY_DIR
-ExecStart=$bun_bin run start
+ExecStart=/bin/bash $start_sh
 Restart=on-failure
-RestartSec=5
+RestartSec=8
 StandardOutput=append:/var/log/tradnest-api.log
 StandardError=append:/var/log/tradnest-api.err.log
 
@@ -517,7 +521,7 @@ start_tradnest_api() {
 wait_for_api_health() {
   local ok=0 i
   log "Waiting for API /health on :$API_PORT"
-  for i in $(seq 1 40); do
+  for i in $(seq 1 90); do
     if curl -fsS "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1; then
       ok=1
       break
@@ -525,11 +529,15 @@ wait_for_api_health() {
     sleep 2
   done
   if [[ "$ok" -ne 1 ]]; then
-    log "API not healthy — systemctl/journal for tradnest-api"
+    log "API not healthy — systemctl/journal + app logs"
     systemctl status tradnest-api --no-pager || true
     journalctl -u tradnest-api -n 80 --no-pager || true
+    log "--- /var/log/tradnest-api.log ---"
+    tail -n 120 /var/log/tradnest-api.log || true
+    log "--- /var/log/tradnest-api.err.log ---"
     tail -n 80 /var/log/tradnest-api.err.log || true
-    ls -l /usr/local/bin/bun /root/.bun/bin/bun /home/ubuntu/.bun/bin/bun 2>/dev/null || true
+    ls -l "$DEPLOY_DIR/apps/api/.medusa/server/public/admin/index.html" 2>/dev/null || \
+      log "no production admin index.html (medusa start needs medusa build)"
     exit 1
   fi
   curl -fsS "http://127.0.0.1:${API_PORT}/health"

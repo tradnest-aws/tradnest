@@ -29,6 +29,15 @@ module.exports = withMercur({
   },
   admin: {
     disable: false,
+    // nginx fronts a public host; Vite's default localhost-only allowlist
+    // blocks /app when the API runs `medusa develop` on this box.
+    vite: (config: { server?: Record<string, unknown> }) => ({
+      ...config,
+      server: {
+        ...config.server,
+        allowedHosts: true,
+      },
+    }),
   },
   featureFlags: {
     seller_registration: true
