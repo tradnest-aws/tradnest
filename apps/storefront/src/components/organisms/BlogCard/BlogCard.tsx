@@ -2,7 +2,6 @@ import Image from "next/image"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { BlogPost } from "@/types/blog"
 import { ArrowRightIcon } from "@/icons"
-import tailwindConfig from "../../../../tailwind.config"
 import { cn } from "@/lib/utils"
 
 interface BlogCardProps {
@@ -30,14 +29,14 @@ export function BlogCard({ post, index }: BlogCardProps) {
           className="object-cover max-h-[472px] h-full w-full"
         />
       </div>
-      <div className="p-4 bg-tertiary text-tertiary absolute bottom-0 left-1 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-b-xs w-[calc(100%-8px)]">
+      <div className="p-4 bg-[rgb(var(--bg-tertiary))] text-white absolute bottom-0 left-1 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-b-xs w-[calc(100%-8px)]">
         <h3 className="heading-sm">{post.title}</h3>
         <p className="text-md line-clamp-2">{post.excerpt}</p>
         <div className="flex items-center gap-4 uppercase label-md mt-[26px]">
           Read more{" "}
           <ArrowRightIcon
             size={20}
-            color={tailwindConfig.theme.extend.colors.tertiary}
+            color="rgb(255, 255, 255)"
           />
         </div>
       </div>

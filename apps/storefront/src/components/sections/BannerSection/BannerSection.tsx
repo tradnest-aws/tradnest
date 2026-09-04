@@ -10,7 +10,7 @@ export const BannerSection = () => {
 
   return (
     <section className="storefront-shell" data-testid="supplier-banner">
-      <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch overflow-hidden rounded-[32px] bg-tertiary text-tertiary">
+      <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch overflow-hidden rounded-[32px] bg-[rgb(var(--bg-tertiary))] text-white">
         <div className="py-10 px-6 lg:p-12 flex flex-col h-full justify-between gap-8">
           <div>
             <span className="text-sm inline-block px-4 py-1 rounded-full mb-4 bg-primary/10">

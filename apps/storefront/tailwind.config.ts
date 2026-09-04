@@ -69,40 +69,43 @@ export default {
           },
         },
       },
-      colors: {
-        primary: "rgba(var(--content-primary))",
-        secondary: "rgba(var(--content-secondary))",
-        tertiary: "rgba(var(--content-tertiary))",
-        disabled: "rgba(var(--content-disabled))",
+      // Content tokens live in textColor only. Putting them in `colors`
+      // also generated bg-* utilities, so bg-tertiary (navy) and
+      // text-tertiary (intended white) could resolve to the same paint.
+      textColor: {
+        primary: "rgb(var(--content-primary) / <alpha-value>)",
+        secondary: "rgb(var(--content-secondary) / <alpha-value>)",
+        tertiary: "rgb(var(--content-tertiary) / <alpha-value>)",
+        disabled: "rgb(var(--content-disabled) / <alpha-value>)",
         action: {
-          DEFAULT: "rgba(var(--content-action-primary))",
-          hover: "rgba(var(--content-action-primary-hover))",
-          pressed: "rgba(var(--content-action-primary-pressed))",
+          DEFAULT: "rgb(var(--content-action-primary) / <alpha-value>)",
+          hover: "rgb(var(--content-action-primary-hover) / <alpha-value>)",
+          pressed: "rgb(var(--content-action-primary-pressed) / <alpha-value>)",
           on: {
-            primary: "rgba(var(--content-action-on-primary))",
-            secondary: "rgba(var(--content-action-on-secondary))",
-            tertiary: "rgba(var(--content-action-on-tertiary))",
+            primary: "rgb(var(--content-action-on-primary) / <alpha-value>)",
+            secondary: "rgb(var(--content-action-on-secondary) / <alpha-value>)",
+            tertiary: "rgb(var(--content-action-on-tertiary) / <alpha-value>)",
           },
         },
         positive: {
-          DEFAULT: "rgba(var(--content-positive-primary))",
+          DEFAULT: "rgb(var(--content-positive-primary) / <alpha-value>)",
           on: {
-            primary: "rgba(var(--content-positive-on-primary))",
-            secondary: "rgba(var(--content-positive-on-secondary))",
+            primary: "rgb(var(--content-positive-on-primary) / <alpha-value>)",
+            secondary: "rgb(var(--content-positive-on-secondary) / <alpha-value>)",
           },
         },
         negative: {
-          DEFAULT: "rgba(var(--content-negative-primary))",
+          DEFAULT: "rgb(var(--content-negative-primary) / <alpha-value>)",
           on: {
-            primary: "rgba(var(--content-negative-on-primary))",
-            secondary: "rgba(var(--content-negative-on-secondary))",
+            primary: "rgb(var(--content-negative-on-primary) / <alpha-value>)",
+            secondary: "rgb(var(--content-negative-on-secondary) / <alpha-value>)",
           },
         },
         warning: {
-          DEFAULT: "rgba(var(--content-warning-primary))",
+          DEFAULT: "rgb(var(--content-warning-primary) / <alpha-value>)",
           on: {
-            primary: "rgba(var(--content-warning-on-primary))",
-            secondary: "rgba(var(--content-warning-on-secondary))",
+            primary: "rgb(var(--content-warning-on-primary) / <alpha-value>)",
+            secondary: "rgb(var(--content-warning-on-secondary) / <alpha-value>)",
           },
         },
       },
@@ -132,9 +135,10 @@ export default {
         full: "1000px",
       },
       fill: {
-        primary: "rgba(var(--content-action-on-primary))",
-        secondary: "rgba(var(--content-action-on-secondary))",
-        disabled: "rgba(var(--content-disabled))",
+        primary: "rgb(var(--content-action-on-primary) / <alpha-value>)",
+        secondary: "rgb(var(--content-action-on-secondary) / <alpha-value>)",
+        tertiary: "rgb(var(--content-tertiary) / <alpha-value>)",
+        disabled: "rgb(var(--content-disabled) / <alpha-value>)",
       },
     },
   },

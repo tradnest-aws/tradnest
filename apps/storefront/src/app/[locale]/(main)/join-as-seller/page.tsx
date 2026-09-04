@@ -29,11 +29,11 @@ export default async function SellerLandingPage({
 
   return (
     <main className="storefront-shell py-10" data-testid="seller-landing">
-      <section className="rounded-[32px] bg-tertiary text-tertiary p-8 md:p-12 max-w-4xl">
-        <p className="label-sm mb-3">{t.bannerKicker}</p>
-        <h1 className="heading-xl mb-4">{t.sellerPageTitle}</h1>
-        <p className="text-lg mb-4">{t.sellerHero}</p>
-        <p className="label-md opacity-80 mb-8">{t.sellerBody}</p>
+      <section className="rounded-[32px] bg-[rgb(var(--bg-tertiary))] text-white p-8 md:p-12 max-w-4xl">
+        <p className="label-sm mb-3 text-white/80">{t.bannerKicker}</p>
+        <h1 className="heading-xl mb-4 text-white">{t.sellerPageTitle}</h1>
+        <p className="text-lg mb-4 text-white">{t.sellerHero}</p>
+        <p className="label-md text-white/80 mb-8">{t.sellerBody}</p>
         <div className="flex flex-wrap gap-3">
           <Button
             href={SELLER_REGISTER_PATH}
@@ -47,7 +47,7 @@ export default async function SellerLandingPage({
             href={SELLER_LOGIN_PATH}
             variant="tonal"
             size="large"
-            className="rounded-full !bg-transparent border border-current !text-tertiary hover:!bg-tertiary/10"
+            className="rounded-full !bg-transparent border border-white/40 !text-white hover:!bg-white/10"
             data-testid="seller-vendor-cta"
           >
             {t.sellerCta}

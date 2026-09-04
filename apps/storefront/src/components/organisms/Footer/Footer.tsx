@@ -9,22 +9,28 @@ export function Footer() {
   const t = useCopy()
 
   return (
-    <footer className="bg-tertiary text-tertiary mt-12" data-testid="footer">
+    <footer
+      className="mt-12 bg-[rgb(var(--bg-tertiary))] text-white"
+      data-testid="footer"
+    >
       <div className="storefront-shell grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 py-12">
         <div>
-          <div className="mb-4">
-            <TradnestLogo height={36} />
+          <div className="mb-4 flex items-center gap-3">
+            <TradnestLogo markOnly height={36} />
+            <span className="heading-sm font-bold tracking-tight text-white">
+              Tradnest
+            </span>
           </div>
-          <p className="label-md text-tertiary/70 max-w-xs">{t.homeDescription}</p>
+          <p className="label-md text-white/80 max-w-xs">{t.homeDescription}</p>
         </div>
         <div data-testid="footer-customer-services">
-          <h2 className="heading-sm mb-4">{t.buyerServices}</h2>
+          <h2 className="heading-sm mb-4 text-white">{t.buyerServices}</h2>
           <nav className="space-y-3" aria-label={t.customerServicesNav}>
             {footerLinks.customerServices.map(({ key, path }) => (
               <LocalizedClientLink
                 key={key}
                 href={path}
-                className="block label-md text-tertiary/80 hover:text-tertiary"
+                className="block label-md text-white/90 hover:text-white"
                 data-testid={`footer-link-${key}`}
               >
                 {t[key]}
@@ -33,13 +39,13 @@ export function Footer() {
           </nav>
         </div>
         <div data-testid="footer-about">
-          <h2 className="heading-sm mb-4">{t.about}</h2>
+          <h2 className="heading-sm mb-4 text-white">{t.about}</h2>
           <nav className="space-y-3" aria-label={t.aboutNav}>
             {footerLinks.about.map(({ key, path }) => (
               <LocalizedClientLink
                 key={key}
                 href={path}
-                className="block label-md text-tertiary/80 hover:text-tertiary"
+                className="block label-md text-white/90 hover:text-white"
                 data-testid={`footer-link-${key}`}
               >
                 {t[key]}
@@ -48,7 +54,7 @@ export function Footer() {
           </nav>
         </div>
         <div data-testid="footer-connect">
-          <h2 className="heading-sm mb-4">{t.connect}</h2>
+          <h2 className="heading-sm mb-4 text-white">{t.connect}</h2>
           <nav className="space-y-3" aria-label={t.socialNav}>
             {footerLinks.connect.map(({ label, path }) => (
               <a
@@ -56,7 +62,7 @@ export function Footer() {
                 title={t.goToSocial(label)}
                 key={label}
                 href={path}
-                className="block label-md text-tertiary/80 hover:text-tertiary"
+                className="block label-md text-white/90 hover:text-white"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -68,10 +74,10 @@ export function Footer() {
         </div>
       </div>
       <div
-        className="storefront-shell border-t border-tertiary/15 py-6"
+        className="storefront-shell border-t border-white/15 py-6"
         data-testid="footer-copyright"
       >
-        <p className="text-md text-tertiary/60 text-center">{t.copyright}</p>
+        <p className="text-md text-white/70 text-center">{t.copyright}</p>
       </div>
     </footer>
   )
