@@ -10,7 +10,7 @@ STORE_PORT="${TRADNEST_STORE_PORT:-3000}"
 VENDOR_PORT="${TRADNEST_VENDOR_PORT:-7001}"
 export PATH="/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:${PATH}"
 
-log() { echo "[cutover $(date +'%H:%M:%S')] $*"; }
+log() { echo "[cutover $(date +'%H:%M:%S')] $*" >&2; }
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "Run as root (sudo)" >&2
@@ -43,11 +43,27 @@ upsert() {
   local file="$1" key="$2" val="$3"
   mkdir -p "$(dirname "$file")"
   touch "$file"
-  if grep -q "^${key}=" "$file"; then
-    sed -i "s|^${key}=.*|${key}=${val}|" "$file"
-  else
-    printf '%s=%s\n' "$key" "$val" >>"$file"
-  fi
+  python3 - "$file" "$key" "$val" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+key = sys.argv[2]
+val = sys.argv[3]
+prefix = f"{key}="
+lines = path.read_text().splitlines() if path.exists() else []
+found = False
+out = []
+for line in lines:
+    if line.startswith(prefix):
+        out.append(f"{key}={val}")
+        found = True
+    else:
+        out.append(line)
+if not found:
+    out.append(f"{key}={val}")
+path.write_text("\n".join(out) + "\n")
+PY
 }
 
 ensure_http_session_cookies() {
@@ -258,12 +274,12 @@ create_publishable_key() {
     return 1
   }
   echo "$out" >&2
-  key="$(printf '%s\n' "$out" | sed -n 's/.*TRADNEST_PUBLISHABLE_KEY=//p' | tail -1 | tr -d '[:space:]')"
+  key="$(printf '%s\n' "$out" | awk -F= '/^TRADNEST_PUBLISHABLE_KEY=/{print $2}' | tail -1 | tr -d '\r[:space:]')"
   if [[ "$key" != pk_* ]]; then
     echo "ensure-publishable-key.ts did not print a pk_ token" >&2
     return 1
   fi
-  echo "$key"
+  printf '%s\n' "$key"
 }
 
 ensure_storefront_publishable_key() {
