@@ -7,13 +7,10 @@ export default function AvatarBox({ checked }: { checked?: boolean }) {
   const fallbackLetter = config.name?.charAt(0)?.toUpperCase() ?? "T";
 
   return (
-    <IconAvatar
-      size="xlarge"
-      className="bg-ui-button-neutral shadow-buttons-neutral after:button-neutral-gradient relative mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-xl after:inset-0 after:content-['']"
-    >
+    <div className="relative mb-4 w-fit">
       {checked && (
         <motion.div
-          className="absolute -right-[5px] -top-1 flex size-5 items-center justify-center rounded-full border-[0.5px] border-[rgba(3,7,18,0.2)] bg-[#3B82F6] bg-gradient-to-b from-white/0 to-white/20 shadow-[0px_1px_2px_0px_rgba(3,7,18,0.12),0px_1px_2px_0px_rgba(255,255,255,0.10)_inset,0px_-1px_5px_0px_rgba(255,255,255,0.10)_inset,0px_0px_0px_0px_rgba(3,7,18,0.06)_inset]"
+          className="absolute -right-[5px] -top-1 z-10 flex size-5 items-center justify-center rounded-full border-[0.5px] border-[rgba(3,7,18,0.2)] bg-[#3B82F6] bg-gradient-to-b from-white/0 to-white/20 shadow-[0px_1px_2px_0px_rgba(3,7,18,0.12),0px_1px_2px_0px_rgba(255,255,255,0.10)_inset,0px_-1px_5px_0px_rgba(255,255,255,0.10)_inset,0px_0px_0px_0px_rgba(3,7,18,0.06)_inset]"
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -51,30 +48,35 @@ export default function AvatarBox({ checked }: { checked?: boolean }) {
         <img
           src={config.logo}
           alt={config.name ?? ""}
-          className="h-full w-full rounded-[10px] object-cover"
+          className="size-12 bg-transparent object-contain"
         />
       ) : (
-        <svg
-          className="rounded-[10px]"
-          viewBox="0 0 400 400"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+        <IconAvatar
+          size="xlarge"
+          className="bg-ui-button-neutral shadow-buttons-neutral after:button-neutral-gradient relative flex h-[50px] w-[50px] items-center justify-center rounded-xl after:inset-0 after:content-['']"
         >
-          <rect width="400" height="400" rx="40" fill="#18181B" />
-          <text
-            x="200"
-            y="200"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="white"
-            fontSize="200"
-            fontWeight="bold"
-            fontFamily="Inter, system-ui, sans-serif"
+          <svg
+            className="rounded-[10px]"
+            viewBox="0 0 400 400"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {fallbackLetter}
-          </text>
-        </svg>
+            <rect width="400" height="400" rx="40" fill="#18181B" />
+            <text
+              x="200"
+              y="200"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="white"
+              fontSize="200"
+              fontWeight="bold"
+              fontFamily="Inter, system-ui, sans-serif"
+            >
+              {fallbackLetter}
+            </text>
+          </svg>
+        </IconAvatar>
       )}
-    </IconAvatar>
+    </div>
   );
 }
