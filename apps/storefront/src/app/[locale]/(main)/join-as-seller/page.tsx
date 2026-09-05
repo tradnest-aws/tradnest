@@ -38,7 +38,7 @@ export default async function SellerLandingPage({
           <Button
             href={SELLER_REGISTER_PATH}
             size="large"
-            className="rounded-full"
+            className="rounded-full !text-white"
             data-testid="seller-register-cta"
           >
             {t.sellerRegisterCta}

@@ -25,7 +25,7 @@ export function Button({
     "text-md button-text rounded-sm disabled:bg-disabled disabled:text-disabled dark:bg-action-tertiary dark:hover:bg-action-tertiary-hover dark:active:bg-action-tertiary-pressed dark:disabled:bg-disabled"
 
   const variantClasses = {
-    filled: `bg-action text-action-on-primary hover:bg-action-hover active:bg-action-pressed ${
+    filled: `bg-action !text-white hover:bg-action-hover active:bg-action-pressed ${
       loading && "button-text-filled"
     }`,
     tonal:

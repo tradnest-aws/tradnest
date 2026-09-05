@@ -82,7 +82,7 @@ export default {
           hover: "rgb(var(--content-action-primary-hover) / <alpha-value>)",
           pressed: "rgb(var(--content-action-primary-pressed) / <alpha-value>)",
           on: {
-            primary: "rgb(var(--content-action-on-primary) / <alpha-value>)",
+            primary: "#ffffff",
             secondary: "rgb(var(--content-action-on-secondary) / <alpha-value>)",
             tertiary: "rgb(var(--content-action-on-tertiary) / <alpha-value>)",
           },
@@ -135,7 +135,7 @@ export default {
         full: "1000px",
       },
       fill: {
-        primary: "rgb(var(--content-action-on-primary) / <alpha-value>)",
+        primary: "#ffffff",
         secondary: "rgb(var(--content-action-on-secondary) / <alpha-value>)",
         tertiary: "rgb(var(--content-tertiary) / <alpha-value>)",
         disabled: "rgb(var(--content-disabled) / <alpha-value>)",

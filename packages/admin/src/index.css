@@ -12,8 +12,13 @@
   --fg-interactive: var(--brand-navy);
   --fg-interactive-hover: var(--brand-gold);
   --border-interactive: var(--brand-gold);
+  --button-inverted: var(--brand-navy);
+  --button-inverted-hover: var(--brand-navy-soft);
+  --button-inverted-pressed: var(--brand-navy-soft);
   --button-inverted-bg: var(--brand-navy);
   --button-inverted-bg-hover: var(--brand-navy-soft);
+  --contrast-fg-primary: #ffffff;
+  --fg-on-inverted: #ffffff;
   --bg-subtle: var(--brand-canvas);
 }
 

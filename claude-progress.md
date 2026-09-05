@@ -13,7 +13,7 @@ session detail aggressively. The per-spec source of truth lives in
 - **Standard verification path**: `bun run build`, `bun run lint` (oxlint),
   `bun run test:integration:http -- <pattern>`
 - **Current blocker**: `tradnest-api` bun path is fixed; `medusa start` still exits 1 under `NODE_ENV=production` because there is no `.medusa/server` admin build. Cutover now starts `medusa develop` until a production build exists. Redeploy `./scripts/deploy-ec2-tradnest.sh api`. On the box, `tail -n 80 /var/log/tradnest-api.log` has the real Medusa error (not the bun `exited with code 1` line).
-- **2026-09-05.** Tradnest `tradnest-icon.png` / `tradnest-logo.png` / `favicon.png` had an opaque cream backing; knocked out to transparency (kept the white trefoil on the navy mark). Login avatar no longer sits in a white rounded tile.
+- **2026-09-05.** Navy CTA buttons inherited body gray/navy because `text-action-on-primary` used invalid `rgb(r, g, b / a)`. Filled/action buttons now use `#ffffff`. Vendor/admin inverted buttons set `--contrast-fg-primary` to white.
 - **2026-09-02.** Vendor login: only `he` / `en` / `ar`, default Hebrew, Medusa/Mercur copy removed from those locales. Onboarding 404 on EC2 is an API rebuild, not a missing route in this repo.
 - **2026-09-01.** Storefront: Tradnest favicon; public URLs without `/il`; `/join-as-seller` marketing page (vendor stays `/seller`); hide prices until login; add-to-cart no longer blocked by “לא מוצג לאזור שלכם”; RTL Hebrew B2B restyle. `bun run lint` and `@mercurjs/storefront` build passed.
 

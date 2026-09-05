@@ -33,7 +33,7 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
               {buttons.map(({ label, path }, index) => {
                 const className =
                   index === 0
-                    ? "inline-flex items-center justify-center rounded-full bg-action text-action-on-primary px-6 py-3 font-semibold hover:bg-action-hover transition-colors"
+                    ? "inline-flex items-center justify-center rounded-full bg-action text-white px-6 py-3 font-semibold hover:bg-action-hover transition-colors"
                     : "inline-flex items-center justify-center rounded-full border border-primary/15 bg-primary px-6 py-3 font-semibold text-primary hover:bg-secondary transition-colors"
                 if (path.startsWith("http") || path.startsWith("/seller")) {
                   return (

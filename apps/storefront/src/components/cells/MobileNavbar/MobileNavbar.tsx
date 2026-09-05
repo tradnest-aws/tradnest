@@ -84,7 +84,7 @@ export const MobileNavbar = ({
               <LocalizedClientLink
                 href={SELLER_REGISTER_PATH}
                 onClick={closeMenuHandler}
-                className="inline-flex items-center justify-center rounded-full bg-action px-4 py-3 label-md font-semibold text-action-on-primary"
+                className="inline-flex items-center justify-center rounded-full bg-action px-4 py-3 label-md font-semibold text-white"
               >
                 {t.becomeSupplier}
               </LocalizedClientLink>

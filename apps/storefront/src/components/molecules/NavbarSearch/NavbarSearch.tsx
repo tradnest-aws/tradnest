@@ -51,7 +51,7 @@ export const NavbarSearch = ({ className, variant = "default" }: Props) => {
         />
         <button
           type="submit"
-          className="m-1 inline-flex items-center gap-2 rounded-full bg-action px-5 py-3 font-semibold text-action-on-primary hover:bg-action-hover"
+          className="m-1 inline-flex items-center gap-2 rounded-full bg-action px-5 py-3 font-semibold text-white hover:bg-action-hover"
         >
           <SearchIcon size={18} color="#ffffff" />
           <span>{t.heroSearchCta}</span>

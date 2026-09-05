@@ -30,7 +30,7 @@ export function HowProcurementWorksSection() {
         </div>
         <LocalizedClientLink
           href="/register"
-          className="inline-flex items-center mt-8 rounded-full bg-action text-action-on-primary px-6 py-3 font-semibold hover:bg-action-hover"
+          className="inline-flex items-center mt-8 rounded-full bg-action text-white px-6 py-3 font-semibold hover:bg-action-hover"
           data-testid="how-procurement-register-link"
         >
           {t.howRegister}

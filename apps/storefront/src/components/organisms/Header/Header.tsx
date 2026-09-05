@@ -61,7 +61,7 @@ export const Header = async ({ locale }: { locale: string }) => {
           {!isLoggedIn && (
             <LocalizedClientLink
               href="/login"
-              className="hidden sm:inline-flex items-center rounded-full bg-action text-action-on-primary px-4 py-2 label-md font-semibold hover:bg-action-hover transition-colors"
+              className="hidden sm:inline-flex items-center rounded-full bg-action text-white px-4 py-2 label-md font-semibold hover:bg-action-hover transition-colors"
             >
               {t.login}
             </LocalizedClientLink>

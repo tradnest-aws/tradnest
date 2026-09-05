@@ -75,7 +75,7 @@ export const ProductCard = ({
           aria-label={t.seeMoreAbout(productName)}
           title={t.seeMoreAbout(productName)}
         >
-          <Button className="absolute rounded-full bg-action text-action-on-primary h-auto lg:h-[44px] lg:group-hover:block hidden w-[calc(100%-1rem)] mx-2 bottom-2 z-10" data-testid="product-card-see-more-button">
+          <Button className="absolute rounded-full bg-action !text-white h-auto lg:h-[44px] lg:group-hover:block hidden w-[calc(100%-1rem)] mx-2 bottom-2 z-10" data-testid="product-card-see-more-button">
             {t.seeMore}
           </Button>
         </LocalizedClientLink>

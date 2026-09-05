@@ -77,9 +77,19 @@
 
 .button-filled {
   @apply bg-action hover:bg-action-hover active:bg-action-pressed disabled:bg-disabled;
+  color: #ffffff;
 }
 .button-filled svg path {
-  @apply fill-primary;
+  fill: #ffffff;
+}
+
+a.bg-action,
+button.bg-action {
+  color: #ffffff;
+}
+a.bg-action svg path,
+button.bg-action svg path {
+  fill: #ffffff;
 }
 
 .button-tonal {
