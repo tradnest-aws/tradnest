@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 
 import { IconAvatar } from "../icon-avatar";
+import { assetUrl } from "../../../utils/asset-url";
 import config from "virtual:mercur/config";
 
 export default function AvatarBox({ checked }: { checked?: boolean }) {
@@ -46,7 +47,7 @@ export default function AvatarBox({ checked }: { checked?: boolean }) {
       )}
       {config.logo ? (
         <img
-          src={config.logo}
+          src={assetUrl(config.logo)}
           alt={config.name ?? ""}
           className="size-12 bg-transparent object-contain"
         />
