@@ -1,12 +1,10 @@
 import { Children, ReactNode, useState } from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Spinner } from "@medusajs/icons"
 import { Button, Heading, Hint, Input, Text } from "@medusajs/ui"
-import { MercurFeatureFlags } from "@mercurjs/types"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Navigate, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import config from "virtual:mercur/config"
 import * as z from "zod"
 
@@ -14,7 +12,7 @@ import { Form } from "@components/common/form"
 import AvatarBox from "@components/common/logo-box/avatar-box"
 import { AuthLayout } from "@components/layout/auth-layout"
 import { AuthSwitchLink, AuthSwitchStack } from "@components/layout/auth-layout/auth-switch-link"
-import { useFeatureFlags, useSignUpWithEmailPass } from "@hooks/api"
+import { useSignUpWithEmailPass } from "@hooks/api"
 
 import { RegisterSchema } from "./register-schema"
 
@@ -161,20 +159,6 @@ const RegisterFooter = () => {
 }
 
 const Root = ({ children }: { children?: ReactNode }) => {
-  const { feature_flags, isLoading } = useFeatureFlags()
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="text-ui-fg-interactive animate-spin" />
-      </div>
-    )
-  }
-
-  if (!feature_flags?.[MercurFeatureFlags.SELLER_REGISTRATION]) {
-    return <Navigate to="/login" replace />
-  }
-
   return (
     <AuthLayout>
       {Children.count(children) > 0 ? (
