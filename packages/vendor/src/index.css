@@ -16,3 +16,27 @@
   --button-inverted-bg-hover: var(--brand-navy-soft);
   --bg-subtle: var(--brand-canvas);
 }
+
+.dark {
+  --fg-interactive: var(--brand-gold);
+  --fg-interactive-hover: #e8c36a;
+}
+
+.auth-switch-copy {
+  color: var(--brand-navy);
+}
+
+.dark .auth-switch-copy {
+  color: var(--brand-canvas);
+}
+
+.auth-switch-copy a {
+  color: var(--brand-gold);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-switch-copy a:hover {
+  opacity: 0.85;
+}

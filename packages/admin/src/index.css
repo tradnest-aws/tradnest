@@ -16,3 +16,8 @@
   --button-inverted-bg-hover: var(--brand-navy-soft);
   --bg-subtle: var(--brand-canvas);
 }
+
+.dark {
+  --fg-interactive: var(--brand-gold);
+  --fg-interactive-hover: #e8c36a;
+}

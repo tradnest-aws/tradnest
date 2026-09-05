@@ -5,14 +5,15 @@ import { Spinner } from "@medusajs/icons"
 import { Button, Heading, Hint, Input, Text } from "@medusajs/ui"
 import { MercurFeatureFlags } from "@mercurjs/types"
 import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Link, Navigate, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import { Navigate, useNavigate } from "react-router-dom"
 import config from "virtual:mercur/config"
 import * as z from "zod"
 
 import { Form } from "@components/common/form"
 import AvatarBox from "@components/common/logo-box/avatar-box"
 import { AuthLayout } from "@components/layout/auth-layout"
+import { AuthSwitchLink, AuthSwitchStack } from "@components/layout/auth-layout/auth-switch-link"
 import { useFeatureFlags, useSignUpWithEmailPass } from "@hooks/api"
 
 import { RegisterSchema } from "./register-schema"
@@ -148,24 +149,14 @@ const RegisterForm = () => {
 }
 
 const RegisterFooter = () => {
-  const { t } = useTranslation()
-
   return (
-    <div className="mt-auto">
-      <span className="text-ui-fg-muted txt-small">
-        <Trans
-          t={t}
-          i18nKey="register.alreadySeller"
-          components={[
-            <Link
-              key="login-link"
-              to="/login"
-              className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover font-medium outline-none"
-            />,
-          ]}
-        />
-      </span>
-    </div>
+    <AuthSwitchStack>
+      <AuthSwitchLink
+        i18nKey="register.alreadySeller"
+        to="/login"
+        linkKey="login-link"
+      />
+    </AuthSwitchStack>
   )
 }
 
