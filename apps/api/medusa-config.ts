@@ -9,6 +9,15 @@ module.exports = withMercur({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: REDIS_URL,
+    // Production defaults to Secure cookies. This host is HTTP until TLS is
+    // on, so the admin SPA's POST /auth/session would never persist connect.sid
+    // and login would appear to succeed then bounce back to /app/login.
+    cookieOptions: {
+      sameSite: "lax",
+      secure: process.env.COOKIE_SECURE === "true",
+      httpOnly: true,
+      path: "/",
+    },
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -17,6 +26,18 @@ module.exports = withMercur({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
+  },
+  admin: {
+    disable: false,
+    // nginx fronts a public host; Vite's default localhost-only allowlist
+    // blocks /app when the API runs `medusa develop` on this box.
+    vite: (config: { server?: Record<string, unknown> }) => ({
+      ...config,
+      server: {
+        ...config.server,
+        allowedHosts: true,
+      },
+    }),
   },
   featureFlags: {
     seller_registration: true
@@ -33,7 +54,7 @@ module.exports = withMercur({
     {
       resolve: '@mercurjs/core/modules/vendor-ui',
       options: {
-        appDir: '',
+        appDir: '../vendor',
         path: '/seller',
         disable: true
       }

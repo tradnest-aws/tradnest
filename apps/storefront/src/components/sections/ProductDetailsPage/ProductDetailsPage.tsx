@@ -2,6 +2,7 @@ import { ProductDetails, ProductGallery } from "@/components/organisms"
 import { listProducts } from "@/lib/data/products"
 import { listOffers } from "@/lib/data/offers"
 import { StoreOffer } from "@/lib/helpers/buybox"
+import { getCopy } from "@/lib/i18n/copy"
 import { HomeProductSection } from "../HomeProductSection/HomeProductSection"
 import NotFound from "@/app/not-found"
 
@@ -12,6 +13,7 @@ export const ProductDetailsPage = async ({
   handle: string
   locale: string
 }) => {
+  const t = getCopy(locale)
   const prod = await listProducts({
     countryCode: locale,
     queryParams: { handle: [handle], limit: 1 },
@@ -20,7 +22,7 @@ export const ProductDetailsPage = async ({
   if (!prod) return null
 
   if (prod.seller?.store_status === "SUSPENDED") {
-    return NotFound()
+    return <NotFound />
   }
 
   const { offers } = await listOffers({
@@ -44,7 +46,7 @@ export const ProductDetailsPage = async ({
       </div>
       <div className="my-8">
         <HomeProductSection
-          heading="Similar items"
+          heading={t.similarProducts}
           products={prod.seller?.products}
           locale={locale}
         />

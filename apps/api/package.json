@@ -19,6 +19,9 @@
   ],
   "scripts": {
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:israel": "medusa exec ./src/scripts/seed-israel-he.ts",
+    "ensure:admin": "medusa exec ./src/scripts/ensure-admin-user.ts",
+    "ensure:product-id-columns": "medusa exec ./src/scripts/ensure-product-id-columns.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",

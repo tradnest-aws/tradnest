@@ -30,6 +30,7 @@ export * from "./stock-location"
 export * from "./payout"
 export * from "./offer"
 export * from "./commission"
+export * from "./quote-request"
 
 // Explicit re-exports to resolve ambiguity with @medusajs/types (Mercur overrides)
 export {

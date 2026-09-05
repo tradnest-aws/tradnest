@@ -64,6 +64,32 @@ const toFormData = (payload: Record<string, any>): FormData => {
     return formData;
 };
 
+export function parseResponseBody(
+    response: Response,
+    text: string,
+): unknown {
+    if (!text) {
+        return undefined;
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    const trimmed = text.trimStart();
+    const looksLikeJson =
+        contentType.includes("json") ||
+        trimmed.startsWith("{") ||
+        trimmed.startsWith("[");
+
+    if (!looksLikeJson) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(text) as unknown;
+    } catch {
+        return undefined;
+    }
+}
+
 export function createClient(options: ClientOptions) {
     const { baseUrl, fetchOptions: defaultFetchOptions } = options;
 
@@ -132,10 +158,11 @@ export function createClient(options: ClientOptions) {
             body,
             headers,
         }).then(async (response) => {
+            const text = await response.text();
+            const parsed = parseResponseBody(response, text);
+
             if (response.status >= 300) {
-                const jsonError = (await response.json().catch(() => ({}))) as {
-                    message?: string;
-                };
+                const jsonError = (parsed ?? {}) as { message?: string };
                 throw new ClientError(
                     jsonError.message ?? response.statusText,
                     response.statusText,
@@ -143,8 +170,7 @@ export function createClient(options: ClientOptions) {
                 );
             }
 
-            const isJsonRequest = headers.get("accept")?.includes("application/json");
-            return isJsonRequest ? await response.json() : response;
+            return parsed;
         });
     })
 }

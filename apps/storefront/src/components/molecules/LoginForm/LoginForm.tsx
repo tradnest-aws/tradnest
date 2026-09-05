@@ -14,6 +14,7 @@ import { login, transferCart } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
 import { LoginFormData, loginFormSchema } from './schema';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const LoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -32,6 +33,7 @@ export const LoginForm = () => {
 };
 
 const Form = () => {
+  const t = useCopy();
   const [isAuthError, setIsAuthError] = useState(false);
   const {
     handleSubmit,
@@ -54,7 +56,7 @@ const Form = () => {
       router.push('/user');
       await transferCart();
     } else {
-      toast.error({ title: res.message || 'An error occurred. Please try again.' });
+      toast.error({ title: res.message || t.genericError });
     }
 
     setIsAuthError(false);
@@ -67,10 +69,10 @@ const Form = () => {
 
   const getAuthMessage = () => {
     if (isSessionExpired) {
-      return 'Your session has expired. Please log in to continue.';
+      return t.sessionExpired;
     }
     if (isSessionRequired) {
-      return 'Please log in to continue.';
+      return t.sessionRequired;
     }
     return null;
   };
@@ -95,15 +97,15 @@ const Form = () => {
           className="rounded-sm border p-4"
           data-testid="login-form-container"
         >
-          <h1 className="heading-md mb-8 uppercase text-primary">Log in</h1>
+          <h1 className="heading-md mb-8 uppercase text-primary">{t.loginTitle}</h1>
           <form
             onSubmit={handleSubmit(submit)}
             data-testid="login-form"
           >
             <div className="space-y-4">
               <LabeledInput
-                label="E-mail"
-                placeholder="Your e-mail address"
+                label={t.emailLabel}
+                placeholder={t.emailPlaceholder}
                 error={
                   (errors.email as FieldError) ||
                   (isAuthError ? ({ message: '' } as FieldError) : undefined)
@@ -114,8 +116,8 @@ const Form = () => {
                 })}
               />
               <LabeledInput
-                label="Password"
-                placeholder="Your password"
+                label={t.passwordLabel}
+                placeholder={t.passwordPlaceholder}
                 type="password"
                 error={
                   (errors.password as FieldError) ||
@@ -130,10 +132,10 @@ const Form = () => {
 
             <Link
               href="/forgot-password"
-              className="label-md mt-4 block text-right uppercase text-action-on-secondary"
+              className="label-md mt-4 block text-end uppercase text-action-on-secondary"
               data-testid="login-forgot-password-link"
             >
-              Forgot your password?
+              {t.forgotPassword}
             </Link>
 
             <Button
@@ -141,14 +143,14 @@ const Form = () => {
               disabled={isSubmitting}
               data-testid="login-submit-button"
             >
-              Log in
+              {t.login}
             </Button>
           </form>
         </div>
 
         <div className="rounded-sm border p-4">
           <h2 className="heading-md mb-4 uppercase text-primary">
-            Don&apos;t have an account yet?
+            {t.needBuyer}
           </h2>
           <Link
             href="/register"
@@ -158,7 +160,7 @@ const Form = () => {
               variant="tonal"
               className="mt-8 flex w-full justify-center uppercase"
             >
-              Create account
+              {t.createBuyerAccount}
             </Button>
           </Link>
         </div>

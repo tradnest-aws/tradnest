@@ -1,45 +1,47 @@
-import { Carousel } from "@/components/cells"
 import { CategoryCard } from "@/components/organisms"
+import { HomeSnapRow } from "@/components/cells"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { getCopy } from "@/lib/i18n/copy"
 
 export const categories: { id: number; name: string; handle: string }[] = [
-  {
-    id: 1,
-    name: "Sneakers",
-    handle: "sneakers",
-  },
-  {
-    id: 2,
-    name: "Sandals",
-    handle: "sandals",
-  },
-  {
-    id: 3,
-    name: "Boots",
-    handle: "boots",
-  },
-  {
-    id: 4,
-    name: "Sport",
-    handle: "sport",
-  },
-  {
-    id: 5,
-    name: "Accessories",
-    handle: "accessories",
-  },
+  { id: 1, name: "אריזות", handle: "packaging" },
+  { id: 2, name: "מזון סיטונאי", handle: "food" },
+  { id: 3, name: "חומרי בניין", handle: "building" },
+  { id: 4, name: "ציוד משרדי", handle: "office" },
+  { id: 5, name: "ניקיון תעשייתי", handle: "cleaning" },
 ]
 
-export const HomeCategories = async ({ heading }: { heading: string }) => {
+export const HomeCategories = async ({
+  heading,
+  locale,
+}: {
+  heading: string
+  locale: string
+}) => {
+  const t = getCopy(locale)
+
   return (
-    <section className="bg-primary py-8 w-full">
-      <div className="mb-6">
-        <h2 className="heading-lg text-primary uppercase">{heading}</h2>
+    <section className="storefront-shell py-4 w-full">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <h2 className="heading-lg font-bold tracking-tight text-primary">
+          {heading}
+        </h2>
+        <LocalizedClientLink
+          href="/categories"
+          className="label-md font-semibold text-action hover:text-action-hover"
+        >
+          {t.seeAll}
+        </LocalizedClientLink>
       </div>
-      <Carousel
-        items={categories?.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+      <HomeSnapRow desktopClassName="md:grid-cols-3 lg:grid-cols-5">
+        {categories.map((category) => (
+          <CategoryCard
+            key={category.id}
+            category={category}
+            className="max-md:w-[42vw] max-md:min-w-[148px] max-md:snap-start max-md:shrink-0"
+          />
         ))}
-      />
+      </HomeSnapRow>
     </section>
   )
 }

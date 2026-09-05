@@ -1,5 +1,7 @@
 import fs from "fs"
 import path from "path"
+import { createRequire } from "node:module"
+import { pathToFileURL } from "node:url"
 import type { ParserOptions } from "@babel/parser"
 import { traverse } from "./babel"
 import { VALID_FILE_EXTENSIONS } from "./constants"
@@ -55,12 +57,23 @@ export function resolveExports(moduleExports: any) {
     return moduleExports
 }
 
-export async function getFileExports(path: string): Promise<any> {
-    const { unregister } = await safeRegister()
-    const module = require(path)
-    unregister()
+export async function getFileExports(filePath: string): Promise<any> {
+    const abs = path.resolve(filePath)
 
-    return resolveExports(module)
+    try {
+        const mod = await import(pathToFileURL(abs).href)
+        return resolveExports(mod)
+    } catch {
+        // Vite's ESM config loader cannot `require()` a .ts Medusa config.
+        // esbuild-register + Node's createRequire is the CJS fallback.
+        const { unregister } = await safeRegister()
+        try {
+            const req = createRequire(abs)
+            return resolveExports(req(abs))
+        } finally {
+            unregister()
+        }
+    }
 }
 
 export const safeRegister = async () => {

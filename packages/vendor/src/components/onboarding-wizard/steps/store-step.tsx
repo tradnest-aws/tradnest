@@ -12,7 +12,13 @@ import {
 import { Form } from "@components/common/form";
 import { HandleInput } from "@components/inputs/handle-input";
 import { useStore } from "@hooks/api";
-import { onboardingLoader } from "../../../pages/onboarding/loader";
+import type { OnboardingLoaderData } from "../../../pages/onboarding/loader";
+
+const FALLBACK_CURRENCIES = [
+  { currency_code: "ils" },
+  { currency_code: "usd" },
+  { currency_code: "eur" },
+] as const;
 
 const StoreStepSchema = z.object({
   name: z.string().min(1, i18n.t("onboarding.wizard.validation.nameRequired")),
@@ -36,10 +42,17 @@ type StoreStepProps = {
 
 export const StoreStep = ({ onSubmit, isPending }: StoreStepProps) => {
   const { t } = useTranslation();
-  const initialData = useLoaderData() as Awaited<
-    ReturnType<typeof onboardingLoader>
-  >;
-  const { store } = useStore(undefined, { initialData });
+  const initialData = useLoaderData() as OnboardingLoaderData;
+  const loadedStore = initialData.store;
+  const { store } = useStore(undefined, {
+    initialData: loadedStore ? { store: loadedStore } : undefined,
+    enabled: Boolean(loadedStore),
+    retry: false,
+    throwOnError: false,
+  });
+  const currencies = store?.supported_currencies?.length
+    ? store.supported_currencies
+    : [...FALLBACK_CURRENCIES];
 
   const form = useExtendableForm({
     schema: StoreStepSchema,
@@ -51,7 +64,7 @@ export const StoreStep = ({ onSubmit, isPending }: StoreStepProps) => {
       name: "",
       email: "",
       phone: "",
-      currency_code: "",
+      currency_code: "ils",
       description: "",
       handle: "",
     },
@@ -158,7 +171,7 @@ export const StoreStep = ({ onSubmit, isPending }: StoreStepProps) => {
                         />
                       </Select.Trigger>
                       <Select.Content>
-                        {store?.supported_currencies?.map((sc) => (
+                        {currencies.map((sc) => (
                           <Select.Item
                             key={sc.currency_code}
                             value={sc.currency_code}

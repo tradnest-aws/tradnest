@@ -29,7 +29,7 @@ export const retrieveCustomer = async (): Promise<HttpTypes.StoreCustomer | null
 
   return await (sdk.store.customers.me
     .query({
-      fields: '*orders',
+      fields: '*orders,+company_name,+metadata',
       fetchOptions: { headers, next, cache: 'force-cache' }
     } as never) as unknown as Promise<{ customer: HttpTypes.StoreCustomer }>)
     .then(({ customer }) => customer ?? null)
@@ -60,7 +60,13 @@ export async function signup(formData: FormData) {
     email: formData.get('email') as string,
     first_name: formData.get('first_name') as string,
     last_name: formData.get('last_name') as string,
-    phone: formData.get('phone') as string
+    phone: formData.get('phone') as string,
+    company_name: formData.get('company_name') as string,
+    metadata: {
+      account_type: 'b2b',
+      job_title: (formData.get('job_title') as string) || undefined,
+      tax_id: (formData.get('tax_id') as string) || undefined
+    }
   };
 
   try {

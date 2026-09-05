@@ -1,17 +1,15 @@
-import {
-  CartItemsFooter,
-  CartItemsHeader,
-  CartItemsProducts,
-} from "@/components/cells"
+import { CartItemsFooter } from "@/components/cells/CartItemsFooter/CartItemsFooter"
+import { CartItemsHeader } from "@/components/cells/CartItemsHeader/CartItemsHeader"
+import { CartItemsProducts } from "@/components/cells/CartItemsProducts/CartItemsProducts"
+import { CartEmpty } from "@/components/organisms/CartEmpty/CartEmpty"
 import { HttpTypes } from "@medusajs/types"
-import { EmptyCart } from "./EmptyCart"
 
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null
 
   const groupedItems: any = groupItemsBySeller(cart)
 
-  if (!Object.keys(groupedItems).length) return <EmptyCart />
+  if (!Object.keys(groupedItems).length) return <CartEmpty />
 
   return Object.keys(groupedItems).map((key) => (
     <div key={key} className="mb-4" data-testid={`cart-items-seller-${key}`}>
@@ -42,12 +40,12 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
       }
       groupedBySeller[seller.id].items.push(item)
     } else {
-      if (!groupedBySeller["fleek"]) {
-        groupedBySeller["fleek"] = {
+      if (!groupedBySeller["tradnest"]) {
+        groupedBySeller["tradnest"] = {
           seller: {
-            name: "Fleek",
-            id: "fleek",
-            photo: "/Logo.svg",
+            name: "Tradnest",
+            id: "tradnest",
+            photo: "/tradnest-icon.png",
             created_at: new Date(),
           },
           items: [],

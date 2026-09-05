@@ -1,3 +1,5 @@
+import { publicPageUrl } from "@/lib/helpers/locale-path"
+
 export const toHreflang = (code: string): string => {
   const map: Record<string, string> = {
     us: "en-US",
@@ -14,6 +16,7 @@ export const toHreflang = (code: string): string => {
     se: "sv-SE",
     no: "nb-NO",
     dk: "da-DK",
+    il: "he-IL",
     cz: "cs-CZ",
     sk: "sk-SK",
     pt: "pt-PT",
@@ -31,7 +34,7 @@ export const toHreflang = (code: string): string => {
   return map[code] || code
 }
 
-const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "il"
 
 // The storefront serves every page under a locale prefix (/de, /se, ...);
 // requests without one are 307-redirected by the middleware. x-default must
@@ -60,8 +63,7 @@ type HreflangAlternates = {
   languages: Record<string, string>
 }
 
-// Builds hreflang alternates where every entry — including x-default and the
-// self-referencing link — points at a locale-prefixed URL that returns 200.
+// Israel is served at the site root. Other locales keep a /{code} prefix.
 export const buildHreflangAlternates = ({
   baseUrl,
   path,
@@ -69,22 +71,26 @@ export const buildHreflangAlternates = ({
   locales,
 }: {
   baseUrl: string
-  // Path after the locale segment, starting with "/" (empty string for home).
   path: string
   locale: string
   locales: string[]
 }): HreflangAlternates => {
   const list = locales.length ? locales : [locale]
+  const normalized = path || ""
 
   const languages = list.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = `${baseUrl}/${code}${path}`
+    acc[toHreflang(code)] = publicPageUrl(baseUrl, code, normalized)
     return acc
   }, {})
 
-  languages["x-default"] = `${baseUrl}/${resolveXDefaultLocale(list)}${path}`
+  languages["x-default"] = publicPageUrl(
+    baseUrl,
+    resolveXDefaultLocale(list),
+    normalized
+  )
 
   return {
-    canonical: `${baseUrl}/${locale}${path}`,
+    canonical: publicPageUrl(baseUrl, locale, normalized),
     languages,
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 import { signout } from "@/lib/data/customer"
 import { cn } from "@/lib/utils"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 type LogoutButtonProps = {
   unstyled?: boolean
@@ -13,6 +14,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
   children,
   "data-testid": dataTestId,
 }) => {
+  const t = useCopy()
   const handleLogout = async () => {
     await signout()
   }
@@ -26,7 +28,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       )}
       data-testid={dataTestId}
     >
-      {children || "Logout"}
+      {children || t.logout}
     </button>
   )
 }

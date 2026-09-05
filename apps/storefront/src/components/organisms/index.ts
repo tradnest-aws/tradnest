@@ -21,6 +21,8 @@ import { HomeProductsCarousel } from "./HomeProductsCarousel/HomeProductsCarouse
 import { ProductGallery } from "./ProductGallery/ProductGallery"
 import { ProductDetails } from "./ProductDetails/ProductDetails"
 import { CompareOffersModal } from "./CompareOffersModal/CompareOffersModal"
+import { RequestQuoteModal } from "./RequestQuoteModal/RequestQuoteModal"
+import { QuoteRequestList } from "./QuoteRequestList/QuoteRequestList"
 import { Addresses } from "./Addressess/Addresses"
 import { CartEmpty } from "./CartEmpty/CartEmpty"
 
@@ -47,6 +49,8 @@ export {
   ProductGallery,
   ProductDetails,
   CompareOffersModal,
+  RequestQuoteModal,
+  QuoteRequestList,
   Addresses,
   CartEmpty,
   OfferCard,

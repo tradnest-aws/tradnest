@@ -37,7 +37,7 @@ export default function App() {
               <I18nProvider>
                 <RouterProvider
                   router={createBrowserRouter(getRouteMap(routes), {
-                    basename: __BASE__,
+                    basename: __BASE__.replace(/\/$/, "") || "/",
                   })}
                 />
               </I18nProvider>

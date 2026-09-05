@@ -55,7 +55,15 @@
   @apply text-[64px] leading-[72px] font-medium tracking-normal max-md:text-[40px] max-md:leading-[48px];
 }
 .container {
-  @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
+  @apply px-4 md:px-6 max-w-[1280px] mx-auto w-full lg:py-10 py-6 lg:px-8;
+}
+
+.storefront-shell {
+  @apply max-w-[1280px] mx-auto w-full px-4 md:px-6 lg:px-8;
+}
+
+.storefront-card {
+  @apply rounded-[24px] bg-primary border border-primary/10 shadow-[0_8px_30px_rgba(16,24,40,0.04)];
 }
 
 /* Atoms components */
@@ -69,9 +77,19 @@
 
 .button-filled {
   @apply bg-action hover:bg-action-hover active:bg-action-pressed disabled:bg-disabled;
+  color: #ffffff;
 }
 .button-filled svg path {
-  @apply fill-primary;
+  fill: #ffffff;
+}
+
+a.bg-action,
+button.bg-action {
+  color: #ffffff;
+}
+a.bg-action svg path,
+button.bg-action svg path {
+  fill: #ffffff;
 }
 
 .button-tonal {
@@ -150,4 +168,28 @@ button:disabled svg path {
 }
 .no-arrows-number-input {
   -moz-appearance: textfield;
+}
+
+html[dir="rtl"] .product-details ul {
+  padding-left: 0;
+  padding-right: 1.25rem;
+}
+
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] [role="dialog"],
+html[dir="rtl"] [data-headlessui-portal],
+html[dir="rtl"] #headlessui-portal-root,
+html[dir="rtl"] [data-radix-portal],
+html[dir="rtl"] [data-radix-popper-content-wrapper],
+html[dir="rtl"] .rt-BaseDialogOverlay,
+html[dir="rtl"] .rt-DialogContent,
+html[dir="rtl"] .rt-PopoverContent,
+html[dir="rtl"] .rt-DropdownMenuContent,
+html[dir="rtl"] [data-sonner-toaster],
+html[dir="rtl"] [data-sonner-toast] {
+  direction: rtl;
+  text-align: start;
 }

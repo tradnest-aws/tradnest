@@ -446,7 +446,7 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   const productsCacheTag = await getCacheTag('products');
   revalidateTag(productsCacheTag);
 
-  redirect(`/${countryCode}${currentPath}`);
+  redirect(currentPath.startsWith('/') ? currentPath : `/${currentPath}`);
 }
 
 export async function updateRegionWithValidation(
@@ -523,7 +523,7 @@ export async function updateRegionWithValidation(
 
   return {
     removedItems,
-    newPath: `/${countryCode}${currentPath}`
+    newPath: currentPath.startsWith('/') ? currentPath : `/${currentPath}`
   };
 }
 

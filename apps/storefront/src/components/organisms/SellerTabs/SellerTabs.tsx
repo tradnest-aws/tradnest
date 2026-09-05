@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { ProductListingSkeleton } from "../ProductListingSkeleton/ProductListingSkeleton"
 import { SellerOffersListing } from "@/components/sections"
 import { TabsContent, TabsList } from "@/components/molecules"
+import { getCopy } from "@/lib/i18n/copy"
 
 export const SellerTabs = ({
   tab,
@@ -17,7 +18,7 @@ export const SellerTabs = ({
   page?: number
 }) => {
   const tabsList = [
-    { label: "Offers", link: `/sellers/${seller_handle}/` },
+    { label: getCopy(locale).offers, link: `/sellers/${seller_handle}/` },
   ]
 
   return (

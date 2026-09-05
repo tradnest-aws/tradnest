@@ -9,9 +9,7 @@ export const AuthLanguageSelect = () => {
   const { t, i18n } = useTranslation();
   const direction = useDocumentDirection();
 
-  const sortedLanguages = [...languages].sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  );
+  const sortedLanguages = [...languages]
 
   const currentLanguage = sortedLanguages.find(
     (language) => language.code === i18n.language

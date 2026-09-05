@@ -21,6 +21,7 @@ export const PolicyResource = {
   product_attribute_value: "product_attribute_value",
   product_change: "product_change",
   review: "review",
+  quote_request: "quote_request",
 
   // Medusa
   product: "product",

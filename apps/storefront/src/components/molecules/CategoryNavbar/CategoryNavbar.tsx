@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils"
 import { useParams } from "next/navigation"
 import { CollapseIcon } from "@/icons"
 import { useMemo } from "react"
+import { useCopy } from "@/lib/i18n/useCopy"
+import Image from "next/image"
 import {
   getActiveParentHandle,
   findParentCategoryHandle,
@@ -12,6 +14,14 @@ import {
 } from "@/lib/helpers/category-utils"
 import { useCategoryDropdown } from "./hooks/useCategoryDropdown"
 import { CategoryDropdownMenu } from "./components/CategoryDropdownMenu"
+
+const CATEGORY_ICON_HANDLES = new Set([
+  "packaging",
+  "food",
+  "building",
+  "office",
+  "cleaning",
+])
 
 interface CategoryNavbarProps {
   categories: HttpTypes.StoreProductCategory[]
@@ -24,6 +34,7 @@ export const CategoryNavbar = ({
   parentCategories = [],
   onClose,
 }: CategoryNavbarProps) => {
+  const t = useCopy()
   const { category } = useParams<{ category?: string }>()
 
   const {
@@ -101,11 +112,11 @@ export const CategoryNavbar = ({
           href="/categories"
           onClick={handleClose}
           className={cn(
-            "label-md uppercase px-2 my-1 md:my-0 flex items-center justify-between md:flex-shrink-0 text-primary"
+            "label-md px-2 my-1 md:my-0 flex items-center justify-between md:flex-shrink-0 text-primary"
           )}
           data-testid="category-link-all-products"
         >
-          All Products
+          {t.allProducts}
         </LocalizedClientLink>
 
         {filteredCategories.map(({ id, handle, name, category_children }) => {
@@ -125,12 +136,23 @@ export const CategoryNavbar = ({
                 href={categoryUrl}
                 onClick={handleClose}
                 className={cn(
-                  "label-md uppercase px-2 py-1 my-3 md:my-0 flex items-center justify-between md:whitespace-nowrap text-primary relative z-10",
+                  "label-md px-2 py-1 my-3 md:my-0 flex items-center gap-2 justify-between md:whitespace-nowrap text-primary relative z-10",
                   isActive && "md:border-b md:border-primary"
                 )}
                 data-testid={`category-link-${handle}`}
               >
-                {name}
+                <span className="flex items-center gap-2">
+                  {CATEGORY_ICON_HANDLES.has(handle) && (
+                    <Image
+                      src={`/images/categories/${handle}.png`}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="size-5 rounded-full object-cover shrink-0"
+                    />
+                  )}
+                  {name}
+                </span>
                 {hasChildren && (
                   <CollapseIcon size={18} className="-rotate-90 md:hidden" />
                 )}

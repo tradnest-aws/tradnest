@@ -3,16 +3,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import i18n from "i18next";
 import { Alert, Button, Heading, Input, Text } from "@medusajs/ui";
 import { useForm } from "react-hook-form";
-import { Trans, useTranslation } from "react-i18next";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import * as z from "zod";
 
-import { MercurFeatureFlags } from "@mercurjs/types";
 import { WidgetZone } from "@mercurjs/dashboard-shared";
 import { Form } from "@components/common/form";
 import AvatarBox from "@components/common/logo-box/avatar-box";
 import { AuthLayout } from "@components/layout/auth-layout";
-import { useFeatureFlags, useSignInWithEmailPass } from "@hooks/api";
+import {
+  AuthSwitchLink,
+  AuthSwitchStack,
+} from "@components/layout/auth-layout/auth-switch-link";
+import { useSignInWithEmailPass } from "@hooks/api";
 import { isFetchError } from "@lib/is-fetch-error";
 import config from "virtual:mercur/config";
 
@@ -39,7 +42,7 @@ const LoginHeader = () => {
 
   return (
     <div className="mb-6 flex flex-col">
-      <Heading>{t("login.title", { name: config.name ?? "Mercur" })}</Heading>
+      <Heading>{t("login.title", { name: config.name ?? "Tradnest" })}</Heading>
       <Text size="small" className="text-ui-fg-subtle">
         {t("login.hint")}
       </Text>
@@ -163,40 +166,19 @@ const LoginForm = () => {
 };
 
 const LoginFooter = () => {
-  const { t } = useTranslation();
-  const { feature_flags } = useFeatureFlags();
-
   return (
-    <div className="mt-auto flex flex-col gap-y-2">
-      <span className="text-ui-fg-muted txt-small">
-        <Trans
-          t={t}
-          i18nKey="login.forgotPassword"
-          components={[
-            <Link
-              key="reset-password-link"
-              to="/reset-password"
-              className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover font-medium outline-none"
-            />,
-          ]}
-        />
-      </span>
-      {feature_flags?.[MercurFeatureFlags.SELLER_REGISTRATION] && (
-        <span className="text-ui-fg-muted txt-small">
-          <Trans
-            t={t}
-            i18nKey="login.notSellerYet"
-            components={[
-              <Link
-                key="register-link"
-                to="/register"
-                className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover font-medium outline-none"
-              />,
-            ]}
-          />
-        </span>
-      )}
-    </div>
+    <AuthSwitchStack>
+      <AuthSwitchLink
+        i18nKey="login.forgotPassword"
+        to="/reset-password"
+        linkKey="reset-password-link"
+      />
+      <AuthSwitchLink
+        i18nKey="login.notSellerYet"
+        to="/register"
+        linkKey="register-link"
+      />
+    </AuthSwitchStack>
   );
 };
 
