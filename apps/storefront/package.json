@@ -1,6 +1,6 @@
 {
   "name": "@mercurjs/storefront",
-  "version": "2.3.2-canary.4",
+  "version": "2.3.4-canary.6",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -11,12 +11,12 @@
   "dependencies": {
     "@headlessui/react": "^2.2.1",
     "@hookform/resolvers": "^3.10.0",
-    "@medusajs/icons": "2.18.0",
-    "@medusajs/medusa": "2.18.0",
-    "@medusajs/types": "2.18.0",
+    "@medusajs/icons": "2.20.1",
+    "@medusajs/medusa": "2.20.1",
+    "@medusajs/types": "2.20.1",
     "@medusajs/ui": "^4.0.33",
-    "@mercurjs/client": "2.3.2-canary.4",
-    "@mercurjs/types": "2.3.2-canary.4",
+    "@mercurjs/client": "2.3.4-canary.6",
+    "@mercurjs/types": "2.3.4-canary.6",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.1.0",
     "@talkjs/react": "^0.1.11",
@@ -29,7 +29,6 @@
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "next": "15.5.21",
-    "next-intl": "^3.26.3",
     "react": "^19.2.1",
     "react-country-flag": "^3.1.0",
     "react-dom": "^19.0.0",
@@ -63,7 +62,6 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "storybook": "^8.4.7",
-    "storybook-next-intl": "^1.2.4",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },

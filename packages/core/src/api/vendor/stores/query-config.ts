@@ -11,13 +11,22 @@ export const vendorStoreFields = [
   "updated_at",
 ]
 
+// Both lists are stripped unconditionally. `allowed` used to depend on the
+// `rbac_filter_fields` feature flag; since Medusa 2.20 a requested field outside
+// it is always dropped, silently, before the query runs.
+export const vendorStoreDisallowedFields = ["members"]
+
 export const vendorStoreQueryConfig = {
   list: {
     defaults: vendorStoreFields,
+    allowed: vendorStoreFields,
+    disallowed: vendorStoreDisallowedFields,
     isList: true,
   },
   retrieve: {
     defaults: vendorStoreFields,
+    allowed: vendorStoreFields,
+    disallowed: vendorStoreDisallowedFields,
     isList: false,
   },
 }

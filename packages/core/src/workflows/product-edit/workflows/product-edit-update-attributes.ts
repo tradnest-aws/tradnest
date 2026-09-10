@@ -1,10 +1,12 @@
 import { AdditionalData } from "@medusajs/framework/types"
 import { deepEqualObj } from "@medusajs/framework/utils"
 import {
+  createHook,
   createWorkflow,
+  type Hook,
+  type ReturnWorkflow,
   transform,
   WorkflowResponse,
-  type ReturnWorkflow,
 } from "@medusajs/framework/workflows-sdk"
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
 import {
@@ -27,6 +29,18 @@ export type ProductEditUpdateAttributesWorkflowInput = {
   remove?: string[]
   update?: ProductAttributeBatchUpdate[]
 } & AdditionalData
+
+export type ProductEditUpdateAttributesWorkflowHooks = [
+  Hook<"validate", { input: ProductEditUpdateAttributesWorkflowInput }, unknown>,
+  Hook<
+    "productChangeCreated",
+    {
+      product_change: ProductChangeDTO
+      additional_data: Record<string, unknown> | undefined
+    },
+    unknown
+  >,
+]
 
 export const productEditUpdateAttributesWorkflowId =
   "product-edit-update-attributes"
@@ -63,10 +77,12 @@ const readScalar = (
 export const productEditUpdateAttributesWorkflow: ReturnWorkflow<
   ProductEditUpdateAttributesWorkflowInput,
   ProductChangeDTO,
-  []
+  ProductEditUpdateAttributesWorkflowHooks
 > = createWorkflow(
   productEditUpdateAttributesWorkflowId,
   function (input: ProductEditUpdateAttributesWorkflowInput) {
+    const validate = createHook("validate", { input })
+
     validateNoPendingProductChangeStep(
       transform({ input }, ({ input }) => ({
         product_ids: [input.product_id],
@@ -173,11 +189,15 @@ export const productEditUpdateAttributesWorkflow: ReturnWorkflow<
           const scalarUnchanged =
             update.value === undefined ||
             deepEqualObj(update.value, previous?.value ?? null)
+          const selectionUnchanged =
+            update.value_ids === undefined ||
+            deepEqualObj([...update.value_ids].sort(), previous?.value_ids ?? [])
 
           if (
             addsNothing &&
             removesNothing &&
             scalarUnchanged &&
+            selectionUnchanged &&
             update.title === undefined
           ) {
             continue
@@ -207,6 +227,13 @@ export const productEditUpdateAttributesWorkflow: ReturnWorkflow<
       })),
     })
 
-    return new WorkflowResponse(change)
+    const productChangeCreated = createHook("productChangeCreated", {
+      product_change: change,
+      additional_data: input.additional_data,
+    })
+
+    return new WorkflowResponse(change, {
+      hooks: [validate, productChangeCreated],
+    })
   },
 )

@@ -10,7 +10,6 @@ export * from "./promotion-cost"
 export * from "./review"
 export * from "./seller"
 export * from "./shipping-option"
-export * from "./shipping-profile"
 export * from "./stock-location"
 export * from './cart'
 export * from './events'
@@ -22,3 +21,4 @@ export * from './offer'
 export * from './media'
 export * from './order'
 export * from './review'
+export * from './payment'
