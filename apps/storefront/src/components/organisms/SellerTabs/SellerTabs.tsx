@@ -18,7 +18,7 @@ export const SellerTabs = ({
   page?: number
 }) => {
   const tabsList = [
-    { label: getCopy(locale).offers, link: `/sellers/${seller_handle}/` },
+    { label: getCopy(locale).allProducts, link: `/sellers/${seller_handle}/` },
   ]
 
   return (
