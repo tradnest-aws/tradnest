@@ -14,6 +14,7 @@ import { login, transferCart } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
 import { LoginFormData, loginFormSchema } from './schema';
+import { resolveLoginSubmit } from './login-submit';
 import { useCopy } from '@/lib/i18n/useCopy';
 
 export const LoginForm = () => {
@@ -34,7 +35,7 @@ export const LoginForm = () => {
 
 const Form = () => {
   const t = useCopy();
-  const [isAuthError, setIsAuthError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     handleSubmit,
     register,
@@ -51,23 +52,32 @@ const Form = () => {
     formData.append('password', data.password);
 
     const res = await login(formData);
+    const outcome = resolveLoginSubmit(res, t.genericError);
 
-    if (res.success) {
-      router.push('/user');
-      await transferCart();
-    } else {
-      toast.error({ title: res.message || t.genericError });
+    if (outcome.type === 'continue') {
+      setSubmitError(null);
+      router.push(outcome.href);
+      try {
+        await transferCart();
+      } catch {
+        // Session is already stored. Cart merge should not block entry.
+      }
+      return;
     }
 
-    setIsAuthError(false);
-    router.push('/user');
+    setSubmitError(outcome.message);
+    toast.error({ title: outcome.message });
   };
 
   const clearApiError = () => {
-    isAuthError && setIsAuthError(false);
+    if (!submitError) return;
+    setSubmitError(null);
   };
 
   const getAuthMessage = () => {
+    if (submitError) {
+      return submitError;
+    }
     if (isSessionExpired) {
       return t.sessionExpired;
     }
@@ -106,10 +116,7 @@ const Form = () => {
               <LabeledInput
                 label={t.emailLabel}
                 placeholder={t.emailPlaceholder}
-                error={
-                  (errors.email as FieldError) ||
-                  (isAuthError ? ({ message: '' } as FieldError) : undefined)
-                }
+                error={errors.email as FieldError}
                 data-testid="login-email-input"
                 {...register('email', {
                   onChange: clearApiError
@@ -121,7 +128,7 @@ const Form = () => {
                 type="password"
                 error={
                   (errors.password as FieldError) ||
-                  (isAuthError ? ({ message: '' } as FieldError) : undefined)
+                  (submitError ? ({ message: submitError } as FieldError) : undefined)
                 }
                 data-testid="login-password-input"
                 {...register('password', {

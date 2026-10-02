@@ -1,5 +1,7 @@
 import 'server-only';
-import { cookies as nextCookies } from 'next/headers';
+import { cookies as nextCookies, headers as nextHeaders } from 'next/headers';
+
+import { shouldUseSecureAuthCookie } from '../helpers/auth-cookie';
 
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | {}
@@ -49,11 +51,16 @@ export const getCacheOptions = async (
 
 export const setAuthToken = async (token: string) => {
   const cookies = await nextCookies();
+  const headerList = await nextHeaders();
   cookies.set('_medusa_jwt', token, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: shouldUseSecureAuthCookie({
+      cookieSecureEnv: process.env.COOKIE_SECURE,
+      forwardedProto: headerList.get('x-forwarded-proto'),
+    }),
+    path: '/',
   });
 };
 
