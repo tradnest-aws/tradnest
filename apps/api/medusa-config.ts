@@ -1,5 +1,28 @@
+import fs from 'fs'
+import path from 'path'
+import { createRequire } from 'module'
 import { loadEnv } from '@medusajs/framework/utils'
 import { withMercur } from '@mercurjs/core'
+
+// The admin bundle is compiled from apps/api, which does not depend on React.
+// Bun keeps React 18 next to @medusajs/dashboard, so point Vite there.
+function react18FromDashboard(pkg: 'react' | 'react-dom'): string | undefined {
+  const dashboardPkg = path.resolve(
+    process.cwd(),
+    'node_modules/@medusajs/dashboard/package.json'
+  )
+  if (!fs.existsSync(dashboardPkg)) return undefined
+  try {
+    const req = createRequire(dashboardPkg)
+    const dir = path.dirname(req.resolve(`${pkg}/package.json`))
+    const version = JSON.parse(
+      fs.readFileSync(path.join(dir, 'package.json'), 'utf8')
+    ).version as string
+    return version.startsWith('18.') ? dir : undefined
+  } catch {
+    return undefined
+  }
+}
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -33,13 +56,48 @@ module.exports = withMercur({
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     // nginx fronts a public host; Vite's default localhost-only allowlist
     // blocks /app when the API runs `medusa develop` on this box.
-    vite: (config: { server?: Record<string, unknown> }) => ({
-      ...config,
-      server: {
-        ...config.server,
-        allowedHosts: true,
-      },
-    }),
+    vite: (config: {
+      server?: Record<string, unknown>
+      resolve?: { alias?: unknown; dedupe?: string[] }
+    }) => {
+      const reactDir = react18FromDashboard('react')
+      const reactDomDir = react18FromDashboard('react-dom')
+      const alias: { find: string | RegExp; replacement: string }[] = []
+      if (reactDir) {
+        alias.push(
+          {
+            find: 'react/jsx-dev-runtime',
+            replacement: path.join(reactDir, 'jsx-dev-runtime.js'),
+          },
+          {
+            find: 'react/jsx-runtime',
+            replacement: path.join(reactDir, 'jsx-runtime.js'),
+          },
+          { find: /^react$/, replacement: reactDir }
+        )
+      }
+      if (reactDomDir) {
+        alias.push(
+          {
+            find: 'react-dom/client',
+            replacement: path.join(reactDomDir, 'client.js'),
+          },
+          { find: /^react-dom$/, replacement: reactDomDir }
+        )
+      }
+      return {
+        ...config,
+        resolve: {
+          ...config.resolve,
+          alias,
+          dedupe: ['react', 'react-dom'],
+        },
+        server: {
+          ...config.server,
+          allowedHosts: true,
+        },
+      }
+    },
   },
   featureFlags: {
     seller_registration: true

@@ -228,11 +228,31 @@ build_mercur_core() {
   ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/core )
 }
 
+link_dashboard_react() {
+  local pkg dest src
+  mkdir -p "$DEPLOY_DIR/apps/api/node_modules"
+  for pkg in react react-dom; do
+    dest="$DEPLOY_DIR/apps/api/node_modules/$pkg"
+    src=""
+    for src in "$DEPLOY_DIR"/node_modules/.bun/@medusajs+dashboard@2.18.0*/node_modules/"$pkg"; do
+      [[ -f "$src/package.json" ]] || continue
+      break
+    done
+    if [[ ! -f "${src:-}/package.json" ]]; then
+      log "Could not find React 18 package '$pkg' next to @medusajs/dashboard"
+      exit 1
+    fi
+    ln -sfn "$src" "$dest"
+    log "Linked apps/api/node_modules/$pkg -> $src"
+  done
+}
+
 build_admin_dashboard() {
   local index bridge
   index="$DEPLOY_DIR/apps/api/.medusa/admin/index.html"
   bridge="$DEPLOY_DIR/apps/api/static/app-jwt-bridge.js"
   log "Build Medusa admin dashboard for /app (admin-only)"
+  link_dashboard_react
   (
     cd "$DEPLOY_DIR/apps/api"
     NODE_OPTIONS="--max-old-space-size=2048" bunx medusa build --admin-only
