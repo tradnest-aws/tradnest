@@ -24,28 +24,44 @@ SSM_PROFILE_NAME="${TRADNEST_SSM_PROFILE:-TradnestEC2SSM}"
 ACTION="${1:-inspect}"
 
 export AWS_PROFILE="$PROFILE"
-export AWS_REGION="$REGION"
-export AWS_DEFAULT_REGION="$REGION"
+# `aws login` refreshes with CreateOAuth2Token in the session region. Forcing
+# eu-north-1 makes that call ValidationException INVALID_REQUEST. Leave the
+# profile's login region in place; EC2 and SSM calls pass --region themselves.
+unset AWS_REGION AWS_DEFAULT_REGION
 
 log() { echo "→ $*"; }
 
 need_aws() {
-  if ! aws sts get-caller-identity >/dev/null 2>&1; then
+  local err
+  err="$(mktemp)"
+  if ! aws sts get-caller-identity >/dev/null 2>"$err"; then
     echo "AWS profile '$PROFILE' is not usable from this machine." >&2
+    cat "$err" >&2
+    rm -f "$err"
     echo "Configure it locally (do not paste access keys into chat)." >&2
     exit 1
   fi
+  rm -f "$err"
+}
+
+# Refresh the login token in the profile region, then call EC2 or SSM in $REGION.
+# A --region on the service call would otherwise send CreateOAuth2Token to eu-north-1.
+aws_regional() {
+  local service="$1"
+  shift
+  aws sts get-caller-identity >/dev/null
+  aws "$service" --region "$REGION" "$@"
 }
 
 ssm_online() {
-  aws ssm describe-instance-information \
+  aws_regional ssm describe-instance-information \
     --filters "Key=InstanceIds,Values=$INSTANCE_ID" \
     --query 'InstanceInformationList[0].PingStatus' \
     --output text 2>/dev/null || echo "None"
 }
 
 instance_profile_arn() {
-  aws ec2 describe-instances \
+  aws_regional ec2 describe-instances \
     --instance-ids "$INSTANCE_ID" \
     --query 'Reservations[0].Instances[0].IamInstanceProfile.Arn' \
     --output text
@@ -112,7 +128,7 @@ JSON
   log "Waiting 12s for IAM to propagate"
   sleep 12
 
-  aws ec2 associate-iam-instance-profile \
+  aws_regional ec2 associate-iam-instance-profile \
     --instance-id "$INSTANCE_ID" \
     --iam-instance-profile "Name=$SSM_PROFILE_NAME" >/dev/null
   log "Associated instance profile $SSM_PROFILE_NAME with $INSTANCE_ID"
@@ -142,19 +158,19 @@ open_ssh() {
     echo "Could not determine your public IP ($my_ip)" >&2
     exit 1
   fi
-  sg="$(aws ec2 describe-instances \
+  sg="$(aws_regional ec2 describe-instances \
     --instance-ids "$INSTANCE_ID" \
     --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId' \
     --output text)"
   log "Authorizing tcp/22 from ${my_ip}/32 on $sg"
-  aws ec2 authorize-security-group-ingress \
+  aws_regional ec2 authorize-security-group-ingress \
     --group-id "$sg" \
     --protocol tcp \
     --port 22 \
     --cidr "${my_ip}/32" \
     >/dev/null 2>&1 || log "Rule may already exist (ok)"
   local key
-  key="$(aws ec2 describe-instances \
+  key="$(aws_regional ec2 describe-instances \
     --instance-ids "$INSTANCE_ID" \
     --query 'Reservations[0].Instances[0].KeyName' \
     --output text)"
@@ -211,7 +227,7 @@ with open(out, "w") as f:
     }, f)
 PY
   local cmd_id
-  cmd_id="$(aws ssm send-command \
+  cmd_id="$(aws_regional ssm send-command \
     --cli-input-json "file://$payload" \
     --query 'Command.CommandId' \
     --output text)"
@@ -220,7 +236,7 @@ PY
   log "Waiting for command $cmd_id"
   local status="Pending"
   for _ in $(seq 1 90); do
-    status="$(aws ssm get-command-invocation \
+    status="$(aws_regional ssm get-command-invocation \
       --command-id "$cmd_id" \
       --instance-id "$INSTANCE_ID" \
       --query 'Status' \
@@ -231,7 +247,7 @@ PY
     sleep 5
   done
 
-  aws ssm get-command-invocation \
+  aws_regional ssm get-command-invocation \
     --command-id "$cmd_id" \
     --instance-id "$INSTANCE_ID" \
     --query '{Status:Status,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
