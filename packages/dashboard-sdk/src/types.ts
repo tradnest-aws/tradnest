@@ -54,6 +54,12 @@ export interface MercurConfig {
      * @default 2_097_152 // 2 MB
      */
     imageLimit?: number;
+    /**
+     * Vite `base` for this panel (for example `"/seller/"`).
+     * Used when the Medusa config cannot be loaded, and always preferred
+     * over a missing `vendor_ui`/`admin_ui` path.
+     */
+    base?: string
 }
 
 export interface BuiltMercurConfig extends MercurConfig {

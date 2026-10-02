@@ -1,39 +1,38 @@
-import { Button } from "@/components/atoms"
-import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+"use client"
+
 import Image from "next/image"
+import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const BannerSection = () => {
+  const t = useCopy()
+
   return (
-    <section className="bg-tertiary container text-tertiary">
-      <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
-        <div className="py-6 px-6 flex flex-col h-full justify-between border border-secondary rounded-sm">
-          <div className="mb-8 lg:mb-48">
-            <span className="text-sm inline-block px-4 py-1 border border-secondary rounded-sm">
-              #COLLECTION
+    <section className="storefront-shell" data-testid="supplier-banner">
+      <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch overflow-hidden rounded-[32px] bg-[rgb(var(--bg-tertiary))] text-white">
+        <div className="py-10 px-6 lg:p-12 flex flex-col h-full justify-between gap-8">
+          <div>
+            <span className="text-sm inline-block px-4 py-1 rounded-full mb-4 bg-primary/10">
+              {t.bannerKicker}
             </span>
-            <h2 className="display-sm">
-              BOHO VIBES: WHERE COMFORT MEETS CREATIVITY
-            </h2>
-            <p className="text-lg text-tertiary max-w-lg">
-              Discover boho styles that inspire adventure and embrace the beauty
-              of the unconventional.
-            </p>
+            <h2 className="heading-xl font-bold mb-4">{t.bannerTitle}</h2>
+            <p className="text-lg max-w-lg opacity-90">{t.bannerBody}</p>
           </div>
-          <LocalizedClientLink href="/collections/boho">
-            <Button size="large" className="w-fit bg-secondary/10">
-              EXPLORE
-            </Button>
+          <LocalizedClientLink
+            href={SELLER_REGISTER_PATH}
+            className="inline-flex w-fit items-center rounded-full bg-[rgba(var(--brand-100))] text-primary px-6 py-3 font-semibold hover:opacity-90"
+          >
+            {t.bannerCta}
           </LocalizedClientLink>
         </div>
-        <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full flex justify-end rounded-sm">
+        <div className="relative aspect-[4/3] lg:aspect-auto lg:min-h-[360px]">
           <Image
             loading="lazy"
-            fetchPriority="high"
             src="/images/banner-section/Image.jpg"
-            alt="Boho fashion collection - Model wearing a floral dress with yellow boots"
-            width={700}
-            height={600}
-            className="object-cover object-top rounded-sm"
+            alt={t.bannerAlt}
+            fill
+            className="object-cover object-top"
             sizes="(min-width: 1024px) 50vw, 100vw"
           />
         </div>

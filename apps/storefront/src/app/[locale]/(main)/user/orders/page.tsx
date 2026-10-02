@@ -4,6 +4,8 @@ import { LoginForm, ParcelAccordion, UserNavigation } from '@/components/molecul
 import { OrdersPagination } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
+import { headers } from 'next/headers';
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from '@/lib/i18n/copy';
 
 const LIMIT = 10;
 
@@ -13,6 +15,9 @@ export default async function UserPage({
   searchParams: Promise<{ page: string }>;
 }) {
   const user = await retrieveCustomer();
+  const locale =
+    (await headers()).get('x-locale') || DEFAULT_STOREFRONT_LOCALE;
+  const t = getCopy(locale);
 
   if (!user) return <LoginForm />;
 
@@ -63,7 +68,7 @@ export default async function UserPage({
           className="space-y-8 md:col-span-3"
           data-testid="orders-container"
         >
-          <h1 className="heading-md uppercase">Orders</h1>
+          <h1 className="heading-md uppercase">{t.orders}</h1>
           {isEmpty(orders) ? (
             <div
               className="text-center"
@@ -73,13 +78,13 @@ export default async function UserPage({
                 className="heading-lg uppercase text-primary"
                 data-testid="no-orders-heading"
               >
-                No orders
+                {t.noOrders}
               </h3>
               <p
                 className="mt-2 text-lg text-secondary"
                 data-testid="no-orders-description"
               >
-                You haven&apos;t placed any order yet. Once you place an order, it will appear here.
+                {t.noOrdersHint}
               </p>
             </div>
           ) : (

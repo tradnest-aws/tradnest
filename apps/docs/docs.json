@@ -1,20 +1,20 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "MercurJS Documentation",
-  "description": "Mercur is the open-source enterprise marketplace platform. Composable, API-first, and AI-native, it runs on your own infrastructure with role-based access control, an auditable change pipeline, and full code ownership. It powers multi-vendor sellers, commissions, order splitting, and payouts, with an admin panel and a vendor portal, on a proven Medusa commerce core.",
+  "name": "Tradnest",
+  "description": "Tradnest is a B2B multi-vendor marketplace built on Mercur. Source from suppliers, compare offers, request quotes, and check out on one order.",
   "logo": {
-    "dark": "/logo.svg",
-    "light": "/logo_dark.svg"
+    "dark": "/tradnest-logo.png",
+    "light": "/tradnest-logo.png"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/tradnest-icon.png",
   "fonts": {
     "family": "Inter"
   },
   "colors": {
-    "primary": "#7C3AED",
-    "light": "#8B5CF6",
-    "dark": "#6D28D9"
+    "primary": "#101828",
+    "light": "#d2a64b",
+    "dark": "#1a2740"
   },
   "appearance": {
     "default": "light"

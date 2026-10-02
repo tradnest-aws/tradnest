@@ -13,7 +13,10 @@ export const Modal = ({
 }) => {
   return (
     <div
-      className="fixed top-0 left-0 w-full h-full flex justify-center z-30"
+      className="fixed inset-0 w-full h-full flex justify-center z-30"
+      dir="inherit"
+      role="dialog"
+      aria-modal="true"
       data-testid={dataTestId ?? 'modal'}
     >
       <div

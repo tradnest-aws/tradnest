@@ -1,7 +1,3 @@
-/**
- * Omits variants/categories/collection, whose nested product-module populate
- * paths trip MikroORM's `expandDotPaths` on the 2.16 options-preview build.
- */
 export const productAttributeBatchResponseFields = [
   "id",
   "title",
@@ -29,3 +25,61 @@ export const productAttributeBatchResponseFields = [
   "scoped_attributes.values.name",
   "scoped_attributes.values.rank",
 ]
+
+/**
+ * Storefront historically requested `*attribute_values`, which is not a
+ * product relation (the link alias is `product_attribute_values`). That, and a
+ * missing `product_attribute_value_link` table, make query.graph 500 — the
+ * listing then renders empty. Strip these paths so catalog pages still return
+ * products; attributes hydrate separately when the link exists.
+ */
+export function isProductAttributeGraphField(field: string): boolean {
+  const normalized = field.replace(/^[*+-]+/, "")
+  return (
+    normalized.startsWith("attribute_values") ||
+    normalized.startsWith("product_attribute_values") ||
+    normalized.startsWith("scoped_attributes")
+  )
+}
+
+export function omitProductAttributeGraphFields(fields: string[]): string[] {
+  return fields.filter((field) => !isProductAttributeGraphField(field))
+}
+
+type ProductGraphQuery = {
+  graph: (options: {
+    entity: string
+    fields: string[]
+    filters?: Record<string, unknown>
+    pagination?: Record<string, unknown>
+  }) => Promise<{
+    data: Record<string, unknown>[]
+    metadata?: { count?: number; skip?: number; take?: number }
+  }>
+}
+
+export async function queryProductsOmittingBrokenAttributeLinks(
+  query: ProductGraphQuery,
+  options: {
+    fields: string[]
+    filters?: Record<string, unknown>
+    pagination?: Record<string, unknown>
+  }
+) {
+  const payload = {
+    entity: "product" as const,
+    fields: options.fields,
+    filters: options.filters,
+    pagination: options.pagination,
+  }
+
+  try {
+    return await query.graph(payload)
+  } catch (error: unknown) {
+    const fields = omitProductAttributeGraphFields(options.fields)
+    if (fields.length === options.fields.length) {
+      throw error
+    }
+    return await query.graph({ ...payload, fields })
+  }
+}

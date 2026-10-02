@@ -1,23 +1,21 @@
+"use client"
+
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { ArrowUpIcon } from "@/icons"
-import { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: "404",
-  description: "Something went wrong",
-}
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export default function NotFound() {
+  const t = useCopy()
   return (
     <div className="flex flex-col gap-4 items-center justify-center py-24">
-      <h1 className="text-2xl-semi text-ui-fg-base">Page not found</h1>
+      <h1 className="text-2xl-semi text-ui-fg-base">{t.notFoundTitle}</h1>
       <p className="text-small-regular text-ui-fg-base">
-        The page you tried to access does not exist.
+        {t.notFoundBody}
       </p>
       <LocalizedClientLink className="flex gap-x-1 items-center group" href="/">
-        Go to frontpage
+        {t.goHome}
         <ArrowUpIcon
-          className="group-hover:rotate-45 ease-in-out duration-150"
+          className="group-hover:rotate-45 ease-in-out duration-150 rtl-flip"
           color="var(--fg-interactive)"
         />
       </LocalizedClientLink>

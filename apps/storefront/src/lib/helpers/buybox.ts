@@ -6,14 +6,37 @@ import { OfferDTO } from '@mercurjs/types';
  */
 export type StoreOffer = OfferDTO & { inventory_quantity?: number | null };
 
-export const getOfferAmount = (offer: StoreOffer): number | null =>
-  offer.calculated_price?.calculated_amount ?? null;
+const amountFromPriceRow = (offer: StoreOffer): number | null => {
+  const row = offer.prices?.[0];
+  if (!row || typeof row.amount !== 'number') {
+    return null;
+  }
+  return row.amount;
+};
 
-export const getOfferStock = (offer: StoreOffer): number =>
-  offer.inventory_quantity ?? 0;
+export const getOfferAmount = (offer: StoreOffer): number | null =>
+  offer.calculated_price?.calculated_amount ?? amountFromPriceRow(offer);
+
+export const getOfferCurrency = (
+  offer: StoreOffer,
+  fallback = 'ils'
+): string =>
+  offer.calculated_price?.currency_code ||
+  offer.prices?.[0]?.currency_code ||
+  fallback;
+
+export const getOfferStock = (offer: StoreOffer): number => {
+  if (offer.allow_backorder) {
+    return Math.max(offer.inventory_quantity ?? 1, 1);
+  }
+  if (offer.inventory_quantity == null) {
+    return 1;
+  }
+  return offer.inventory_quantity;
+};
 
 export const isPurchasable = (offer: StoreOffer): boolean =>
-  getOfferStock(offer) > 0 && getOfferAmount(offer) !== null;
+  getOfferStock(offer) > 0;
 
 /**
  * Buybox comparator (best first): in-stock before out-of-stock, then lowest

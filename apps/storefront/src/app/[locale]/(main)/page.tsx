@@ -1,10 +1,10 @@
 import {
   BannerSection,
-  BlogSection,
   Hero,
   HomeCategories,
   HomeProductSection,
-  ShopByStyleSection,
+  HomeStats,
+  HowProcurementWorksSection,
 } from "@/components/sections"
 
 import type { Metadata } from "next"
@@ -16,6 +16,10 @@ import {
   getStorefrontLocales,
   toHreflang,
 } from "@/lib/helpers/hreflang"
+import { getCopy } from "@/lib/i18n/copy"
+import { publicPageUrl } from "@/lib/helpers/locale-path"
+
+const DEFAULT_SITE_NAME = "טרדנסט — שוק סיטונאי B2B"
 
 export async function generateMetadata({
   params,
@@ -23,6 +27,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const headersList = await headers()
   const host = headersList.get("host")
@@ -43,10 +48,9 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "Home"
-  const description =
-    "Welcome to Mercur B2C Demo! Create a modern marketplace that you own and customize in every aspect with high-performance, fully customizable storefront."
-  const ogImage = "/B2C_Storefront_Open_Graph.png"
+  const title = t.homeTitle
+  const description = t.homeDescription
+  const ogImage = "/tradnest-logo.png"
 
   return {
     title,
@@ -68,23 +72,18 @@ export async function generateMetadata({
     },
     openGraph: {
       title: `${title} | ${
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront"
+        process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME
       }`,
       description,
       url: canonical,
-      siteName:
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME,
       type: "website",
       images: [
         {
           url: ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`,
           width: 1200,
           height: 630,
-          alt:
-            process.env.NEXT_PUBLIC_SITE_NAME ||
-            "Mercur B2C Demo - Marketplace Storefront",
+          alt: process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME,
         },
       ],
     },
@@ -103,18 +102,17 @@ export default async function Home({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const headersList = await headers()
   const host = headersList.get("host")
   const protocol = headersList.get("x-forwarded-proto") || "https"
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
 
-  const siteName =
-    process.env.NEXT_PUBLIC_SITE_NAME ||
-    "Mercur B2C Demo - Marketplace Storefront"
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME
 
   return (
-    <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+    <main className="flex w-full flex-col gap-10 lg:gap-14 items-stretch text-primary">
       <link
         rel="preload"
         as="image"
@@ -130,8 +128,8 @@ export default async function Home({
             "@context": "https://schema.org",
             "@type": "Organization",
             name: siteName,
-            url: `${baseUrl}/${locale}`,
-            logo: `${baseUrl}/favicon.ico`,
+            url: publicPageUrl(baseUrl, locale, "/"),
+            logo: `${baseUrl}/tradnest-icon.png`,
           }),
         }}
       />
@@ -143,7 +141,7 @@ export default async function Home({
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: siteName,
-            url: `${baseUrl}/${locale}`,
+            url: publicPageUrl(baseUrl, locale, "/"),
             inLanguage: toHreflang(locale),
           }),
         }}
@@ -151,27 +149,18 @@ export default async function Home({
 
       <Hero
         image="/images/hero/Image.jpg"
-        heading="Snag your style in a flash"
-        paragraph="Buy, sell, and discover pre-loved gems from the trendiest brands."
+        heading={t.heroHeading}
+        paragraph={t.heroParagraph}
         buttons={[
-          { label: "Buy now", path: "/categories" },
-          {
-            label: "Sell now",
-            path:
-              process.env.NEXT_PUBLIC_VENDOR_URL ||
-              "https://vendor.mercurjs.com",
-          },
+          { label: t.heroCatalog, path: "/categories" },
+          { label: t.heroSeller, path: "/seller/register" },
         ]}
       />
-      <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="trending listings" locale={locale} home />
-      </div>
-      <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading="SHOP BY CATEGORY" />
-      </div>
+      <HomeStats />
+      <HomeCategories heading={t.byCategory} locale={locale} />
+      <HomeProductSection heading={t.featured} locale={locale} home />
       <BannerSection />
-      <ShopByStyleSection />
-      <BlogSection />
+      <HowProcurementWorksSection />
     </main>
   )
 }

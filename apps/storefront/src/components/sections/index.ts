@@ -4,6 +4,8 @@ import { HomeCategories } from "./HomeCategories/HomeCategories"
 import { BannerSection } from "./BannerSection/BannerSection"
 import { ShopByStyleSection } from "./ShopByStyle/ShopByStyleSection"
 import { BlogSection } from "./BlogSection/BlogSection"
+import { HowProcurementWorksSection } from "./HowProcurementWorks/HowProcurementWorksSection"
+import { HomeStats } from "./HomeStats/HomeStats"
 import { ProductListing } from "./ProductListing/ProductListing"
 import { SellerPageHeader } from "./SellerPageHeader/SellerPageHeader"
 import { Cart } from "./Cart/Cart"
@@ -19,6 +21,8 @@ export {
   BannerSection,
   ShopByStyleSection,
   BlogSection,
+  HowProcurementWorksSection,
+  HomeStats,
   ProductListing,
   SellerPageHeader,
   Cart,

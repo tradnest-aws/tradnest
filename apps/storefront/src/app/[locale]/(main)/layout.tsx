@@ -31,7 +31,7 @@ export default async function RootLayout({
       </>
     );
 
-  const userName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'User';
+  const userName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'משתמש';
 
   return (
     <TalkJsProvider

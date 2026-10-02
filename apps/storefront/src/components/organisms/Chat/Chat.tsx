@@ -9,6 +9,7 @@ import { ChatBox } from '@/components/cells/ChatBox/ChatBox';
 import { Modal } from '@/components/molecules';
 import { MessageIcon } from '@/icons';
 import { SellerDTO } from '@mercurjs/types';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 const TALKJS_APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID || '';
 
@@ -33,6 +34,7 @@ export const Chat = ({
   variant?: 'tonal' | 'filled';
   buttonSize?: 'small' | 'large';
 }) => {
+  const t = useCopy();
   const [modal, setModal] = useState(false);
 
   if (!TALKJS_APP_ID) {
@@ -54,11 +56,11 @@ export const Chat = ({
         className={buttonClassNames}
         size={buttonSize}
       >
-        {icon ? <MessageIcon size={20} /> : 'Write to seller'}
+        {icon ? <MessageIcon size={20} /> : t.writeToSeller}
       </Button>
       {modal && (
         <Modal
-          heading="Chat"
+          heading={t.chat}
           onClose={() => setModal(false)}
         >
           <div className="px-4">

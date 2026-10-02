@@ -1,5 +1,11 @@
-import { defineMiddlewares } from "@medusajs/medusa";
+import { defineMiddlewares } from "@medusajs/medusa"
+import { forceHttpSessionCookie } from "./utils/http-session-cookie"
 
 export default defineMiddlewares({
-    routes: [],
-});
+  routes: [
+    {
+      matcher: "*",
+      middlewares: [forceHttpSessionCookie],
+    },
+  ],
+})

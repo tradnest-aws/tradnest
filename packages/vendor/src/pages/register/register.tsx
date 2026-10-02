@@ -1,19 +1,18 @@
 import { Children, ReactNode, useState } from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Spinner } from "@medusajs/icons"
 import { Button, Heading, Hint, Input, Text } from "@medusajs/ui"
-import { MercurFeatureFlags } from "@mercurjs/types"
 import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Link, Navigate, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import config from "virtual:mercur/config"
 import * as z from "zod"
 
 import { Form } from "@components/common/form"
 import AvatarBox from "@components/common/logo-box/avatar-box"
 import { AuthLayout } from "@components/layout/auth-layout"
-import { useFeatureFlags, useSignUpWithEmailPass } from "@hooks/api"
+import { AuthSwitchLink, AuthSwitchStack } from "@components/layout/auth-layout/auth-switch-link"
+import { useSignUpWithEmailPass } from "@hooks/api"
 
 import { RegisterSchema } from "./register-schema"
 
@@ -28,9 +27,9 @@ const RegisterHeader = () => {
 
   return (
     <div className="mb-6 flex flex-col">
-      <Heading>{t("register.title", { name: config.name ?? "Mercur" })}</Heading>
+      <Heading>{t("register.title", { name: config.name ?? "Tradnest" })}</Heading>
       <Text size="small" className="text-ui-fg-subtle">
-        {t("register.hint", { name: config.name ?? "Mercur" })}
+        {t("register.hint", { name: config.name ?? "Tradnest" })}
       </Text>
     </div>
   )
@@ -148,42 +147,18 @@ const RegisterForm = () => {
 }
 
 const RegisterFooter = () => {
-  const { t } = useTranslation()
-
   return (
-    <div className="mt-auto">
-      <span className="text-ui-fg-muted txt-small">
-        <Trans
-          t={t}
-          i18nKey="register.alreadySeller"
-          components={[
-            <Link
-              key="login-link"
-              to="/login"
-              className="text-ui-fg-interactive transition-fg hover:text-ui-fg-interactive-hover focus-visible:text-ui-fg-interactive-hover font-medium outline-none"
-            />,
-          ]}
-        />
-      </span>
-    </div>
+    <AuthSwitchStack>
+      <AuthSwitchLink
+        i18nKey="register.alreadySeller"
+        to="/login"
+        linkKey="login-link"
+      />
+    </AuthSwitchStack>
   )
 }
 
 const Root = ({ children }: { children?: ReactNode }) => {
-  const { feature_flags, isLoading } = useFeatureFlags()
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Spinner className="text-ui-fg-interactive animate-spin" />
-      </div>
-    )
-  }
-
-  if (!feature_flags?.[MercurFeatureFlags.SELLER_REGISTRATION]) {
-    return <Navigate to="/login" replace />
-  }
-
   return (
     <AuthLayout>
       {Children.count(children) > 0 ? (

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Funnel_Display } from 'next/font/google';
+import { Heebo } from 'next/font/google';
 
 import './globals.css';
 
@@ -8,25 +8,34 @@ import Head from 'next/head';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
+import { retrieveCustomer } from '@/lib/data/customer';
 
 import { Providers } from './providers';
 
-const funnelDisplay = Funnel_Display({
-  variable: '--font-funnel-sans',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600']
+const heebo = Heebo({
+  variable: '--font-heebo',
+  subsets: ['latin', 'hebrew'],
+  weight: ['400', '500', '600', '700', '800']
 });
 
 export const metadata: Metadata = {
   title: {
     template: `%s | ${
-      process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+      process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
     }`,
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
   },
   description:
-    process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000')
+    process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
+    'טרדנסט הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/tradnest-icon.png', type: 'image/png' }
+    ],
+    apple: '/tradnest-icon.png'
+  }
 };
 
 export default async function RootLayout({
@@ -34,15 +43,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cart = await retrieveCart();
-
-  // default lang updated by HtmlLangSetter
-  const htmlLang = 'en';
+  const [cart, customer] = await Promise.all([
+    retrieveCart(),
+    retrieveCustomer()
+  ]);
+  const htmlLang = 'he-IL';
+  const dir = 'rtl';
 
   return (
     <html
       lang={htmlLang}
-      className=""
+      dir={dir}
+      className={heebo.variable}
     >
       <Head>
         <link
@@ -110,10 +122,15 @@ export default async function RootLayout({
           href="https://api.mercurjs.com"
         />
       </Head>
-      <body className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}>
+      <body
+        dir={dir}
+        className={`${heebo.className} relative bg-secondary text-secondary antialiased`}
+      >
         <HtmlLangSetter />
-        <Providers cart={cart}>{children}</Providers>
-        <Toaster position="top-right" />
+        <Providers cart={cart} isLoggedIn={Boolean(customer)}>
+          {children}
+        </Providers>
+        <Toaster position={dir === 'rtl' ? 'top-left' : 'top-right'} />
       </body>
     </html>
   );

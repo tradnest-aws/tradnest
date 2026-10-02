@@ -13,6 +13,7 @@ import { sendResetPasswordEmail } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
 import { ForgotPasswordFormData, forgotPasswordSchema } from './schema';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const ForgotPasswordForm = () => {
   const methods = useForm<ForgotPasswordFormData>({
@@ -30,6 +31,7 @@ export const ForgotPasswordForm = () => {
 };
 
 const Form = () => {
+  const t = useCopy();
   const {
     handleSubmit,
     register,
@@ -43,7 +45,7 @@ const Form = () => {
     const result = await sendResetPasswordEmail(data.email);
 
     if (!result.success) {
-      toast.error({ title: result.error || 'An error occurred. Please try again.' });
+      toast.error({ title: result.error || t.genericError });
       return;
     }
 
@@ -59,9 +61,9 @@ const Form = () => {
       className="mx-auto mt-6 w-full max-w-xl space-y-4 rounded-sm border p-4"
       data-testid="forgot-password-form-container"
     >
-      <h1 className="heading-md my-0 mb-2 uppercase text-primary">Forgot your password?</h1>
+      <h1 className="heading-md my-0 mb-2 uppercase text-primary">{t.forgotTitle}</h1>
       <p className="text-md">
-        Enter the email you used to sign up and we&#39;ll send you a password reset email. email.
+        {t.forgotHint}
       </p>
       <form
         onSubmit={handleSubmit(submit)}
@@ -69,8 +71,8 @@ const Form = () => {
       >
         <div className="space-y-4">
           <LabeledInput
-            label="E-mail"
-            placeholder="Your e-mail address"
+            label={t.emailLabel}
+            placeholder={t.emailPlaceholder}
             error={errors.email as FieldError}
             data-testid="forgot-password-email-input"
             {...register('email')}
@@ -83,7 +85,7 @@ const Form = () => {
             disabled={isSubmitting}
             data-testid="forgot-password-submit-button"
           >
-            Reset Password
+            {t.forgotTitle}
           </Button>
 
           <Link
@@ -95,7 +97,7 @@ const Form = () => {
               variant="tonal"
               className="flex w-full justify-center uppercase"
             >
-              Back to log in
+              {t.login}
             </Button>
           </Link>
         </div>

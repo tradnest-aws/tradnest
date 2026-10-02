@@ -7,6 +7,8 @@ import { redirect } from "next/navigation"
 import { format } from "date-fns"
 import { retrieveOrderGroup } from "@/lib/data/orders"
 import { OrderDetailsSection } from "@/components/sections/OrderDetailsSection/OrderDetailsSection"
+import { headers } from "next/headers"
+import { DEFAULT_STOREFRONT_LOCALE, getCopy } from "@/lib/i18n/copy"
 
 export default async function UserPage({
   params,
@@ -16,6 +18,9 @@ export default async function UserPage({
   const { id } = await params
 
   const user = await retrieveCustomer()
+  const t = getCopy(
+    (await headers()).get("x-locale") || DEFAULT_STOREFRONT_LOCALE
+  )
   const orderGroup = (await retrieveOrderGroup(id)) as any
 
   if (!user) return redirect("/login")
@@ -31,15 +36,15 @@ export default async function UserPage({
               className="label-md text-action-on-secondary uppercase flex items-center gap-2"
             >
               <ArrowLeftIcon className="size-4" />
-              All orders
+              {t.allOrders}
             </Button>
           </LocalizedClientLink>
           <div className="sm:flex items-center justify-between">
             <h1 className="heading-md uppercase my-8">
-              Order set #{orderGroup.display_id}
+              {t.orderSet(orderGroup.display_id)}
             </h1>
             <p className="label-md text-secondary">
-              Order date:{" "}
+              {t.orderDate}{" "}
               <span className="text-primary">
                 {format(orderGroup.created_at || "", "yyyy-MM-dd")}
               </span>

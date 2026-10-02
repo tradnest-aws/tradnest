@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 
 import { SelectField } from '@/components/molecules';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 const selectOptions = [
   { label: 'Newest', value: 'created_at' },
@@ -11,6 +12,7 @@ const selectOptions = [
 ];
 
 export const ProductListingHeader = ({ total }: { total: number }) => {
+  const t = useCopy();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -23,7 +25,7 @@ export const ProductListingHeader = ({ total }: { total: number }) => {
       className="flex w-full items-center justify-between"
       data-testid="product-listing-header"
     >
-      <div data-testid="product-listing-total">{total} listings</div>
+      <div data-testid="product-listing-total">{t.listingsCount(total)}</div>
     </div>
   );
 };

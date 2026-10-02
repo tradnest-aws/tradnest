@@ -7,6 +7,8 @@ import {
   buildHreflangAlternates,
   getStorefrontLocales,
 } from "@/lib/helpers/hreflang"
+import { decodeSellerHandle } from "@/lib/helpers/seller-handle"
+import { getCopy } from "@/lib/i18n/copy"
 import { SellerDTO } from "@mercurjs/types"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
@@ -16,7 +18,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ handle: string; locale: string }>
 }): Promise<Metadata> {
-  const { handle, locale } = await params
+  const { handle: rawHandle, locale } = await params
+  const handle = decodeSellerHandle(rawHandle)
 
   const seller = (await getSellerByHandle(handle)) as SellerDTO
   if (!seller) {
@@ -72,7 +75,8 @@ export default async function SellerPage({
   params: Promise<{ handle: string; locale: string }>
   searchParams: Promise<{ page?: string }>
 }) {
-  const { handle, locale } = await params
+  const { handle: rawHandle, locale } = await params
+  const handle = decodeSellerHandle(rawHandle)
   const { page } = await searchParams
 
   const seller = (await getSellerByHandle(handle)) as SellerDTO
@@ -82,7 +86,13 @@ export default async function SellerPage({
   const tab = "offers"
 
   if (!seller) {
-    return null
+    const t = getCopy(locale)
+    return (
+      <main className="container py-12">
+        <h1 className="heading-md">{t.noResults}</h1>
+        <p className="mt-2 text-secondary">{t.noResultsHint}</p>
+      </main>
+    )
   }
 
   return (

@@ -6,6 +6,7 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { convertToLocale } from '@/lib/helpers/money';
+import { isInternalVariantOption } from '@/lib/helpers/variant-option';
 
 export const CartItemsProducts = ({
   products,
@@ -76,7 +77,9 @@ export const CartItemsProducts = ({
               </div>
               <div className="lg:flex justify-between -mt-4 lg:mt-0">
                 <div className="label-md text-secondary" data-testid="cart-item-details">
-                  {options?.map(({ option, id, value }) => (
+                  {options
+                    ?.filter(({ option }) => !isInternalVariantOption(option?.title))
+                    .map(({ option, id, value }) => (
                     <p key={id}>
                       {option?.title}: <span className="text-primary">{value}</span>
                     </p>

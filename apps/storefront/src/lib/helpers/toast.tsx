@@ -15,7 +15,7 @@ export const toast = {
       duration: 10000,
       icon: <DoneIcon color="rgb(20, 83, 45)" />,
       cancel: {
-        label: <CloseIcon size={22} color='rgba(9, 9, 9, 1)' className='cursor-pointer ml-auto' />,
+        label: <CloseIcon size={22} color='rgba(9, 9, 9, 1)' className='cursor-pointer ms-auto' />,
         onClick: () => {}
       },
       cancelButtonStyle: {
@@ -34,7 +34,7 @@ export const toast = {
       description,
       icon: <ErrorIcon color="rgb(155, 34, 25)" />,
       cancel: {
-        label: <CloseIcon size={22} color='rgba(9, 9, 9, 1)' className='cursor-pointer ml-auto' />,
+        label: <CloseIcon size={22} color='rgba(9, 9, 9, 1)' className='cursor-pointer ms-auto' />,
         onClick: () => {}
       },
       cancelButtonStyle: {

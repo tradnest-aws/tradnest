@@ -1,11 +1,9 @@
 import {
-  BookOpen,
   CircleHalfSolid,
   EllipsisHorizontal,
   GlobeEurope,
   Keyboard,
   OpenRectArrowOut,
-  TimelineVertical,
   User as UserIcon,
   XMark,
 } from "@medusajs/icons";
@@ -57,19 +55,6 @@ export const UserMenu = () => {
             <Link to="/settings/profile" state={{ from: location.pathname }}>
               <UserIcon className="text-ui-fg-subtle me-2" />
               {t("app.menus.user.profileSettings")}
-            </Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item asChild>
-            <Link to="https://docs.mercurjs.com/welcome" target="_blank">
-              <BookOpen className="text-ui-fg-subtle me-2" />
-              {t("app.menus.user.documentation")}
-            </Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item asChild>
-            <Link to="https://www.mercurjs.com/updates" target="_blank">
-              <TimelineVertical className="text-ui-fg-subtle me-2" />
-              {t("app.menus.user.changelog")}
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
@@ -204,9 +189,7 @@ export const ThemeToggle = () => {
 export const LanguageToggle = () => {
   const { t, i18n } = useTranslation();
 
-  const sortedLanguages = languages.sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  );
+  const sortedLanguages = [...languages]
 
   const currentLanguage = sortedLanguages.find(
     (lang) => lang.code === i18n.language

@@ -1,5 +1,7 @@
 import 'server-only';
-import { cookies as nextCookies } from 'next/headers';
+import { cookies as nextCookies, headers as nextHeaders } from 'next/headers';
+
+import { shouldUseSecureAuthCookie } from '../helpers/auth-cookie';
 
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | {}
@@ -49,11 +51,16 @@ export const getCacheOptions = async (
 
 export const setAuthToken = async (token: string) => {
   const cookies = await nextCookies();
+  const headerList = await nextHeaders();
   cookies.set('_medusa_jwt', token, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: shouldUseSecureAuthCookie({
+      cookieSecureEnv: process.env.COOKIE_SECURE,
+      forwardedProto: headerList.get('x-forwarded-proto'),
+    }),
+    path: '/',
   });
 };
 
@@ -69,19 +76,33 @@ export const getCartId = async () => {
   return cookies.get('_medusa_cart_id')?.value;
 };
 
+const cartCookieBase = async () => {
+  const headerList = await nextHeaders();
+  return {
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    // Production sets NODE_ENV=production, but this host is HTTP. A Secure
+    // cart cookie is dropped, so the next add looks like the cart was emptied.
+    secure: shouldUseSecureAuthCookie({
+      cookieSecureEnv: process.env.COOKIE_SECURE,
+      forwardedProto: headerList.get('x-forwarded-proto'),
+    }),
+    path: '/',
+  };
+};
+
 export const setCartId = async (cartId: string) => {
   const cookies = await nextCookies();
   cookies.set('_medusa_cart_id', cartId, {
+    ...(await cartCookieBase()),
     maxAge: 60 * 60 * 24 * 7,
-    httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production',
   });
 };
 
 export const removeCartId = async () => {
   const cookies = await nextCookies();
   cookies.set('_medusa_cart_id', '', {
+    ...(await cartCookieBase()),
     maxAge: -1,
   });
 };

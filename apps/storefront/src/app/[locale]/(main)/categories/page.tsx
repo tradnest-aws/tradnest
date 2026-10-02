@@ -13,6 +13,8 @@ import {
   buildHreflangAlternates,
   getStorefrontLocales,
 } from "@/lib/helpers/hreflang"
+import { getCopy } from "@/lib/i18n/copy"
+import { publicPageUrl } from "@/lib/helpers/locale-path"
 
 export const revalidate = 60
 
@@ -41,10 +43,8 @@ export async function generateMetadata({
     locales,
   })
 
-  const title = "All Products"
-  const description = `Browse all products on ${
-    process.env.NEXT_PUBLIC_SITE_NAME || "our store"
-  }`
+  const title = getCopy(locale).allProducts
+  const description = getCopy(locale).catalogDescription
 
   return {
     title,
@@ -70,6 +70,7 @@ async function AllCategories({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const t = getCopy(locale)
 
   const ua = (await headers()).get("user-agent") || ""
   const bot = isBot(ua)
@@ -77,7 +78,7 @@ async function AllCategories({
   const breadcrumbsItems = [
     {
       path: "/",
-      label: "All Products",
+      label: t.allProducts,
     },
   ]
 
@@ -95,7 +96,7 @@ async function AllCategories({
   const itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
     "@type": "ListItem",
     position: idx + 1,
-    url: `${baseUrl}/${locale}/products/${p.handle}`,
+    url: publicPageUrl(baseUrl, locale, `/products/${p.handle}`),
     name: p.title,
   }))
 
@@ -112,8 +113,8 @@ async function AllCategories({
               {
                 "@type": "ListItem",
                 position: 1,
-                name: "All Products",
-                item: `${baseUrl}/${locale}/categories`,
+                name: t.allProducts,
+                item: publicPageUrl(baseUrl, locale, "/categories"),
               },
             ],
           }),
@@ -134,7 +135,7 @@ async function AllCategories({
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
-      <h1 className="heading-xl uppercase">All Products</h1>
+      <h1 className="heading-xl">{t.allProducts}</h1>
 
       <Suspense fallback={<div data-testid="all-categories-page-loading"><ProductListingSkeleton /></div>}>
         {bot ? (

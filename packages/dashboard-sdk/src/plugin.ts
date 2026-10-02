@@ -182,6 +182,13 @@ function resolvePluginExtensions(plugins: any[], configDir: string, appType: "ad
     return extensions;
 }
 
+function viteAssetBase(value: string | undefined): string | undefined {
+    if (!value) {
+        return undefined
+    }
+    return value.endsWith("/") ? value : `${value}/`
+}
+
 function trimTrailingSlashes(value: string): string {
     let end = value.length;
 
@@ -198,6 +205,7 @@ async function loadMedusaConfig(
     options: {
         isDevelopment: boolean;
         vendorUrl?: string;
+        fallbackBase?: string;
     },
 ): Promise<{
     base?: string;
@@ -272,10 +280,12 @@ async function loadMedusaConfig(
         console.warn(
             `[@mercurjs/dashboard-sdk] Could not load the Medusa config from "${medusaConfigPath}": ` +
                 `${error instanceof Error ? error.message : String(error)}. ` +
-                `Building with base "/" and no plugin extensions — if this panel is served ` +
-                `under a sub-path (e.g. /dashboard), its assets will not resolve.`,
+                (options.fallbackBase
+                    ? `Using base "${options.fallbackBase}" without plugin extensions.`
+                    : `Building with base "/" and no plugin extensions — if this panel is served ` +
+                      `under a sub-path (e.g. /dashboard), its assets will not resolve.`),
         );
-        return { pluginExtensions: [] };
+        return { base: options.fallbackBase, pluginExtensions: [] };
     }
 }
 
@@ -301,17 +311,19 @@ export function mercurDashboardPlugin(pluginConfig: MercurConfig): Vite.Plugin {
                 {
                     isDevelopment,
                     vendorUrl: pluginConfig.vendorUrl,
+                    fallbackBase: pluginConfig.base ?? viteConfig.base,
                 },
             );
 
             const srcDir = path.join(root, "src");
             const backendUrl = pluginConfig.backendUrl ?? "http://localhost:9000";
             const imageLimit = pluginConfig.imageLimit ?? 2 * 1024 * 1024;
+            const resolvedBase = viteAssetBase(pluginConfig.base ?? base ?? viteConfig.base);
 
             config = {
                 ...pluginConfig,
                 backendUrl,
-                base,
+                base: resolvedBase,
                 root,
                 srcDir,
                 pluginExtensions,
@@ -319,7 +331,7 @@ export function mercurDashboardPlugin(pluginConfig: MercurConfig): Vite.Plugin {
             };
 
             return {
-                base: config.base,
+                ...(resolvedBase ? { base: resolvedBase } : {}),
                 define: {
                     __BACKEND_URL__: JSON.stringify(config.backendUrl),
                     __BASE__: JSON.stringify(config.base || "/"),

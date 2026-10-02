@@ -10,6 +10,7 @@ import {
   findParentCategoryHandle,
   filterCategoriesByParent,
 } from "@/lib/helpers/category-utils"
+import { useCopy } from "@/lib/i18n/useCopy"
 import { MobileCategoryDrawer } from "./MobileCategoryDrawer"
 
 interface MobileCategoryNavbarProps {
@@ -23,6 +24,7 @@ export const MobileCategoryNavbar = ({
   parentCategories = [],
   onClose,
 }: MobileCategoryNavbarProps) => {
+  const t = useCopy()
   const { category } = useParams<{ category?: string }>()
   const [selectedCategory, setSelectedCategory] = useState<HttpTypes.StoreProductCategory | null>(null)
 
@@ -72,7 +74,7 @@ export const MobileCategoryNavbar = ({
           onClick={handleClose}
           className="label-md uppercase px-4 py-3 text-primary hover:bg-secondary/10 transition-colors"
         >
-          All Products
+          {t.allProducts}
         </LocalizedClientLink>
 
         {filteredCategories.map(({ id, handle, name, category_children }) => {

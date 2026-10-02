@@ -6,6 +6,7 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 import {
   enrichProductAttributes,
+  queryProductsOmittingBrokenAttributeLinks,
   wrapProductVariantsWithOfferPrice,
 } from "../../utils"
 import { splitComputedVariantFields } from "./helpers"
@@ -30,12 +31,14 @@ export const GET = async (req: MedusaStoreRequest, res: MedusaResponse) => {
     ...productFilters
   } = (req.filterableFields ?? {}) as Record<string, unknown>
 
-  const { data: products, metadata } = await query.graph({
-    entity: "product",
-    fields: req.queryConfig.fields,
-    filters: productFilters,
-    pagination: req.queryConfig.pagination,
-  })
+  const { data: products, metadata } = await queryProductsOmittingBrokenAttributeLinks(
+    query,
+    {
+      fields: req.queryConfig.fields,
+      filters: productFilters,
+      pagination: req.queryConfig.pagination,
+    }
+  )
 
   await enrichProductAttributes(req.scope, products as any[])
 

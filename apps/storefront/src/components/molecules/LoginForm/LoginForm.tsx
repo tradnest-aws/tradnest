@@ -14,6 +14,8 @@ import { login, transferCart } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
 import { LoginFormData, loginFormSchema } from './schema';
+import { resolveLoginSubmit } from './login-submit';
+import { useCopy } from '@/lib/i18n/useCopy';
 
 export const LoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -32,7 +34,8 @@ export const LoginForm = () => {
 };
 
 const Form = () => {
-  const [isAuthError, setIsAuthError] = useState(false);
+  const t = useCopy();
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     handleSubmit,
     register,
@@ -49,28 +52,37 @@ const Form = () => {
     formData.append('password', data.password);
 
     const res = await login(formData);
+    const outcome = resolveLoginSubmit(res, t.genericError);
 
-    if (res.success) {
-      router.push('/user');
-      await transferCart();
-    } else {
-      toast.error({ title: res.message || 'An error occurred. Please try again.' });
+    if (outcome.type === 'continue') {
+      setSubmitError(null);
+      try {
+        await transferCart();
+      } catch {
+        // Session is already stored. Cart merge should not block entry.
+      }
+      router.push(outcome.href);
+      return;
     }
 
-    setIsAuthError(false);
-    router.push('/user');
+    setSubmitError(outcome.message);
+    toast.error({ title: outcome.message });
   };
 
   const clearApiError = () => {
-    isAuthError && setIsAuthError(false);
+    if (!submitError) return;
+    setSubmitError(null);
   };
 
   const getAuthMessage = () => {
+    if (submitError) {
+      return submitError;
+    }
     if (isSessionExpired) {
-      return 'Your session has expired. Please log in to continue.';
+      return t.sessionExpired;
     }
     if (isSessionRequired) {
-      return 'Please log in to continue.';
+      return t.sessionRequired;
     }
     return null;
   };
@@ -95,31 +107,28 @@ const Form = () => {
           className="rounded-sm border p-4"
           data-testid="login-form-container"
         >
-          <h1 className="heading-md mb-8 uppercase text-primary">Log in</h1>
+          <h1 className="heading-md mb-8 uppercase text-primary">{t.loginTitle}</h1>
           <form
             onSubmit={handleSubmit(submit)}
             data-testid="login-form"
           >
             <div className="space-y-4">
               <LabeledInput
-                label="E-mail"
-                placeholder="Your e-mail address"
-                error={
-                  (errors.email as FieldError) ||
-                  (isAuthError ? ({ message: '' } as FieldError) : undefined)
-                }
+                label={t.emailLabel}
+                placeholder={t.emailPlaceholder}
+                error={errors.email as FieldError}
                 data-testid="login-email-input"
                 {...register('email', {
                   onChange: clearApiError
                 })}
               />
               <LabeledInput
-                label="Password"
-                placeholder="Your password"
+                label={t.passwordLabel}
+                placeholder={t.passwordPlaceholder}
                 type="password"
                 error={
                   (errors.password as FieldError) ||
-                  (isAuthError ? ({ message: '' } as FieldError) : undefined)
+                  (submitError ? ({ message: submitError } as FieldError) : undefined)
                 }
                 data-testid="login-password-input"
                 {...register('password', {
@@ -130,10 +139,10 @@ const Form = () => {
 
             <Link
               href="/forgot-password"
-              className="label-md mt-4 block text-right uppercase text-action-on-secondary"
+              className="label-md mt-4 block text-end uppercase text-action-on-secondary"
               data-testid="login-forgot-password-link"
             >
-              Forgot your password?
+              {t.forgotPassword}
             </Link>
 
             <Button
@@ -141,14 +150,14 @@ const Form = () => {
               disabled={isSubmitting}
               data-testid="login-submit-button"
             >
-              Log in
+              {t.login}
             </Button>
           </form>
         </div>
 
         <div className="rounded-sm border p-4">
           <h2 className="heading-md mb-4 uppercase text-primary">
-            Don&apos;t have an account yet?
+            {t.needBuyer}
           </h2>
           <Link
             href="/register"
@@ -158,7 +167,7 @@ const Form = () => {
               variant="tonal"
               className="mt-8 flex w-full justify-center uppercase"
             >
-              Create account
+              {t.createBuyerAccount}
             </Button>
           </Link>
         </div>

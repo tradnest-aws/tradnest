@@ -15,6 +15,8 @@ export default defineConfig(({ mode }) => {
       react(),
       mercurDashboardPlugin({
         medusaConfigPath: '../api/medusa-config.ts',
+        name: 'Tradnest',
+        logo: '/tradnest-icon.png',
         ...(backendUrl ? { backendUrl } : {}),
         ...(vendorUrl ? { vendorUrl } : {}),
       }),

@@ -1,16 +1,17 @@
-import {
-  retrieveActiveStore,
-  storeQueryKeys,
-} from "../../hooks/api/store";
-import { queryClient } from "../../lib/query-client";
+import { HttpTypes } from "@medusajs/types";
 
-const storeDetailQuery = () => ({
-  queryKey: storeQueryKeys.details(),
-  queryFn: async () => retrieveActiveStore(),
-});
+import { retrieveActiveStore } from "../../hooks/api/store";
 
-export const onboardingLoader = async () => {
-  const query = storeDetailQuery();
+export type OnboardingLoaderData = {
+  store?: HttpTypes.AdminStore;
+};
 
-  return queryClient.ensureQueryData(query);
+export const onboardingLoader = async (): Promise<OnboardingLoaderData> => {
+  try {
+    return await retrieveActiveStore();
+  } catch {
+    // New suppliers have no store yet. A thrown ClientError 404 is rendered
+    // as the vendor "no page at this address" screen instead of the wizard.
+    return {};
+  }
 };

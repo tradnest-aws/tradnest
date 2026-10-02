@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "rm -rf node_modules/.vite && vite --port 7002",
+    "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview --port 7001"
+    "preview": "vite preview --host 127.0.0.1 --port 7001"
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",

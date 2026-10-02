@@ -10,8 +10,11 @@ import { getAuthHeaders } from './cookies';
 import { CACHE_TAGS, getGlobalCacheOptions } from './cache-tags';
 import { getRegion, retrieveRegion } from './regions';
 
+// Do not request `*attribute_values` — that is not a product relation (see
+// `product_attribute_values`) and 500s the store list, which the catalog
+// catches as an empty page.
 const PRODUCT_LIST_FIELDS =
-  '*variants.calculated_price,+variants.inventory_quantity,*variants.options,*attribute_values,*attribute_values.attribute';
+  '*variants.calculated_price,+variants.inventory_quantity,*variants.options';
 
 export type SearchFacetBucket = { value: string; count: number };
 
@@ -256,10 +259,26 @@ export const searchProducts = async ({
   } as never) as unknown as Promise<{
     products: HttpTypes.StoreProduct[];
     count: number;
-  }>).catch(() => ({
-    products: [] as HttpTypes.StoreProduct[],
-    count: 0,
-  }));
+  }>).catch(async () => {
+    const fallback = await (sdk.store.products.query({
+      q: query || undefined,
+      region_id: region.id,
+      category_id,
+      collection_id,
+      order,
+      limit,
+      offset,
+      fields: 'id,title,thumbnail,handle,*variants.calculated_price',
+      fetchOptions: { headers: { ...(await getAuthHeaders()) }, cache: 'no-cache' },
+    } as never) as unknown as Promise<{
+      products: HttpTypes.StoreProduct[];
+      count: number;
+    }>).catch(() => ({
+      products: [] as HttpTypes.StoreProduct[],
+      count: 0,
+    }));
+    return fallback;
+  });
 
   const ordered =
     sortBy === 'price_asc' || sortBy === 'price_desc'

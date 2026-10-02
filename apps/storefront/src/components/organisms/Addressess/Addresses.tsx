@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { HttpTypes } from "@medusajs/types"
 import { isEmpty } from "lodash"
 import { useState } from "react"
+import { useCopy } from "@/lib/i18n/useCopy"
 
 export const Addresses = ({
   user,
@@ -16,6 +17,7 @@ export const Addresses = ({
   user: HttpTypes.StoreCustomer
   regions: HttpTypes.StoreRegion[]
 }) => {
+  const t = useCopy()
   const [showForm, setShowForm] = useState(false)
   const [deleteAddress, setDeleteAddress] = useState<string | null>(null)
 
@@ -65,18 +67,17 @@ export const Addresses = ({
         )}
         data-testid="addresses-container"
       >
-        <h1 className="heading-md uppercase" data-testid="addresses-heading">Addresses</h1>
+        <h1 className="heading-md" data-testid="addresses-heading">{t.addresses}</h1>
         {isEmpty(user.addresses) ? (
           <div className="text-center" data-testid="addresses-empty-state">
-            <h3 className="heading-lg text-primary uppercase" data-testid="addresses-empty-heading">
-              No saved shipping addresses
+            <h3 className="heading-lg text-primary" data-testid="addresses-empty-heading">
+              {t.noSavedAddresses}
             </h3>
             <p className="text-lg text-secondary mt-2" data-testid="addresses-empty-description">
-              You currently have no saved shipping addresses. <br />
-              Add an address to make your checkout process quicker and easier.
+              {t.noSavedAddressesHint}
             </p>
             <Button onClick={handleAdd} className="mt-4" data-testid="addresses-add-button">
-              Add address
+              {t.addAddress}
             </Button>
           </div>
         ) : (

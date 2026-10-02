@@ -1,13 +1,17 @@
+"use client"
+
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import LocalizedClientLink from "../../LocalizedLink/LocalizedLink"
 import { ArrowRightIcon } from "@/icons"
+import { useCopy } from "@/lib/i18n/useCopy"
 interface Props {
   category: HttpTypes.StoreProductCategory
   onLinkClick?: () => void
 }
 
 export const FeaturedCategory = ({ category, onLinkClick }: Props) => {
+  const t = useCopy()
 
   return (
     <LocalizedClientLink
@@ -16,21 +20,22 @@ export const FeaturedCategory = ({ category, onLinkClick }: Props) => {
       className="flex flex-col w-full h-full"
     >
       <div className="relative aspect-square max-h-[248px] w-full h-full bg-initial rounded-t-sm">
-        {category && category.metadata && (
-          <Image
-            src={category.metadata?.image_url as string}
-            alt={category.name}
-            width={100}
-            height={100}
-            className="object-cover p-1 rounded-sm w-full h-full"
-          />
-        )}
+        <Image
+          src={
+            (category.metadata?.image_url as string) ||
+            `/images/categories/${category.handle}.png`
+          }
+          alt={category.name}
+          width={100}
+          height={100}
+          className="object-cover p-1 rounded-sm w-full h-full"
+        />
       </div>
 
         <div className="p-4 flex flex-col gap-y-2 mt-auto bg-initial">
-          <h3 className="heading-md text-primary uppercase">{category.name}</h3>
+          <h3 className="heading-md text-primary">{category.name}</h3>
           <div className="flex items-center gap-x-2">
-            <p className="label-md uppercase">Shop Now</p>
+            <p className="label-md">{t.shopNow}</p>
             <ArrowRightIcon className="w-4 h-4" />
           </div>
         </div>

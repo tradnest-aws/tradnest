@@ -6,7 +6,6 @@ import { Indicator } from "@/components/atoms"
 import { ArrowLeftIcon, ArrowRightIcon } from "@/icons"
 import { useCallback, useEffect, useState } from "react"
 import { EmblaCarouselType } from "embla-carousel"
-import tailwindConfig from "../../../../tailwind.config"
 
 export const CustomCarousel = ({
   variant = "light",
@@ -20,6 +19,10 @@ export const CustomCarousel = ({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align,
+    direction:
+      typeof document !== "undefined" && document.documentElement.dir === "rtl"
+        ? "rtl"
+        : "ltr",
   })
 
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -46,8 +49,8 @@ export const CustomCarousel = ({
   )
 
   const arrowColor = {
-    light: tailwindConfig.theme.extend.colors.primary,
-    dark: tailwindConfig.theme.extend.colors.tertiary,
+    light: "rgb(var(--content-primary))",
+    dark: "rgb(var(--content-tertiary))",
   }
 
   return (
