@@ -3,6 +3,7 @@ import path from 'path'
 import { createRequire } from 'module'
 import { loadEnv } from '@medusajs/framework/utils'
 import { withMercur } from '@mercurjs/core'
+import { tradnestAdminBrandPlugin } from './admin-brand/vite-plugin'
 
 // The admin bundle is compiled from apps/api, which does not depend on React.
 // Bun keeps React 18 next to @medusajs/dashboard, so point Vite there.
@@ -96,6 +97,9 @@ module.exports = withMercur({
           ...config.server,
           allowedHosts: true,
         },
+        // Replaces the spread `plugins` array. Vite merges this with the
+        // admin bundler's own plugins, so only the brand plugin is added.
+        plugins: [tradnestAdminBrandPlugin()],
       }
     },
   },

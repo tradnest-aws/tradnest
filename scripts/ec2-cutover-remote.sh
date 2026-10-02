@@ -261,6 +261,12 @@ build_admin_dashboard() {
     log "Admin build did not write $index"
     exit 1
   fi
+  # The brand plugin emits this during the Vite build. Copy it again so the
+  # login mark still resolves if the asset step is skipped.
+  if [[ -f "$DEPLOY_DIR/apps/storefront/public/tradnest-icon.png" ]]; then
+    cp -f "$DEPLOY_DIR/apps/storefront/public/tradnest-icon.png" \
+      "$DEPLOY_DIR/apps/api/.medusa/admin/tradnest-icon.png"
+  fi
   if [[ -f "$bridge" ]] && ! grep -q "app-jwt-bridge.js" "$index"; then
     python3 - "$index" <<'PY'
 import pathlib, sys
