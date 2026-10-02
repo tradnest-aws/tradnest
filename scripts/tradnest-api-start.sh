@@ -15,6 +15,11 @@ fi
 
 cd "$API"
 
+# nginx serves apps/api/.medusa/admin at /app. Do not also mount Vite there.
+if [[ -f "$API/.medusa/admin/index.html" ]]; then
+  export DISABLE_MEDUSA_ADMIN=true
+fi
+
 ADMIN_INDEX="$API/.medusa/server/public/admin/index.html"
 if [[ -f "$ADMIN_INDEX" ]]; then
   echo "Starting Medusa production server from $API/.medusa/server"

@@ -28,7 +28,9 @@ module.exports = withMercur({
     }
   },
   admin: {
-    disable: false,
+    // The public host serves a built dashboard from nginx. Leaving Vite's
+    // dev server on makes /app return an empty #medusa shell.
+    disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     // nginx fronts a public host; Vite's default localhost-only allowlist
     // blocks /app when the API runs `medusa develop` on this box.
     vite: (config: { server?: Record<string, unknown> }) => ({

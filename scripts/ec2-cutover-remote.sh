@@ -228,6 +228,37 @@ build_mercur_core() {
   ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/core )
 }
 
+build_admin_dashboard() {
+  local index bridge
+  index="$DEPLOY_DIR/apps/api/.medusa/admin/index.html"
+  bridge="$DEPLOY_DIR/apps/api/static/app-jwt-bridge.js"
+  log "Build Medusa admin dashboard for /app (admin-only)"
+  (
+    cd "$DEPLOY_DIR/apps/api"
+    NODE_OPTIONS="--max-old-space-size=2048" bunx medusa build --admin-only
+  )
+  if [[ ! -f "$index" ]]; then
+    log "Admin build did not write $index"
+    exit 1
+  fi
+  if [[ -f "$bridge" ]] && ! grep -q "app-jwt-bridge.js" "$index"; then
+    python3 - "$index" <<'PY'
+import pathlib, sys
+path = pathlib.Path(sys.argv[1])
+html = path.read_text()
+tag = '<script src="/app-jwt-bridge.js?v=4"></script>'
+needle = "<script"
+if needle not in html:
+    raise SystemExit("admin index.html has no script tag")
+path.write_text(html.replace(needle, tag + needle, 1), encoding="utf-8")
+PY
+  fi
+  bash "$DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh" "$DEPLOY_DIR"
+  mkdir -p /var/www/tradnest
+  ln -sfn "$DEPLOY_DIR/apps/api/.medusa/admin" /var/www/tradnest/app
+  log "Admin dashboard ready at $index"
+}
+
 verify_admin_session_cookie() {
   local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
   local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
@@ -428,22 +459,19 @@ server {
     return 301 /seller/;
   }
 
-  location /app {
-    proxy_pass http://127.0.0.1:$API_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-    proxy_set_header Cookie \$http_cookie;
-    proxy_set_header Upgrade \$http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Accept-Encoding "";
-    sub_filter_types application/javascript;
-    sub_filter_once off;
-    sub_filter '<script type="module" crossorigin src="/app/assets/' '<script src="/app-jwt-bridge.js?v=4"></script><script type="module" crossorigin src="/app/assets/';
-    sub_filter '.js"></script>' '.js?v=jwt4"></script>';
-    sub_filter 'wje="session"' 'wje="jwt"';
-    sub_filter 'auth:{type:"session"}' 'auth:{type:"jwt"}';
+  location = /app {
+    return 301 /app/;
+  }
+
+  location /app/assets/ {
+    root /var/www/tradnest;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location /app/ {
+    root /var/www/tradnest;
+    try_files \$uri \$uri/ /app/index.html;
+    add_header Cache-Control "no-cache";
   }
 
   location = /app-jwt-bridge.js {
@@ -668,6 +696,22 @@ EOF
   systemctl restart tradnest-vendor
 }
 
+verify_admin_app() {
+  local body
+  body="$(mktemp)"
+  local code
+  code="$(curl -sS -o "$body" -w '%{http_code}' -H "Host: ${ORIGIN_HOST}" "http://127.0.0.1/app/" || echo 000)"
+  if [[ "$code" != "200" ]] || grep -q '@vite/client' "$body" || ! grep -q 'id="medusa"' "$body"; then
+    log "GET /app did not serve the built admin dashboard (HTTP $code)"
+    head -c 400 "$body" >&2 || true
+    echo >&2
+    rm -f "$body"
+    exit 1
+  fi
+  log "GET /app serves the built admin dashboard"
+  rm -f "$body"
+}
+
 health_check() {
   log "Health checks"
   local ok=0 i
@@ -706,6 +750,7 @@ health_check() {
   fi
   curl -fsS "http://127.0.0.1:${API_PORT}/health"
   echo
+  verify_admin_app
   verify_admin_products
   log "Cutover complete"
   echo "API:        $PUBLIC_ORIGIN/health"
@@ -723,12 +768,14 @@ if [[ "${TRADNEST_STEP:-}" == "api" ]]; then
   log "API+nginx only (no storefront rebuild)"
   ensure_product_id_columns
   build_mercur_core
+  build_admin_dashboard
   ensure_http_session_cookies
   write_api_unit
   start_tradnest_api
   wait_for_api_health
   verify_vendor_sellers_route
   install_nginx_vhost
+  verify_admin_app
   verify_admin_session_cookie
   verify_admin_products
   verify_store_products
@@ -740,6 +787,7 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   log "nginx-only switch (no full monorepo rebuild)"
   ensure_product_id_columns
   build_mercur_core
+  build_admin_dashboard
   ensure_http_session_cookies
   write_api_unit
   start_tradnest_api
@@ -846,6 +894,7 @@ bunx medusa db:migrate --skip-links
 bunx medusa db:sync-links --execute-safe
 ensure_product_id_columns
 
+build_admin_dashboard
 write_api_unit
 
 log "Stopping processes on :$API_PORT and :$STORE_PORT (old Medusa/Next)"
