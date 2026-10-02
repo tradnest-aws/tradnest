@@ -368,7 +368,19 @@ log "Now at \$(git rev-parse --short HEAD)"
 chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh scripts/patch-medusa-admin-jwt.sh scripts/ensure-product-id-columns.sh
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
-bash scripts/ec2-cutover-remote.sh
+# SSM keeps only the first 24KB. Full log stays on the box; print the tail.
+set +e
+bash scripts/ec2-cutover-remote.sh > /var/log/tradnest-cutover.log 2>&1
+code=\$?
+set -e
+echo "EXIT=\$code"
+echo "----- tail /var/log/tradnest-cutover.log -----"
+tail -n 120 /var/log/tradnest-cutover.log
+if [ "\$code" -ne 0 ]; then
+  echo "----- dmesg -----"
+  dmesg -T 2>/dev/null | tail -n 15 || true
+fi
+exit \$code
 REMOTE
 )
 
@@ -391,7 +403,19 @@ chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh sc
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=nginx
-bash scripts/ec2-cutover-remote.sh
+# SSM keeps only the first 24KB. Full log stays on the box; print the tail.
+set +e
+bash scripts/ec2-cutover-remote.sh > /var/log/tradnest-cutover.log 2>&1
+code=\$?
+set -e
+echo "EXIT=\$code"
+echo "----- tail /var/log/tradnest-cutover.log -----"
+tail -n 120 /var/log/tradnest-cutover.log
+if [ "\$code" -ne 0 ]; then
+  echo "----- dmesg -----"
+  dmesg -T 2>/dev/null | tail -n 15 || true
+fi
+exit \$code
 REMOTE
 )
 
@@ -414,7 +438,19 @@ chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh sc
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=seed
-bash scripts/ec2-cutover-remote.sh
+# SSM keeps only the first 24KB. Full log stays on the box; print the tail.
+set +e
+bash scripts/ec2-cutover-remote.sh > /var/log/tradnest-cutover.log 2>&1
+code=\$?
+set -e
+echo "EXIT=\$code"
+echo "----- tail /var/log/tradnest-cutover.log -----"
+tail -n 120 /var/log/tradnest-cutover.log
+if [ "\$code" -ne 0 ]; then
+  echo "----- dmesg -----"
+  dmesg -T 2>/dev/null | tail -n 15 || true
+fi
+exit \$code
 REMOTE
 )
 
@@ -437,7 +473,19 @@ chmod +x scripts/ec2-cutover-remote.sh scripts/patch-medusa-session-cookie.sh sc
 export TRADNEST_DEPLOY_DIR="\$DEPLOY_DIR"
 export TRADNEST_PUBLIC_ORIGIN="http://\$PUBLIC_IP"
 export TRADNEST_STEP=api
-bash scripts/ec2-cutover-remote.sh
+# SSM keeps only the first 24KB. Full log stays on the box; print the tail.
+set +e
+bash scripts/ec2-cutover-remote.sh > /var/log/tradnest-cutover.log 2>&1
+code=\$?
+set -e
+echo "EXIT=\$code"
+echo "----- tail /var/log/tradnest-cutover.log -----"
+tail -n 120 /var/log/tradnest-cutover.log
+if [ "\$code" -ne 0 ]; then
+  echo "----- dmesg -----"
+  dmesg -T 2>/dev/null | tail -n 15 || true
+fi
+exit \$code
 REMOTE
 )
 
