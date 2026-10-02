@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import { Chip } from "@/components/atoms"
 import useUpdateSearchParams from "@/hooks/useUpdateSearchParams"
+import { isInternalVariantOption } from "@/lib/helpers/variant-option"
 
 export const ProductVariants = ({
   product,
@@ -18,9 +19,15 @@ export const ProductVariants = ({
     if (value) updateSearchParams(optionId, value)
   }
 
+  const options = (product.options || []).filter(
+    (option) => !isInternalVariantOption(option.title)
+  )
+
+  if (!options.length) return null
+
   return (
     <div className="my-4 space-y-2" data-testid="product-variants">
-      {(product.options || []).map(
+      {options.map(
         ({ id, title, values }: HttpTypes.StoreProductOption) => (
           <div key={id} data-testid={`product-variant-${title.toLowerCase()}`}>
             <span className="label-md text-secondary">{title}: </span>

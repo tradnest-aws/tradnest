@@ -1,4 +1,5 @@
 import { convertToLocale } from "@/lib/helpers/money"
+import { isInternalVariantOption } from "@/lib/helpers/variant-option"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 
@@ -45,7 +46,9 @@ export const CartDropdownItem = ({
       <div className="py-2">
         <h4 className="heading-xs">{item.product_title}</h4>
         <div className="label-md text-secondary">
-          {item.variant?.options?.map(({ option, id, value }, index) => (
+          {item.variant?.options
+            ?.filter(({ option }) => !isInternalVariantOption(option?.title))
+            .map(({ option, id, value }, index) => (
             <p key={id ?? index}>
               {option?.title}: <span className="text-primary">{value}</span>
             </p>
