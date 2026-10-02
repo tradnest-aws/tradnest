@@ -32,6 +32,9 @@ const en = {
   addresses: "Addresses",
   settings: "Settings",
   messages: "Messages",
+  noMessages: "No messages",
+  noMessagesHint:
+    "Conversations with suppliers show up here. Open a product and write to the supplier to start one.",
   welcome: (name: string) => `Welcome ${name}`,
   buyerAccountFor: (company: string) => `Buyer account for ${company}.`,
   buyerAccountReady:
@@ -288,6 +291,9 @@ const he: typeof en = {
   addresses: "כתובות",
   settings: "הגדרות",
   messages: "הודעות",
+  noMessages: "אין הודעות",
+  noMessagesHint:
+    "שיחות עם ספקים יופיעו כאן. פתחו מוצר ופנו לספק כדי להתחיל שיחה.",
   welcome: (name: string) => `שלום ${name}`,
   buyerAccountFor: (company: string) => `חשבון רוכש עבור ${company}.`,
   buyerAccountReady: "חשבון הרוכש מוכן. ניתן להשלים פרטי חברה בהגדרות.",
