@@ -285,6 +285,8 @@ REMOTE
 
 DEPLOY_REMOTE=$(cat <<REMOTE
 set -eu
+# SSM Run Command leaves HOME unset; set -u then aborts on \$HOME.
+export HOME="\${HOME:-/root}"
 REPO_URL='$REPO_URL'
 BRANCH='$BRANCH'
 DEPLOY_DIR='$DEPLOY_DIR'
