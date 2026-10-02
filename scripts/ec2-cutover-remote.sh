@@ -153,19 +153,54 @@ print(f"GET /admin/products/:id?fields=*options {status}")
 PY
 }
 
+store_region_id() {
+  local pk="$1"
+  curl -fsS \
+    -H "x-publishable-api-key: ${pk}" \
+    "http://127.0.0.1:${API_PORT}/store/regions" \
+    | python3 -c '
+import json, sys
+data = json.load(sys.stdin)
+regions = data.get("regions") or []
+chosen = ""
+for region in regions:
+    countries = region.get("countries") or []
+    isos = []
+    for country in countries:
+        if isinstance(country, dict):
+            isos.append(str(country.get("iso_2") or "").lower())
+        else:
+            isos.append(str(country).lower())
+    if "il" in isos:
+        chosen = region.get("id") or ""
+        break
+if not chosen and regions:
+    chosen = regions[0].get("id") or ""
+print(chosen)
+'
+}
+
 verify_store_products() {
   local env="$DEPLOY_DIR/apps/storefront/.env"
-  local pk status
+  local pk status region_id
   pk="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_' "$env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'")"
   if [[ "$pk" != pk_* ]]; then
     log "WARN: no publishable key in storefront .env — skip store product check"
     return 0
   fi
+  region_id="$(store_region_id "$pk" || true)"
+  if [[ -z "$region_id" ]]; then
+    log "WARN: no store region — skip calculated-price product check"
+    return 0
+  fi
+  log "Store product check uses region $region_id"
+  # calculated_price without region_id is a 400: missing pricing context.
   local fields='*variants.calculated_price,+variants.inventory_quantity,*variants.options,*attribute_values,*attribute_values.attribute'
   status="$(curl -sS -o /tmp/tradnest-store-products.json -w '%{http_code}' \
     -H "x-publishable-api-key: ${pk}" \
     -G "http://127.0.0.1:${API_PORT}/store/products" \
     --data-urlencode "limit=2" \
+    --data-urlencode "region_id=${region_id}" \
     --data-urlencode "fields=${fields}")"
   python3 - "$status" <<'PY'
 import json, sys
