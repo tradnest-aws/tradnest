@@ -7,6 +7,7 @@ import { toast } from "@/lib/helpers/toast"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { useCartContext, useSession } from "@/components/providers"
 import { getOfferAmount, getOfferCurrency, getOfferStock, type StoreOffer } from "@/lib/helpers/buybox"
+import { cartHasAnotherSeller, isSingleSellerCartError } from "@/lib/helpers/single-seller-cart"
 import { convertToLocale } from "@/lib/helpers/money"
 import { cn } from "@/lib/utils"
 import { useCopy } from "@/lib/i18n/useCopy"
@@ -50,6 +51,14 @@ export const OfferCard = ({
     }
     if (isAddToCartDisabled) return
 
+    if (cartHasAnotherSeller(cart?.items, offer.seller_id)) {
+      toast.error({
+        title: t.singleSellerCart,
+        description: t.singleSellerCartHint,
+      })
+      return
+    }
+
     const total = amount ?? 0
     const subtotal =
       offer.calculated_price?.calculated_amount_without_tax ?? total
@@ -64,17 +73,19 @@ export const OfferCard = ({
         tax_total: total - subtotal,
         variant_id: offer.variant_id,
         product_id: offer.product_id,
-        metadata: { offer_id: offer.id },
+        metadata: { offer_id: offer.id, seller_id: offer.seller_id },
       },
       currency
     )
 
     try {
       await addToCart({ offerId: offer.id, quantity: 1, countryCode: locale })
-    } catch {
+    } catch (error) {
       toast.error({
-        title: t.addToCartError,
-        description: t.addToCartErrorHint,
+        title: isSingleSellerCartError(error) ? t.singleSellerCart : t.addToCartError,
+        description: isSingleSellerCartError(error)
+          ? t.singleSellerCartHint
+          : t.addToCartErrorHint,
       })
     }
   }

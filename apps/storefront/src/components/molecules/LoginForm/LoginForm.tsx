@@ -56,12 +56,12 @@ const Form = () => {
 
     if (outcome.type === 'continue') {
       setSubmitError(null);
-      router.push(outcome.href);
       try {
         await transferCart();
       } catch {
         // Session is already stored. Cart merge should not block entry.
       }
+      router.push(outcome.href);
       return;
     }
 

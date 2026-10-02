@@ -20,6 +20,7 @@ import { Chat } from "@/components/organisms/Chat/Chat"
 import { CompareOffersModal } from "@/components/organisms/CompareOffersModal/CompareOffersModal"
 import { RequestQuoteModal } from "@/components/organisms/RequestQuoteModal/RequestQuoteModal"
 import { SellerDTO } from "@mercurjs/types"
+import { cartHasAnotherSeller, isSingleSellerCartError } from "@/lib/helpers/single-seller-cart"
 import { toast } from "@/lib/helpers/toast"
 import { useCartContext } from "@/components/providers"
 import { useCopy } from "@/lib/i18n/useCopy"
@@ -127,6 +128,14 @@ export const ProductDetailsHeader = ({
     }
     if (!winnerOffer || isAddToCartDisabled) return
 
+    if (cartHasAnotherSeller(cart?.items, winnerOffer.seller_id)) {
+      toast.error({
+        title: t.singleSellerCart,
+        description: t.singleSellerCartHint,
+      })
+      return
+    }
+
     const total = offerAmount ?? 0
     const subtotal =
       winnerOffer.calculated_price?.calculated_amount_without_tax ?? total
@@ -141,7 +150,7 @@ export const ProductDetailsHeader = ({
       variant_id: variantId,
       product_id: product.id,
       variant: product.variants?.find(({ id }) => id === variantId),
-      metadata: { offer_id: winnerOffer.id },
+      metadata: { offer_id: winnerOffer.id, seller_id: winnerOffer.seller_id },
     }
 
     onAddToCart(storeCartLineItem, offerCurrency)
@@ -152,10 +161,12 @@ export const ProductDetailsHeader = ({
         quantity: 1,
         countryCode: locale,
       })
-    } catch {
+    } catch (error) {
       toast.error({
-        title: t.addToCartError,
-        description: t.addToCartErrorHint,
+        title: isSingleSellerCartError(error) ? t.singleSellerCart : t.addToCartError,
+        description: isSingleSellerCartError(error)
+          ? t.singleSellerCartHint
+          : t.addToCartErrorHint,
       })
     }
   }

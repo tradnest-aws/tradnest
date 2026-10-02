@@ -154,6 +154,9 @@ const en = {
   quoteFailed: "Could not send quote request",
   addToCartError: "Error adding to cart",
   addToCartErrorHint: "This offer does not have the required inventory",
+  singleSellerCart: "One supplier per order",
+  singleSellerCartHint:
+    "This cart already has products from another supplier. Finish that order or empty the cart before buying from a different supplier.",
   addedToCart: "Added to cart",
   writeToSeller: "Write to seller",
   chat: "Chat",
@@ -408,6 +411,9 @@ const he: typeof en = {
   quoteFailed: "לא ניתן לשלוח את הבקשה",
   addToCartError: "שגיאה בהוספה לעגלה",
   addToCartErrorHint: "להצעה אין מלאי מתאים",
+  singleSellerCart: "הזמנה מספק אחד",
+  singleSellerCartHint:
+    "בעגלה כבר יש מוצרים מספק אחר. סיימו את ההזמנה או רוקנו את העגלה לפני קנייה מספק אחר.",
   addedToCart: "נוסף לעגלה",
   writeToSeller: "פנייה לספק",
   chat: "צ׳אט",

@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 
 import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
+import { SINGLE_SELLER_CART } from '@/lib/helpers/single-seller-cart';
 
 import { sdk } from '../client';
 import {
@@ -132,6 +133,20 @@ export async function addToCart({
     item => item.metadata?.offer_id === offerId
   );
 
+  const rethrowCartError = (error: unknown): never => {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    const responseMessage =
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message ?? '';
+    if (
+      message.includes(SINGLE_SELLER_CART) ||
+      responseMessage.includes(SINGLE_SELLER_CART)
+    ) {
+      throw new Error(SINGLE_SELLER_CART);
+    }
+    return medusaError(error);
+  };
+
   if (currentItem) {
     await sdk.store.carts.$id.lineItems.$lineId
       .mutate({
@@ -140,7 +155,7 @@ export async function addToCart({
         quantity: currentItem.quantity + quantity,
         fetchOptions: { headers }
       })
-      .catch(medusaError)
+      .catch(rethrowCartError)
       .finally(async () => {
         const cartCacheTag = await getCacheTag('carts');
         revalidateTag(cartCacheTag);
@@ -157,7 +172,7 @@ export async function addToCart({
         const cartCacheTag = await getCacheTag('carts');
         revalidateTag(cartCacheTag);
       })
-      .catch(medusaError)
+      .catch(rethrowCartError)
       .finally(async () => {
         const cartCacheTag = await getCacheTag('carts');
         revalidateTag(cartCacheTag);

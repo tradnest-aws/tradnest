@@ -51,7 +51,7 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
           items: [],
         }
       }
-      groupedBySeller["fleek"].items.push(item)
+      groupedBySeller["tradnest"].items.push(item)
     }
   })
 

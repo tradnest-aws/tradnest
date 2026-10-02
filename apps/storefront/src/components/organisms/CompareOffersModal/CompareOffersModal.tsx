@@ -8,6 +8,7 @@ import { SellerAvatar } from "@/components/cells/SellerAvatar/SellerAvatar"
 import { Modal } from "@/components/molecules/Modal/Modal"
 import { useCartContext, useSession } from "@/components/providers"
 import { convertToLocale } from "@/lib/helpers/money"
+import { cartHasAnotherSeller, isSingleSellerCartError } from "@/lib/helpers/single-seller-cart"
 import { toast } from "@/lib/helpers/toast"
 import { useCopy } from "@/lib/i18n/useCopy"
 import {
@@ -33,7 +34,7 @@ export const CompareOffersModal = ({
   const t = useCopy()
   const router = useRouter()
   const { isLoggedIn } = useSession()
-  const { addToCart } = useCartContext()
+  const { addToCart, cart } = useCartContext()
   const [addingId, setAddingId] = useState<string | null>(null)
 
   const ranked = rankOffers(offers)
@@ -43,14 +44,23 @@ export const CompareOffersModal = ({
       router.push("/login?sessionRequired=true")
       return
     }
+    if (cartHasAnotherSeller(cart?.items, offer.seller_id)) {
+      toast.error({
+        title: t.singleSellerCart,
+        description: t.singleSellerCartHint,
+      })
+      return
+    }
     setAddingId(offer.id)
     try {
       await addToCart({ offerId: offer.id, quantity: 1, countryCode: locale })
       toast.success({ title: t.addedToCart })
-    } catch {
+    } catch (error) {
       toast.error({
-        title: t.addToCartError,
-        description: t.addToCartErrorHint,
+        title: isSingleSellerCartError(error) ? t.singleSellerCart : t.addToCartError,
+        description: isSingleSellerCartError(error)
+          ? t.singleSellerCartHint
+          : t.addToCartErrorHint,
       })
     } finally {
       setAddingId(null)
