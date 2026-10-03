@@ -81,8 +81,13 @@ ensure_http_session_cookies() {
 }
 
 ensure_platform_admin() {
-  log "Ensure platform admin that can manage stores (${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il})"
-  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+  log "Ensure platform admin rafat@tradnest.il"
+  (
+    cd "$DEPLOY_DIR/apps/api" && \
+    TRADNEST_ADMIN_EMAIL=rafat@tradnest.il \
+    TRADNEST_ADMIN_PASSWORD=supersecret \
+    bunx medusa exec ./src/scripts/ensure-admin-user.ts
+  )
 }
 
 ensure_product_id_columns() {
@@ -92,7 +97,7 @@ ensure_product_id_columns() {
 }
 
 verify_admin_products() {
-  local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
+  local email="${TRADNEST_ADMIN_EMAIL:-rafat@tradnest.il}"
   local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
   local token body status pid
   token="$(curl -sS -X POST "http://127.0.0.1:${API_PORT}/auth/user/emailpass" \
@@ -291,7 +296,7 @@ PY
 }
 
 verify_admin_session_cookie() {
-  local email="${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il}"
+  local email="${TRADNEST_ADMIN_EMAIL:-rafat@tradnest.il}"
   local pass="${TRADNEST_ADMIN_PASSWORD:-supersecret}"
   local token headers
   token="$(curl -sS -X POST "http://127.0.0.1:${API_PORT}/auth/user/emailpass" \

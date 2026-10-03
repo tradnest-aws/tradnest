@@ -58,7 +58,7 @@ export default async function ensureAdminUser({
   container,
 }: ExecArgs): Promise<void> {
   const email = (
-    process.env.TRADNEST_ADMIN_EMAIL || "admin@tradnest.il"
+    process.env.TRADNEST_ADMIN_EMAIL || "rafat@tradnest.il"
   ).toLowerCase()
   const password = process.env.TRADNEST_ADMIN_PASSWORD || "supersecret"
 
@@ -72,8 +72,8 @@ export default async function ensureAdminUser({
   if (!user) {
     const created = await userModule.createUsers({
       email,
-      first_name: "Tradnest",
-      last_name: "Admin",
+      first_name: "Rafat",
+      last_name: "Tradnest",
     })
     user = Array.isArray(created) ? created[0] : created
     logger.info(`Created Medusa admin user ${email}`)
