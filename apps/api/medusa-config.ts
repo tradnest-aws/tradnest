@@ -111,7 +111,7 @@ module.exports = withMercur({
       resolve: '@mercurjs/core/modules/admin-ui',
       options: {
         appDir: '../admin',
-        path: '/dashboard',
+        path: '/admin',
         disable: true
       }
     },

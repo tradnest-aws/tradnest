@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const backendUrl = env.VITE_MERCUR_BACKEND_URL || env.MERCUR_BACKEND_URL
   const vendorUrl = env.VITE_MERCUR_VENDOR_URL || env.MERCUR_VENDOR_URL
-  const base = env.VITE_ADMIN_BASE || '/dashboard/'
+  const base = env.VITE_ADMIN_BASE || '/admin/'
 
   return {
     resolve: {

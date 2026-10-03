@@ -435,7 +435,43 @@ server {
     proxy_set_header Cookie \$http_cookie;
   }
 
-  location /admin {
+  # The marketplace admin UI and the Medusa API share /admin.
+  # Page loads send Accept: text/html. API calls from the panel do not.
+  location = /admin {
+    return 301 /admin/;
+  }
+
+  location ^~ /admin/assets/ {
+    proxy_pass http://127.0.0.1:$ADMIN_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location ~* ^/admin/.+\.(?:png|svg|ico|js|css|woff2?|map|webp|jpe?g|gif)$ {
+    proxy_pass http://127.0.0.1:$ADMIN_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /admin/ {
+    error_page 418 = @tradnest_admin_api;
+    if (\$http_accept !~* text/html) {
+      return 418;
+    }
+    proxy_pass http://127.0.0.1:$ADMIN_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location @tradnest_admin_api {
     proxy_pass http://127.0.0.1:$API_PORT;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
@@ -496,18 +532,12 @@ server {
     return 301 /seller/;
   }
 
-  location /dashboard/ {
-    proxy_pass http://127.0.0.1:$ADMIN_PORT;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-    proxy_set_header Upgrade \$http_upgrade;
-    proxy_set_header Connection "upgrade";
+  location = /dashboard {
+    return 301 /admin/;
   }
 
-  location = /dashboard {
-    return 301 /dashboard/;
+  location /dashboard/ {
+    rewrite ^/dashboard/(.*)\$ /admin/\$1 permanent;
   }
 
   location = /app {
@@ -732,11 +762,11 @@ build_marketplace_admin() {
     cp -f "$DEPLOY_DIR/apps/storefront/public/tradnest-icon.png" \
       "$DEPLOY_DIR/apps/admin/public/tradnest-icon.png"
   fi
-  log "Build marketplace admin at /dashboard/"
+  log "Build marketplace admin at /admin/"
   ( cd "$DEPLOY_DIR/apps/admin" && \
     VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" \
     VITE_MERCUR_VENDOR_URL="${PUBLIC_ORIGIN}/seller/" \
-    VITE_ADMIN_BASE=/dashboard/ \
+    VITE_ADMIN_BASE=/admin/ \
     bun run build )
 }
 
@@ -770,12 +800,12 @@ EOF
 
 verify_marketplace_admin() {
   local code
-  code="$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${ADMIN_PORT}/dashboard/" || echo 000)"
+  code="$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${ADMIN_PORT}/admin/" || echo 000)"
   if [[ "$code" != "200" ]]; then
-    log "GET /dashboard/ did not serve the marketplace admin (HTTP $code)"
+    log "GET /admin/ did not serve the marketplace admin (HTTP $code)"
     exit 1
   fi
-  log "GET /dashboard/ serves stores and products management"
+  log "GET /admin/ serves stores and products management"
 }
 
 write_vendor_unit() {
@@ -866,7 +896,7 @@ health_check() {
   echo "API:        $PUBLIC_ORIGIN/health"
   echo "Storefront: $PUBLIC_ORIGIN/"
   echo "Admin:      $PUBLIC_ORIGIN/app"
-  echo "Stores:     $PUBLIC_ORIGIN/dashboard/"
+  echo "Stores:     $PUBLIC_ORIGIN/admin/"
   echo "Vendor:     $PUBLIC_ORIGIN/seller/"
   echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
 }
