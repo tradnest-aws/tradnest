@@ -8,6 +8,7 @@ PUBLIC_ORIGIN="${TRADNEST_PUBLIC_ORIGIN:-http://13.60.11.98}"
 API_PORT="${TRADNEST_API_PORT:-9000}"
 STORE_PORT="${TRADNEST_STORE_PORT:-3000}"
 VENDOR_PORT="${TRADNEST_VENDOR_PORT:-7001}"
+ADMIN_PORT="${TRADNEST_MARKET_ADMIN_PORT:-7002}"
 export PATH="/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:${PATH}"
 
 log() { echo "[cutover $(date +'%H:%M:%S')] $*" >&2; }
@@ -495,6 +496,20 @@ server {
     return 301 /seller/;
   }
 
+  location /dashboard/ {
+    proxy_pass http://127.0.0.1:$ADMIN_PORT;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location = /dashboard {
+    return 301 /dashboard/;
+  }
+
   location = /app {
     return 301 /app/;
   }
@@ -704,6 +719,65 @@ build_vendor_spa() {
     VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" VITE_VENDOR_BASE=/seller/ bun run build )
 }
 
+build_marketplace_admin() {
+  export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}"
+  export TSUP_DTS=0
+  log "Install workspace so the marketplace admin app is linked"
+  ( cd "$DEPLOY_DIR" && bun install )
+  log "Build admin package JS only (skip DTS)"
+  ( cd "$DEPLOY_DIR" && bunx turbo run build --filter=@mercurjs/dashboard-sdk --filter=@mercurjs/admin^... )
+  ( cd "$DEPLOY_DIR/packages/admin" && TSUP_DTS=0 bunx tsup && bun run generate:targets )
+  if [[ -f "$DEPLOY_DIR/apps/storefront/public/tradnest-icon.png" ]]; then
+    mkdir -p "$DEPLOY_DIR/apps/admin/public"
+    cp -f "$DEPLOY_DIR/apps/storefront/public/tradnest-icon.png" \
+      "$DEPLOY_DIR/apps/admin/public/tradnest-icon.png"
+  fi
+  log "Build marketplace admin at /dashboard/"
+  ( cd "$DEPLOY_DIR/apps/admin" && \
+    VITE_MERCUR_BACKEND_URL="$PUBLIC_ORIGIN" \
+    VITE_MERCUR_VENDOR_URL="${PUBLIC_ORIGIN}/seller/" \
+    VITE_ADMIN_BASE=/dashboard/ \
+    bun run build )
+}
+
+write_marketplace_admin_unit() {
+  local bun_bin
+  bun_bin="$(resolve_bun_bin)"
+  log "Writing tradnest-admin.service (bun=$bun_bin port=$ADMIN_PORT)"
+  cat >/etc/systemd/system/tradnest-admin.service <<EOF
+[Unit]
+Description=Tradnest marketplace admin
+After=network.target tradnest-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=$DEPLOY_DIR/apps/admin
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/bin:/root/.bun/bin:/home/ubuntu/.bun/bin:/usr/bin:/bin
+ExecStart=$bun_bin x vite preview --host 127.0.0.1 --port $ADMIN_PORT --strictPort
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/tradnest-admin.log
+StandardError=append:/var/log/tradnest-admin.err.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tradnest-admin >/dev/null
+  systemctl restart tradnest-admin
+}
+
+verify_marketplace_admin() {
+  local code
+  code="$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${ADMIN_PORT}/dashboard/" || echo 000)"
+  if [[ "$code" != "200" ]]; then
+    log "GET /dashboard/ did not serve the marketplace admin (HTTP $code)"
+    exit 1
+  fi
+  log "GET /dashboard/ serves stores and products management"
+}
+
 write_vendor_unit() {
   local bun_bin
   bun_bin="$(resolve_bun_bin)"
@@ -792,7 +866,8 @@ health_check() {
   echo "API:        $PUBLIC_ORIGIN/health"
   echo "Storefront: $PUBLIC_ORIGIN/"
   echo "Admin:      $PUBLIC_ORIGIN/app"
-    echo "Vendor:     $PUBLIC_ORIGIN/seller/"
+  echo "Stores:     $PUBLIC_ORIGIN/dashboard/"
+  echo "Vendor:     $PUBLIC_ORIGIN/seller/"
   echo "HEAD: $(git -C "$DEPLOY_DIR" rev-parse --short HEAD)"
 }
 
@@ -832,12 +907,15 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   ensure_storefront_publishable_key
   build_vendor_spa
   write_vendor_unit
+  build_marketplace_admin
+  write_marketplace_admin_unit
   log "Rebuild storefront so catalog fields and publishable key are inlined"
   ( cd "$DEPLOY_DIR/apps/storefront" && bun run build )
   write_storefront_unit
   sleep 6
   install_nginx_vhost
   verify_admin_session_cookie
+  verify_marketplace_admin
   verify_store_products
   health_check
   exit 0
@@ -919,6 +997,7 @@ log "Build workspace packages (cli before core, plus storefront deps)"
 cd "$DEPLOY_DIR"
 bunx turbo run build --filter=@mercurjs/core... --filter=@mercurjs/storefront... --filter=@mercurjs/client...
 build_vendor_spa
+build_marketplace_admin
 
 log "Medusa migrate (skip interactive link prompts; do not drop b2b-starter link tables)"
 cd "$DEPLOY_DIR/apps/api"
@@ -961,6 +1040,7 @@ sleep 5
 ensure_platform_admin
 write_storefront_unit
 write_vendor_unit
+write_marketplace_admin_unit
 
 install_nginx_vhost
 verify_admin_session_cookie
