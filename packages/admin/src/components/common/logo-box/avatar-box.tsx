@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
 
-import { IconAvatar } from "../icon-avatar";
 import { assetUrl } from "../../../utils/asset-url";
 import config from "virtual:mercur/config";
 
 export default function AvatarBox({ checked }: { checked?: boolean }) {
-  const fallbackLetter = config.name?.charAt(0)?.toUpperCase() ?? "M";
+  const brand = config.name || "Tradnest";
+  const logo = config.logo || "/tradnest-icon.png";
 
   return (
     <div className="relative mb-4 w-fit">
@@ -45,39 +45,11 @@ export default function AvatarBox({ checked }: { checked?: boolean }) {
           </svg>
         </motion.div>
       )}
-      {config.logo ? (
-        <img
-          src={assetUrl(config.logo)}
-          alt={config.name ?? ""}
-          className="size-12 bg-transparent object-contain"
-        />
-      ) : (
-        <IconAvatar
-          size="xlarge"
-          className="bg-ui-button-neutral shadow-buttons-neutral after:button-neutral-gradient relative flex h-[50px] w-[50px] items-center justify-center rounded-xl after:inset-0 after:content-['']"
-        >
-          <svg
-            className="rounded-[10px]"
-            viewBox="0 0 400 400"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="400" height="400" rx="40" fill="#18181B" />
-            <text
-              x="200"
-              y="200"
-              textAnchor="middle"
-              dominantBaseline="central"
-              fill="white"
-              fontSize="200"
-              fontWeight="bold"
-              fontFamily="Inter, system-ui, sans-serif"
-            >
-              {fallbackLetter}
-            </text>
-          </svg>
-        </IconAvatar>
-      )}
+      <img
+        src={assetUrl(logo)}
+        alt={brand}
+        className="size-12 bg-transparent object-contain"
+      />
     </div>
   );
 }
