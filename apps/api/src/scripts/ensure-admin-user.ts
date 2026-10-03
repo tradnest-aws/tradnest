@@ -5,6 +5,7 @@ const SUPER_ADMIN_ROLE_ID = "role_super_admin"
 
 type AuthRegisterResult = {
   success?: boolean
+  error?: string
   authIdentity?: { id: string }
 }
 
@@ -36,10 +37,10 @@ type AuthModule = {
     provider: string,
     payload: { body: { email: string; password: string } }
   ) => Promise<AuthRegisterResult>
-  updateProviderIdentities: (data: {
-    id: string
-    provider_metadata: { password: string }
-  }) => Promise<unknown>
+  updateProvider: (
+    provider: string,
+    data: { entity_id: string; password: string }
+  ) => Promise<AuthRegisterResult>
   updateAuthIdentities: (data: {
     id: string
     app_metadata: { user_id: string }
@@ -97,18 +98,18 @@ export default async function ensureAdminUser({
     }
     authIdentityId = registerResponse.authIdentity.id
   } else if (identities[0]) {
-    const scrypt = await import("scrypt-kdf")
-    const passwordHash = await scrypt.default.kdf(password, {
-      logN: 15,
-      r: 8,
-      p: 1,
+    // emailpass hashes the password itself. Importing scrypt-kdf here fails
+    // on nginx deploy: that package is not an API dependency, and this step
+    // runs before bun install.
+    const updated = await authModule.updateProvider("emailpass", {
+      entity_id: email,
+      password,
     })
-    await authModule.updateProviderIdentities({
-      id: identities[0].id,
-      provider_metadata: {
-        password: passwordHash.toString("base64"),
-      },
-    })
+    if (!updated?.success) {
+      throw new Error(
+        `Failed to reset password for ${email}: ${updated?.error ?? "unknown error"}`
+      )
+    }
     logger.info(`Reset password for ${email}`)
   }
 
