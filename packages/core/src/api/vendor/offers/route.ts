@@ -6,6 +6,7 @@ import {
   ContainerRegistrationKeys,
 } from "@medusajs/framework/utils"
 
+import { ensureSellerOwnsOfferVariants } from "../products/helpers"
 import { createOffersWorkflow } from "../../../workflows/offer"
 import { refetchOffer } from "./helpers"
 import { VendorCreateOfferType, VendorGetOffersParamsType } from "./validators"
@@ -39,6 +40,8 @@ export const POST = async (
   const memberId = req.auth_context.actor_id
 
   const { additional_data, ...offerData } = req.validatedBody
+
+  await ensureSellerOwnsOfferVariants(req.scope, sellerId, [offerData.variant_id])
 
   const { result } = await createOffersWorkflow(req.scope).run({
     input: {

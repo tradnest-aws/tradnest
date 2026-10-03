@@ -188,6 +188,32 @@ medusaIntegrationTestRunner({
                     expect(r2.status).toEqual(201)
                 })
 
+                it("should reject an offer on a product created by another store", async () => {
+                    const deps = await seedSellerOfferDeps(seller1Headers)
+                    const otherProfile = await api.post(
+                        `/vendor/shipping-profiles`,
+                        { name: `Other ${Date.now()}`, type: "default" },
+                        seller2Headers
+                    )
+
+                    const response = await api
+                        .post(
+                            `/vendor/offers`,
+                            {
+                                sku: "OTHER-STORE-SKU",
+                                variant_id: deps.variant_id,
+                                shipping_profile_id:
+                                    otherProfile.data.shipping_profile.id,
+                                inventory_items: [{}],
+                                prices: [{ amount: 1000, currency_code: "usd" }],
+                            },
+                            seller2Headers
+                        )
+                        .catch((e) => e.response)
+
+                    expect(response.status).toEqual(404)
+                })
+
                 it("should allow a single seller to create multiple offers on the same variant with distinct sku", async () => {
                     const deps = await seedSellerOfferDeps(seller1Headers)
 

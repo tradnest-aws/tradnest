@@ -10,12 +10,12 @@ import {
   validateAndTransformBody,
   validateAndTransformQuery,
 } from "@medusajs/framework"
-import { ProductStatus } from "@mercurjs/types"
-
 import { applyOfferedProductsFilter } from "../../utils"
 import {
-  getProductIdsRestrictedFromSeller,
+  ensureSellerOwnsProduct,
+  getSellerAssignedProductIds,
   getSellerOwnedProductIds,
+  sellerVisibleProductIds,
 } from "./helpers"
 import {
   vendorProductQueryConfig,
@@ -42,9 +42,9 @@ const applySellerProductLinkFilter = async (
 ) => {
   const sellerId = req.seller_context!.seller_id
 
-  const [ownProductIds, restrictedFromSellerIds] = await promiseAll([
+  const [ownProductIds, assignedProductIds] = await promiseAll([
     getSellerOwnedProductIds(req.scope, sellerId),
-    getProductIdsRestrictedFromSeller(req.scope, sellerId),
+    getSellerAssignedProductIds(req.scope, sellerId),
   ])
 
   req.filterableFields ??= {}
@@ -52,17 +52,31 @@ const applySellerProductLinkFilter = async (
   req.filterableFields.$and = [
     ...existingAnd,
     {
-      $or: [
-        { id: ownProductIds },
-        {
-          status: ProductStatus.PUBLISHED,
-          id: { $nin: restrictedFromSellerIds },
-        },
-      ],
+      id: sellerVisibleProductIds(ownProductIds, assignedProductIds),
     },
   ]
 
   return next()
+}
+
+const requireSellerOwnsProduct = async (
+  req: AuthenticatedMedusaRequest,
+  _res: MedusaResponse,
+  next: MedusaNextFunction
+) => {
+  const productId = req.params.id
+  if (!productId) {
+    return next()
+  }
+
+  try {
+    await ensureSellerOwnsProduct(req.scope, req.seller_context!.seller_id, [
+      productId,
+    ])
+    return next()
+  } catch (error) {
+    return next(error)
+  }
 }
 
 export const vendorProductsMiddlewares: MiddlewareRoute[] = [
@@ -106,6 +120,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/vendor/products/:id",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformQuery(
         VendorGetProductParams,
         vendorProductQueryConfig.retrieve
@@ -122,6 +137,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/vendor/products/:id",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformBody(VendorUpdateProduct),
       validateAndTransformQuery(
         VendorGetProductParams,
@@ -138,7 +154,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/vendor/products/:id",
-    middlewares: [],
+    middlewares: [requireSellerOwnsProduct],
     policies: [
       {
         resource: PolicyResource.product,
@@ -150,7 +166,10 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
   {
     method: ["POST"],
     matcher: "/vendor/products/:id/cancel",
-    middlewares: [validateAndTransformBody(VendorCancelProductChange)],
+    middlewares: [
+      requireSellerOwnsProduct,
+      validateAndTransformBody(VendorCancelProductChange),
+    ],
     policies: [
       {
         resource: PolicyResource.product,
@@ -163,6 +182,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/vendor/products/:id/variants",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformQuery(
         VendorGetProductVariantsParams,
         vendorProductVariantQueryConfig.list
@@ -179,6 +199,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/vendor/products/:id/variants",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformBody(VendorAddProductVariant),
       validateAndTransformQuery(
         VendorGetProductParams,
@@ -197,6 +218,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/vendor/products/:id/variants/:variant_id",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformQuery(
         VendorGetProductVariantParams,
         vendorProductVariantQueryConfig.retrieve
@@ -213,6 +235,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/vendor/products/:id/variants/:variant_id",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformBody(VendorUpdateProductVariant),
       validateAndTransformQuery(
         VendorGetProductParams,
@@ -229,7 +252,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
   {
     method: ["DELETE"],
     matcher: "/vendor/products/:id/variants/:variant_id",
-    middlewares: [],
+    middlewares: [requireSellerOwnsProduct],
     policies: [
       {
         resource: PolicyResource.product_variant,
@@ -242,6 +265,7 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/vendor/products/:id/attributes/batch",
     middlewares: [
+      requireSellerOwnsProduct,
       validateAndTransformBody(VendorBatchProductAttributes),
       validateAndTransformQuery(
         VendorGetProductParams,
@@ -252,6 +276,17 @@ export const vendorProductsMiddlewares: MiddlewareRoute[] = [
       {
         resource: PolicyResource.product,
         operation: PolicyOperation.update,
+      },
+    ],
+  },
+  {
+    method: ["GET"],
+    matcher: "/vendor/products/:id/preview",
+    middlewares: [requireSellerOwnsProduct],
+    policies: [
+      {
+        resource: PolicyResource.product,
+        operation: PolicyOperation.read,
       },
     ],
   },

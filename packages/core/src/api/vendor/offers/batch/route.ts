@@ -5,6 +5,7 @@ import {
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { CreateOfferDTO } from "@mercurjs/types"
 
+import { ensureSellerOwnsOfferVariants } from "../../products/helpers"
 import { createOffersWorkflow } from "../../../../workflows/offer"
 import { VendorCreateOffersBatchType } from "../validators"
 
@@ -16,6 +17,12 @@ export const POST = async (
   const memberId = req.auth_context.actor_id
 
   const { additional_data } = req.validatedBody
+
+  await ensureSellerOwnsOfferVariants(
+    req.scope,
+    sellerId,
+    req.validatedBody.offers.map((offer) => offer.variant_id)
+  )
 
   const offers: CreateOfferDTO[] = req.validatedBody.offers.map((o) => ({
     seller_id: sellerId,

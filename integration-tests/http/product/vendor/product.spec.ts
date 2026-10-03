@@ -323,18 +323,24 @@ medusaIntegrationTestRunner({
         return (result as { id: string }[])[0].id
       }
 
-      it("scopes the vendor list to the seller's own proposed products plus published", async () => {
+      it("keeps a store's products private from other stores", async () => {
         const proposedByA = await createProduct("A Proposed", "proposed", sellerA.id)
         const published = await createProduct("Global Published", "published", "other-actor")
 
         const listAsA = await api.get("/vendor/products?limit=100", headersA)
         const idsA = listAsA.data.products.map((p: { id: string }) => p.id)
-        expect(idsA).toEqual(expect.arrayContaining([proposedByA, published]))
+        expect(idsA).toContain(proposedByA)
+        expect(idsA).not.toContain(published)
 
         const listAsB = await api.get("/vendor/products?limit=100", headersB)
         const idsB = listAsB.data.products.map((p: { id: string }) => p.id)
-        expect(idsB).toContain(published)
+        expect(idsB).not.toContain(published)
         expect(idsB).not.toContain(proposedByA)
+
+        const hidden = await api
+          .get(`/vendor/products/${proposedByA}`, headersB)
+          .catch((error) => error.response)
+        expect(hidden.status).toEqual(404)
       })
 
       it("hides a restricted published product from sellers it is not assigned to", async () => {

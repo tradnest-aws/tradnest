@@ -7,7 +7,10 @@ import {
   createAdminUser,
 } from "../../../helpers/create-admin-user"
 import { createSellerUser } from "../../../helpers/create-seller-user"
-import { createVendorProduct } from "../../../helpers/create-product"
+import {
+  assignProductsToSeller,
+  createVendorProduct,
+} from "../../../helpers/create-product"
 
 jest.setTimeout(120000)
 
@@ -32,12 +35,16 @@ medusaIntegrationTestRunner({
         email: string
         name: string
         variantId: string
+        productId: string
         amount: number
       }) => {
         const { seller, headers } = await createSellerUser(appContainer, {
           email: opts.email,
           name: opts.name,
         })
+        await assignProductsToSeller(appContainer, (seller as { id: string }).id, [
+          opts.productId,
+        ])
         const tag = `${opts.name}`
 
         const stockLocation = (
@@ -113,6 +120,7 @@ medusaIntegrationTestRunner({
             email: "pl-offer-a@test.com",
             name: "OfferA",
             variantId,
+            productId: product.id,
             amount: 1000,
           })
         ).offer
@@ -121,6 +129,7 @@ medusaIntegrationTestRunner({
             email: "pl-offer-b@test.com",
             name: "OfferB",
             variantId,
+            productId: product.id,
             amount: 1000,
           })
         ).offer

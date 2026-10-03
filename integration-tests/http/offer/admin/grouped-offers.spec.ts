@@ -2,6 +2,7 @@ import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { MedusaContainer } from "@medusajs/framework/types"
 import { createSellerUser } from "../../../helpers/create-seller-user"
 import { createVendorProduct } from "../../../helpers/create-product"
+import { linkSellersToProductWorkflow } from "@mercurjs/core/workflows"
 import {
     adminHeaders,
     createAdminUser,
@@ -38,6 +39,15 @@ medusaIntegrationTestRunner({
                 return res.data.shipping_profile.id as string
             }
 
+            const assignProductToSeller = async (
+                productId: string,
+                sellerId: string
+            ) => {
+                await linkSellersToProductWorkflow(appContainer).run({
+                    input: { id: productId, add: [sellerId] },
+                })
+            }
+
             beforeAll(async () => {
                 appContainer = getContainer()
             })
@@ -70,6 +80,7 @@ medusaIntegrationTestRunner({
                     }
                 )
                 const variantId = product.variants[0].id
+                await assignProductToSeller(product.id, seller2.id)
 
                 const sp1 = await createShippingProfile(seller1Headers, "s1")
                 const sp2 = await createShippingProfile(seller2Headers, "s2")
@@ -142,6 +153,7 @@ medusaIntegrationTestRunner({
                     variants: [{ title: "Default" }],
                 })
                 const variantId = product.variants[0].id
+                await assignProductToSeller(product.id, seller2.id)
 
                 const sp1 = await createShippingProfile(seller1Headers, "f1")
                 const sp2 = await createShippingProfile(seller2Headers, "f2")
@@ -200,6 +212,7 @@ medusaIntegrationTestRunner({
                     }
                 )
                 const variantId = product.variants[0].id
+                await assignProductToSeller(product.id, seller2.id)
 
                 const sp1 = await createShippingProfile(seller1Headers, "sc1")
                 const sp2 = await createShippingProfile(seller2Headers, "sc2")
@@ -250,6 +263,7 @@ medusaIntegrationTestRunner({
                     variants: [{ title: "Default" }],
                 })
                 const variantId = product.variants[0].id
+                await assignProductToSeller(product.id, seller2.id)
 
                 const sp1 = await createShippingProfile(seller1Headers, "d1")
                 const sp2 = await createShippingProfile(seller2Headers, "d2")

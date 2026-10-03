@@ -69,6 +69,13 @@ medusaIntegrationTestRunner({
 
                 let productId = opts.productId
                 let variantId = opts.variantId
+                if (productId) {
+                    await assignProductsToSeller(
+                        appContainer,
+                        result.seller.id as string,
+                        [productId]
+                    )
+                }
                 if (!productId || !variantId) {
                     const product = await createVendorProduct(api, headers, {
                         title: `${opts.name} Product ${tag}`,
