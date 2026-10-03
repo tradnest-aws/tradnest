@@ -80,6 +80,11 @@ ensure_http_session_cookies() {
   bash "$DEPLOY_DIR/scripts/patch-medusa-admin-jwt.sh" "$DEPLOY_DIR" || true
 }
 
+ensure_platform_admin() {
+  log "Ensure platform admin that can manage stores (${TRADNEST_ADMIN_EMAIL:-admin@tradnest.il})"
+  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+}
+
 ensure_product_id_columns() {
   log "Ensure product_id columns (fixes /app product 400: product_option, product_attribute, offer)"
   chmod +x "$DEPLOY_DIR/scripts/ensure-product-id-columns.sh"
@@ -818,6 +823,7 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
   write_api_unit
   start_tradnest_api
   wait_for_api_health
+  ensure_platform_admin
   ensure_storefront_publishable_key
   build_vendor_spa
   write_vendor_unit
@@ -833,8 +839,7 @@ if [[ "${TRADNEST_STEP:-}" == "nginx" ]]; then
 fi
 
 if [[ "${TRADNEST_STEP:-}" == "seed" ]]; then
-  log "Ensuring Medusa /app admin user"
-  ( cd "$DEPLOY_DIR/apps/api" && bunx medusa exec ./src/scripts/ensure-admin-user.ts )
+  ensure_platform_admin
   ensure_product_id_columns
   ensure_http_session_cookies
   write_api_unit
@@ -948,6 +953,7 @@ fi
 
 start_tradnest_api
 sleep 5
+ensure_platform_admin
 write_storefront_unit
 write_vendor_unit
 

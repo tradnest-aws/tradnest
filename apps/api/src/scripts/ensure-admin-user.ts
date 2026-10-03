@@ -50,6 +50,10 @@ type LinkModule = {
   create: (data: Record<string, Record<string, string>>) => Promise<unknown>
 }
 
+/**
+ * Platform admin for /app. The super-admin role holds `*:*`, which includes
+ * managing seller stores (`seller` create/read/update, approve, suspend).
+ */
 export default async function ensureAdminUser({
   container,
 }: ExecArgs): Promise<void> {
