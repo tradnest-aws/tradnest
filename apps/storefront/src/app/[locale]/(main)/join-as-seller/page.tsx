@@ -1,9 +1,7 @@
 import { Button } from "@/components/atoms"
+import { JoinSellerForm } from "@/components/molecules/JoinSellerForm/JoinSellerForm"
 import { getCopy } from "@/lib/i18n/copy"
-import {
-  SELLER_LOGIN_PATH,
-  SELLER_REGISTER_PATH,
-} from "@/lib/helpers/locale-path"
+import { SELLER_LOGIN_PATH } from "@/lib/helpers/locale-path"
 import type { Metadata } from "next"
 
 export async function generateMetadata({
@@ -34,15 +32,10 @@ export default async function SellerLandingPage({
         <h1 className="heading-xl mb-4 text-white">{t.sellerPageTitle}</h1>
         <p className="text-lg mb-4 text-white">{t.sellerHero}</p>
         <p className="label-md text-white/80 mb-8">{t.sellerBody}</p>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            href={SELLER_REGISTER_PATH}
-            size="large"
-            className="rounded-full !text-white"
-            data-testid="seller-register-cta"
-          >
-            {t.sellerRegisterCta}
-          </Button>
+        <div className="rounded-[24px] bg-primary p-5 text-primary" data-testid="join-seller-panel">
+          <JoinSellerForm />
+        </div>
+        <div className="mt-4">
           <Button
             href={SELLER_LOGIN_PATH}
             variant="tonal"

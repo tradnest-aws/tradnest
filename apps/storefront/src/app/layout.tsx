@@ -21,13 +21,13 @@ const heebo = Heebo({
 export const metadata: Metadata = {
   title: {
     template: `%s | ${
-      process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
+      process.env.NEXT_PUBLIC_SITE_NAME || 'AZTrade'
     }`,
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'טרדנסט — שוק סיטונאי B2B'
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'AZTrade'
   },
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    'טרדנסט הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ.',
+    'AZTrade הוא שוק B2B לספקים בישראל. משווים הצעות, מבקשים הצעות מחיר ומזמינים במשלוח לכל הארץ.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   icons: {
     icon: [

@@ -9,10 +9,8 @@ import { IconButton } from "@/components/atoms";
 import { HeaderCategoryNavbar } from "@/components/molecules";
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink";
 import { CloseIcon, HamburgerMenuIcon } from "@/icons";
-import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path";
+import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path";
 import { useCopy } from "@/lib/i18n/useCopy";
-
-import { MobileCategoryNavbar } from "./components";
 
 export const MobileNavbar = ({
   categories,
@@ -72,21 +70,21 @@ export const MobileNavbar = ({
                 categories={categories}
                 parentCategories={parentCategories}
               />
-              <div className="p-4">
-                <MobileCategoryNavbar
-                  onClose={closeMenuHandler}
-                  categories={categories}
-                  parentCategories={parentCategories}
-                />
-              </div>
             </div>
             <div className="flex flex-col gap-2 border-t border-primary/10 bg-[rgb(var(--bg-secondary))] p-4">
               <LocalizedClientLink
-                href={SELLER_REGISTER_PATH}
+                href={JOIN_AS_SELLER_PATH}
                 onClick={closeMenuHandler}
                 className="inline-flex items-center justify-center rounded-full bg-action px-4 py-3 label-md font-semibold text-white"
               >
                 {t.becomeSupplier}
+              </LocalizedClientLink>
+              <LocalizedClientLink
+                href="/register"
+                onClick={closeMenuHandler}
+                className="inline-flex items-center justify-center rounded-full bg-action px-4 py-3 label-md font-semibold text-white"
+              >
+                {t.becomeBusinessOwner}
               </LocalizedClientLink>
               <LocalizedClientLink
                 href="/login"

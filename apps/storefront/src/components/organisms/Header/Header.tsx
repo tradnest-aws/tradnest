@@ -8,7 +8,7 @@ import { MessageButton } from "@/components/molecules/MessageButton/MessageButto
 import { NavbarSearch } from "@/components/molecules/NavbarSearch/NavbarSearch"
 import { listCategories } from "@/lib/data/categories"
 import { retrieveCustomer } from "@/lib/data/customer"
-import { SELLER_REGISTER_PATH } from "@/lib/helpers/locale-path"
+import { JOIN_AS_SELLER_PATH } from "@/lib/helpers/locale-path"
 import { getCopy } from "@/lib/i18n/copy"
 
 export const Header = async ({ locale }: { locale: string }) => {
@@ -28,7 +28,7 @@ export const Header = async ({ locale }: { locale: string }) => {
       data-testid="header"
     >
       <div
-        className="storefront-shell flex items-center gap-3 lg:gap-6 py-3"
+        className="storefront-shell flex flex-wrap items-center gap-3 lg:gap-6 py-3"
         data-testid="header-top"
       >
         <MobileNavbar
@@ -49,14 +49,22 @@ export const Header = async ({ locale }: { locale: string }) => {
           <NavbarSearch variant="header" />
         </div>
         <div
-          className="ms-auto flex items-center justify-end gap-2 lg:gap-3"
+          className="ms-auto flex flex-wrap items-center justify-end gap-2 lg:gap-3"
           data-testid="header-actions"
         >
           <LocalizedClientLink
-            href={SELLER_REGISTER_PATH}
-            className="hidden lg:inline-flex items-center rounded-full border border-primary/15 px-4 py-2 label-md text-primary hover:bg-secondary transition-colors"
+            href={JOIN_AS_SELLER_PATH}
+            className="inline-flex items-center whitespace-nowrap rounded-full border border-primary/15 px-4 py-2 label-md text-primary hover:bg-secondary transition-colors"
+            data-testid="header-join-seller"
           >
             {t.becomeSupplier}
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/register"
+            className="inline-flex items-center whitespace-nowrap rounded-full border border-primary/15 px-4 py-2 label-md text-primary hover:bg-secondary transition-colors"
+            data-testid="header-join-business"
+          >
+            {t.becomeBusinessOwner}
           </LocalizedClientLink>
           {!isLoggedIn && (
             <LocalizedClientLink
@@ -71,7 +79,7 @@ export const Header = async ({ locale }: { locale: string }) => {
           <CartDropdown />
         </div>
       </div>
-      <Navbar categories={categories} parentCategories={parentCategories} />
+      <Navbar locale={locale} />
     </header>
   )
 }

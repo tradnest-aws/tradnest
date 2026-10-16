@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       react(),
       mercurDashboardPlugin({
         medusaConfigPath: '../api/medusa-config.ts',
-        name: 'Tradnest',
+        name: 'AZTrade',
         i18n: { defaultLanguage: "he" },
         logo: '/tradnest-icon.png',
         base: env.VITE_VENDOR_BASE || '/seller/',

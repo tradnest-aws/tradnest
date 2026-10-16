@@ -17,21 +17,27 @@ const OFFER_FIELDS =
   '+calculated_price,+inventory_quantity,+prices,' +
   '+product.id,+product.title,+product.handle,+product.thumbnail';
 
-export const listOffers = async ({
-  productId,
-  sellerId,
-  countryCode,
-  regionId,
-  limit,
-  offset,
-}: {
+type ListOffersInput = {
   productId?: string;
   sellerId?: string;
   countryCode?: string;
   regionId?: string;
   limit?: number;
   offset?: number;
-}): Promise<{ offers: OfferDTO[]; count: number }> => {
+  fieldsExtra?: string;
+};
+
+export const listOffersResult = async ({
+  productId,
+  sellerId,
+  countryCode,
+  regionId,
+  limit,
+  offset,
+  fieldsExtra,
+}: ListOffersInput): Promise<
+  { ok: true; offers: OfferDTO[]; count: number } | { ok: false; offers: OfferDTO[]; count: number }
+> => {
   const region = regionId
     ? { id: regionId }
     : countryCode
@@ -43,24 +49,32 @@ export const listOffers = async ({
     productId ? CACHE_TAGS.productOffers(productId) : undefined
   );
 
-  return (
-    sdk.store.offers.query({
+  try {
+    const { offers, count } = (await (sdk.store.offers.query({
       product_id: productId,
       seller_id: sellerId,
       region_id: region?.id,
       country_code: countryCode,
       limit,
       offset,
-      fields: OFFER_FIELDS,
+      fields: fieldsExtra ? `${OFFER_FIELDS},${fieldsExtra}` : OFFER_FIELDS,
       fetchOptions: {
         headers: { ...(await getAuthHeaders()) },
         cache: 'force-cache',
         next,
       },
-    } as never) as unknown as Promise<{ offers: OfferDTO[]; count: number }>
-  )
-    .then(({ offers, count }) => ({ offers, count }))
-    .catch(() => ({ offers: [], count: 0 }));
+    } as never) as unknown as Promise<{ offers: OfferDTO[]; count: number }>));
+    return { ok: true, offers: offers ?? [], count: count ?? 0 };
+  } catch {
+    return { ok: false, offers: [], count: 0 };
+  }
+};
+
+export const listOffers = async (
+  input: ListOffersInput
+): Promise<{ offers: OfferDTO[]; count: number }> => {
+  const result = await listOffersResult(input);
+  return { offers: result.offers, count: result.count };
 };
 
 export const retrieveOffer = async (

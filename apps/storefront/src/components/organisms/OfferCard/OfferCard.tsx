@@ -1,31 +1,39 @@
 "use client"
 
 import Image from "next/image"
+import { useState } from "react"
 
 import { Button } from "@/components/atoms"
 import { toast } from "@/lib/helpers/toast"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { RequestQuoteModal } from "@/components/organisms/RequestQuoteModal/RequestQuoteModal"
 import { useCartContext, useSession } from "@/components/providers"
 import { getOfferAmount, getOfferCurrency, getOfferStock, type StoreOffer } from "@/lib/helpers/buybox"
 import { cartHasAnotherSeller, isSingleSellerCartError } from "@/lib/helpers/single-seller-cart"
 import { convertToLocale } from "@/lib/helpers/money"
 import { cn } from "@/lib/utils"
 import { useCopy } from "@/lib/i18n/useCopy"
+import { HttpTypes } from "@medusajs/types"
 import { useRouter } from "next/navigation"
 
 export const OfferCard = ({
   offer,
   locale,
   className,
+  sellerPage = false,
+  buyer = null,
 }: {
   offer: StoreOffer
   locale: string
   className?: string
+  sellerPage?: boolean
+  buyer?: HttpTypes.StoreCustomer | null
 }) => {
   const t = useCopy()
   const router = useRouter()
   const { isLoggedIn } = useSession()
   const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext()
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false)
 
   const product = offer.product
   const productName = String(product?.title || t.productFallback)
@@ -36,8 +44,14 @@ export const OfferCard = ({
 
   const hasPrice = amount !== null
   const displayPrice = hasPrice
-    ? convertToLocale({ amount, currency_code: currency })
+    ? convertToLocale({
+        amount,
+        currency_code: sellerPage ? "ils" : currency,
+        locale: sellerPage ? "he-IL" : undefined,
+      })
     : null
+  const canBuyHere = hasPrice && stock > 0
+  const productId = offer.product_id || product?.id || ""
 
   const quantityInCart =
     cart?.items?.find((item) => item.metadata?.offer_id === offer.id)?.quantity ?? 0
@@ -130,8 +144,19 @@ export const OfferCard = ({
           <h3 className="heading-sm truncate" data-testid="offer-card-title">
             {productName}
           </h3>
-          <div className="flex items-center gap-2 mt-2" data-testid="offer-card-price">
-            {isLoggedIn && displayPrice ? (
+          <div className="flex flex-col gap-1 mt-2" data-testid="offer-card-price">
+            {sellerPage ? (
+              <>
+                {displayPrice ? (
+                  <p className="font-medium" data-testid="offer-card-current-price">
+                    {displayPrice}
+                  </p>
+                ) : null}
+                <p className="label-md text-secondary" data-testid="offer-card-stock">
+                  {stock > 0 ? t.inStockCount(stock) : t.outOfStock}
+                </p>
+              </>
+            ) : isLoggedIn && displayPrice ? (
               <p className="font-medium" data-testid="offer-card-current-price">
                 {displayPrice}
               </p>
@@ -142,15 +167,49 @@ export const OfferCard = ({
             )}
           </div>
         </LocalizedClientLink>
-        <Button
-          onClick={handleAddToCart}
-          disabled={isLoggedIn && isAddToCartDisabled}
-          loading={isAddingItem}
-          className="w-full py-3 flex justify-center rounded-xl"
-          data-testid="offer-card-add-to-cart-button"
-        >
-          {!isLoggedIn ? t.loginToOrder : stock ? t.addToCart : t.outOfStock}
-        </Button>
+        {sellerPage && !canBuyHere ? (
+          <Button
+            variant="tonal"
+            onClick={() => {
+              if (!buyer) {
+                router.push("/login?sessionRequired=true")
+                return
+              }
+              setIsQuoteOpen(true)
+            }}
+            className="w-full py-3 flex justify-center rounded-xl"
+            data-testid="offer-card-request-quote"
+          >
+            {t.requestQuote}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleAddToCart}
+            disabled={isLoggedIn && isAddToCartDisabled}
+            loading={isAddingItem}
+            className="w-full py-3 flex justify-center rounded-xl"
+            data-testid="offer-card-add-to-cart-button"
+          >
+            {sellerPage
+              ? t.addToCartShort
+              : !isLoggedIn
+                ? t.loginToOrder
+                : stock
+                  ? t.addToCart
+                  : t.outOfStock}
+          </Button>
+        )}
+        {isQuoteOpen && buyer && productId ? (
+          <RequestQuoteModal
+            productId={productId}
+            productTitle={productName}
+            sellerId={offer.seller_id}
+            offerId={offer.id}
+            variantId={offer.variant_id}
+            user={buyer}
+            onClose={() => setIsQuoteOpen(false)}
+          />
+        ) : null}
       </div>
     </div>
   )

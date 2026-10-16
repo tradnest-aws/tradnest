@@ -40,7 +40,7 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
       if (!groupedBySeller['tradnest']) {
         groupedBySeller['tradnest'] = {
           seller: {
-            name: 'Tradnest',
+            name: 'AZTrade',
             id: 'tradnest',
             photo: '/tradnest-icon.png',
             created_at: new Date()

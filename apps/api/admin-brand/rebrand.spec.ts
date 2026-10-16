@@ -12,10 +12,10 @@ test("replaces the Medusa welcome copy and document title", () => {
 
   const out = rebrandDashboardModule(input)
 
-  expect(out).toContain('DEFAULT_TITLE = "Tradnest"')
-  expect(out).toContain("${pageTitle} - Tradnest")
-  expect(out).toContain("Welcome to Tradnest")
-  expect(out).toContain("ברוכים הבאים ל-Tradnest")
+  expect(out).toContain('DEFAULT_TITLE = "AZTrade"')
+  expect(out).toContain("${pageTitle} - AZTrade")
+  expect(out).toContain("Welcome to AZTrade")
+  expect(out).toContain("ברוכים הבאים ל-AZTrade")
   expect(out).not.toContain("Medusa")
 })
 
@@ -48,7 +48,7 @@ test("swaps the login mark for the Tradnest icon", () => {
 
   expect(out).not.toContain("M238.088")
   expect(out).toContain('src: "/app/tradnest-icon.png"')
-  expect(out).toContain('alt: "Tradnest"')
+  expect(out).toContain('alt: "AZTrade"')
 })
 
 test("swaps the reset-password mark for the Tradnest icon", () => {
@@ -66,7 +66,7 @@ test("sets the admin document title and favicon", () => {
 
   const out = rebrandAdminHtml(html)
 
-  expect(out).toContain("<title>Tradnest</title>")
+  expect(out).toContain("<title>AZTrade</title>")
   expect(out).toContain('href="/app/tradnest-icon.png"')
   expect(out).not.toContain("data:,")
 })

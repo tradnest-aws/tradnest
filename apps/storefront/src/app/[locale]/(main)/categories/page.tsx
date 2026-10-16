@@ -1,20 +1,12 @@
-import { ProductListingSkeleton } from "@/components/organisms/ProductListingSkeleton/ProductListingSkeleton"
-import { Suspense } from "react"
-
-import { Breadcrumbs } from "@/components/atoms"
-import { SearchProductsListing, ProductListing } from "@/components/sections"
-import isBot from "@/lib/helpers/isBot"
+import { CategoryCatalog } from "@/components/sections/CategoryCatalog/CategoryCatalog"
 import { headers } from "next/headers"
 import type { Metadata } from "next"
-import Script from "next/script"
 import { listRegions } from "@/lib/data/regions"
-import { listProducts } from "@/lib/data/products"
 import {
   buildHreflangAlternates,
   getStorefrontLocales,
 } from "@/lib/helpers/hreflang"
 import { getCopy } from "@/lib/i18n/copy"
-import { publicPageUrl } from "@/lib/helpers/locale-path"
 
 export const revalidate = 60
 
@@ -64,88 +56,21 @@ export async function generateMetadata({
   }
 }
 
-async function AllCategories({
+export default async function AllCategories({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams: Promise<{ page?: string }>
 }) {
   const { locale } = await params
+  const { page } = await searchParams
   const t = getCopy(locale)
 
-  const ua = (await headers()).get("user-agent") || ""
-  const bot = isBot(ua)
-
-  const breadcrumbsItems = [
-    {
-      path: "/",
-      label: t.allProducts,
-    },
-  ]
-
-  const headersList = await headers()
-  const host = headersList.get("host")
-  const protocol = headersList.get("x-forwarded-proto") || "https"
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
-  const {
-    response: { products: jsonLdProducts },
-  } = await listProducts({
-    countryCode: locale,
-    queryParams: { limit: 8, order: "created_at", fields: "id,title,handle" },
-  })
-
-  const itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
-    "@type": "ListItem",
-    position: idx + 1,
-    url: publicPageUrl(baseUrl, locale, `/products/${p.handle}`),
-    name: p.title,
-  }))
-
   return (
-    <main className="container">
-      <Script
-        id="ld-breadcrumbs-categories"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: t.allProducts,
-                item: publicPageUrl(baseUrl, locale, "/categories"),
-              },
-            ],
-          }),
-        }}
-      />
-      <Script
-        id="ld-itemlist-categories"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: itemList,
-          }),
-        }}
-      />
-      <div className="hidden md:block mb-2">
-        <Breadcrumbs items={breadcrumbsItems} />
-      </div>
-
+    <main className="container" data-testid="aztrade-category-page">
       <h1 className="heading-xl">{t.allProducts}</h1>
-
-      <Suspense fallback={<div data-testid="all-categories-page-loading"><ProductListingSkeleton /></div>}>
-        {bot ? (
-          <ProductListing showSidebar locale={locale} />
-        ) : (
-          <SearchProductsListing locale={locale} />
-        )}
-      </Suspense>
+      <CategoryCatalog locale={locale} page={Number(page) || 1} />
     </main>
   )
 }
-
-export default AllCategories

@@ -119,7 +119,12 @@ export async function middleware(request: NextRequest) {
     ? pathname.replace(/^\/[^/]+/, '') || '/'
     : pathname;
 
-  if (pathname === '/il/seller' || pathname === '/il/seller/') {
+  if (
+    pathname === '/il/seller' ||
+    pathname === '/il/seller/' ||
+    pathname === '/seller/register' ||
+    pathname === '/il/seller/register'
+  ) {
     const redirectUrl = `${publicOrigin(request)}/join-as-seller${queryString}`;
     return NextResponse.redirect(redirectUrl, 308);
   }

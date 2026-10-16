@@ -1,4 +1,6 @@
 import { ProductListingSkeleton } from "@/components/organisms/ProductListingSkeleton/ProductListingSkeleton"
+import { CategoryCatalog } from "@/components/sections/CategoryCatalog/CategoryCatalog"
+import { findAztradeCategory } from "@/lib/catalog/aztrade-categories"
 import { getCategoryByHandle, collectCategorySubtreeIds } from "@/lib/data/categories"
 import { Suspense } from "react"
 
@@ -74,13 +76,31 @@ export async function generateMetadata({
 
 async function Category({
   params,
+  searchParams,
 }: {
   params: Promise<{
     category: string
     locale: string
   }>
+  searchParams: Promise<{ page?: string }>
 }) {
   const { category: categoryHandle, locale } = await params
+  const { page } = await searchParams
+  const aztrade = findAztradeCategory(categoryHandle)
+
+  if (aztrade) {
+    return (
+      <main className="container" data-testid="aztrade-category-page">
+        <h1 className="heading-xl">{aztrade.child?.name || aztrade.parent.name}</h1>
+        <CategoryCatalog
+          parent={aztrade.parent}
+          selected={aztrade.child?.handle}
+          locale={locale}
+          page={Number(page) || 1}
+        />
+      </main>
+    )
+  }
 
   const category = await getCategoryByHandle(categoryHandle)
 

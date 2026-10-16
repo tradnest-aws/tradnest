@@ -22,7 +22,7 @@ export default async function ensurePublishableKey({
     input: {
       api_keys: [
         {
-          title: "Tradnest storefront",
+          title: "AZTrade storefront",
           type: "publishable",
           created_by: "",
         },

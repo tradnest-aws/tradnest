@@ -1,15 +1,14 @@
 import { CategoryCard } from "@/components/organisms"
 import { HomeSnapRow } from "@/components/cells"
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
+import { AZTRADE_CATEGORY_TREE } from "@/lib/catalog/aztrade-categories"
 import { getCopy } from "@/lib/i18n/copy"
 
-export const categories: { id: number; name: string; handle: string }[] = [
-  { id: 1, name: "אריזות", handle: "packaging" },
-  { id: 2, name: "מזון סיטונאי", handle: "food" },
-  { id: 3, name: "חומרי בניין", handle: "building" },
-  { id: 4, name: "ציוד משרדי", handle: "office" },
-  { id: 5, name: "ניקיון תעשייתי", handle: "cleaning" },
-]
+export const categories = AZTRADE_CATEGORY_TREE.map((category, index) => ({
+  id: index + 1,
+  name: category.name,
+  handle: category.handle,
+}))
 
 export const HomeCategories = async ({
   heading,
@@ -34,9 +33,9 @@ export const HomeCategories = async ({
         </LocalizedClientLink>
       </div>
       <HomeSnapRow desktopClassName="md:grid-cols-3 lg:grid-cols-5">
-        {categories.map((category) => (
+        {AZTRADE_CATEGORY_TREE.map((category) => (
           <CategoryCard
-            key={category.id}
+            key={category.handle}
             category={category}
             className="max-md:w-[42vw] max-md:min-w-[148px] max-md:snap-start max-md:shrink-0"
           />

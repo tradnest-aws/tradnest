@@ -18,7 +18,7 @@ export function Footer() {
           <div className="mb-4 flex items-center gap-3">
             <TradnestLogo markOnly height={36} />
             <span className="heading-sm font-bold tracking-tight text-white">
-              Tradnest
+              AZTrade
             </span>
           </div>
           <p className="label-md text-white/80 max-w-xs">{t.homeDescription}</p>

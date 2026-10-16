@@ -1,7 +1,7 @@
 const AVATAR_MARK = "M238.088 51.1218"
 const LOGO_MARK = "M30.85 6.16832"
 
-const TRADNEST_ICON = `jsx("img", { src: "/app/tradnest-icon.png", alt: "Tradnest", className: "size-12 object-contain" })`
+const TRADNEST_ICON = `jsx("img", { src: "/app/tradnest-icon.png", alt: "AZTrade", className: "size-12 object-contain" })`
 
 export function isDashboardModule(id: string): boolean {
   return id.includes("@medusajs/dashboard") || id.includes("@medusajs+dashboard")
@@ -22,7 +22,7 @@ export function rebrandDashboardModule(code: string): string {
     const after = source.slice(offset + match.length, offset + match.length + 8)
     if (/(?:import|new)\s+$/.test(before)) return match
     if (after.startsWith(" from") || after.startsWith("({")) return match
-    return "Tradnest"
+    return "AZTrade"
   })
 }
 
@@ -30,9 +30,9 @@ export function rebrandAdminHtml(html: string): string {
   const icon = '<link rel="icon" type="image/png" href="/app/tradnest-icon.png" />'
   let out = html
   if (/<title>[\s\S]*?<\/title>/i.test(out)) {
-    out = out.replace(/<title>[\s\S]*?<\/title>/i, "<title>Tradnest</title>")
+    out = out.replace(/<title>[\s\S]*?<\/title>/i, "<title>AZTrade</title>")
   } else {
-    out = out.replace(/<head>/i, "<head>\n            <title>Tradnest</title>")
+    out = out.replace(/<head>/i, "<head>\n            <title>AZTrade</title>")
   }
   if (/<link\s+rel="icon"[^>]*>/i.test(out)) {
     out = out.replace(/<link\s+rel="icon"[^>]*>/i, icon)

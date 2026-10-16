@@ -7,7 +7,7 @@ type TradnestLogoProps = {
   priority?: boolean
 }
 
-const LOGO_ASPECT = 1246 / 344
+const LOGO_ASPECT = 1229 / 601
 
 export const TradnestLogo = ({
   className,
@@ -19,7 +19,7 @@ export const TradnestLogo = ({
     return (
       <Image
         src="/tradnest-icon.png"
-        alt="Tradnest"
+        alt="AZTrade"
         width={height}
         height={height}
         className={className}
@@ -31,7 +31,7 @@ export const TradnestLogo = ({
   return (
     <Image
       src="/tradnest-logo.png"
-      alt="Tradnest"
+      alt="AZTrade"
       width={Math.round(height * LOGO_ASPECT)}
       height={height}
       className={className}

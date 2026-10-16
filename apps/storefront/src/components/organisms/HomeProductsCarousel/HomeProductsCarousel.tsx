@@ -1,7 +1,9 @@
-import { Carousel, HomeSnapRow } from "@/components/cells"
+import { HomeSnapRow } from "@/components/cells"
 import { ProductCard } from "../ProductCard/ProductCard"
 import { listProducts } from "@/lib/data/products"
 import { Product } from "@/types/product"
+
+import { SimilarProductsRow } from "./SimilarProductsRow"
 
 export const HomeProductsCarousel = async ({
   locale,
@@ -44,17 +46,10 @@ export const HomeProductsCarousel = async ({
   }
 
   return (
-    <div className="flex justify-center w-full">
-      <Carousel
-        align="start"
-        items={items.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            className="min-w-[250px] lg:w-[calc(25%-1rem)]"
-          />
-        ))}
-      />
-    </div>
+    <SimilarProductsRow
+      slides={items.map((product) => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    />
   )
 }

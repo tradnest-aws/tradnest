@@ -103,7 +103,7 @@ export default async function seedIsraelHebrew({
     input: {
       selector: { id: store.id },
       update: {
-        name: "Tradnest ישראל",
+        name: "AZTrade",
         default_sales_channel_id: defaultSalesChannel[0].id,
       },
     },

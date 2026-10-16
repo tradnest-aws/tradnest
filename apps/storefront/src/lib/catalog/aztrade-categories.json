@@ -1,0 +1,82 @@
+[
+  {
+    "name": "רכב ואבזרים",
+    "handle": "vehicle-and-accessories",
+    "children": [
+      { "name": "אביזרים חיצוניים ועיצוב", "handle": "exterior-accessories-and-design" },
+      { "name": "אביזרים לפנים הרכב", "handle": "accessories-for-the-interior-of-the-vehicle" },
+      { "name": "אלקטרוניקה, מולטימדיה ומצלמות", "handle": "electronics-multimedia-and-cameras" },
+      { "name": "חלקים וחלקי חילוף לתחזוקה שוטפת", "handle": "parts-and-spare-parts-for-routine-maintenance" },
+      { "name": "טיפוח, ניקוי ודיטיילינג", "handle": "care-cleaning-and-detailing" },
+      { "name": "נשאים, מנשאים וציוד טיולים", "handle": "carriers-carriers-and-travel-equipment" },
+      { "name": "ציוד חירום, בטיחות וחילוץ", "handle": "emergency-safety-and-rescue-equipment" },
+      { "name": "שמנים, נוזלים ותוספים", "handle": "oils-fluids-and-additives" },
+      { "name": "תאורה ואלקטרוניקה היקפית", "handle": "lighting-and-peripheral-electronics" }
+    ]
+  },
+  {
+    "name": "פארם וניקיון",
+    "handle": "pharm-and-cleaning",
+    "children": [
+      { "name": "איפור וקוסמטיקה", "handle": "make-up-and-cosmetics" },
+      { "name": "היגיינה אישית ופה", "handle": "personal-and-oral-hygiene" },
+      { "name": "חומרי ניקוי לבית", "handle": "household-cleaners" },
+      { "name": "טיפוח הפנים והעור", "handle": "facial-and-skin-care" },
+      { "name": "טיפוח השיער", "handle": "hair-care" },
+      { "name": "כביסה וטיפוח הטקסטיל", "handle": "washing-and-caring-for-textiles" },
+      { "name": "כביסה וטיפול בבגדים", "handle": "washing-and-care-of-clothes" },
+      { "name": "מוצרי ניקוי לבית", "handle": "home-cleaning-products" },
+      { "name": "ניקוי כלים ומטבח", "handle": "cleaning-dishes-and-kitchen" },
+      { "name": "עזרה ראשונה ובריאות", "handle": "first-aid-and-health" },
+      { "name": "רחצה וטיפוח הגוף", "handle": "bathing-and-body-care" }
+    ]
+  },
+  {
+    "name": "מנעולנות, אבטחה ופרזול",
+    "handle": "locksmithing-security-and-ironwork",
+    "children": [
+      { "name": "כלי עבודה וציוד למנעולנים", "handle": "tools-and-equipment-for-locksmiths" },
+      { "name": "מנעולים וצילינדרים", "handle": "locks-and-cylinders" },
+      { "name": "שלטים, גלמים ומפתחות", "handle": "remotes-pods-and-keys" },
+      { "name": "אבטחה חכמה ובקרת כניסה", "handle": "smart-security-and-access-control" },
+      { "name": "כספות ומוצרי אחסון מאובטח", "handle": "safes-and-secure-storage-products" },
+      { "name": "מכלולי מנעולנות לרכב", "handle": "car-lock-assemblies" },
+      { "name": "פרזול לדלתות", "handle": "ironing-for-doors" },
+      { "name": "פרזול לחלונות ותריסים", "handle": "ironing-for-windows-and-blinds" },
+      { "name": "פרזול לריהוט ומטבחים", "handle": "ironwork-for-furniture-and-kitchens" }
+    ]
+  },
+  {
+    "name": "חשמל, תאורה",
+    "handle": "electricity-lighting",
+    "children": [
+      { "name": "אמצעי פיקוד, סוללות ומטענים", "handle": "command-devices-batteries-and-chargers" },
+      { "name": "בית חכם ואוטומציה", "handle": "smart-home-and-automation" },
+      { "name": "כבלים, מוליכים ומעברי נתונים", "handle": "cables-conductors-and-data-transitions" },
+      { "name": "לוחות חשמל, הגנה ואביזרי התקנה", "handle": "electrical-panels-protection-and-installation-accessories" },
+      { "name": "נורות, נוריות ופסי LED", "handle": "bulbs-leds-and-led-strips" },
+      { "name": "ציוד חשמל, אביזרים ותשתיות", "handle": "electrical-equipment-accessories-and-infrastructure" },
+      { "name": "ציוד עבודה, כלי מדידה ובטיחות למוסמכים", "handle": "work-equipment-measuring-and-safety-tools-for-the-qualified" },
+      { "name": "תאורת גינה ופנסי הצפה סולארית", "handle": "garden-lighting-and-solar-flood-lights" },
+      { "name": "תאורת פנים לבית ולמשרד", "handle": "interior-lighting-for-home-and-office" }
+    ]
+  },
+  {
+    "name": "אינסטלציה ובנייה",
+    "handle": "plumbing-and-construction",
+    "children": [
+      { "name": "ברזים", "handle": "faucets" },
+      { "name": "חומרי איטום, הדבקה וציפוי", "handle": "sealing-adhesive-and-coating-materials" },
+      { "name": "חומרי בנייה וגבס", "handle": "construction-materials-and-plaster" },
+      { "name": "טיהור מים", "handle": "water-purification" },
+      { "name": "כלי עבודה", "handle": "tools" },
+      { "name": "כלים סניטרים ומקלחת", "handle": "sanitary-ware-and-shower" },
+      { "name": "מערכות חימום מים ודוודים", "handle": "water-heating-systems-and-boilers" },
+      { "name": "ניקוז ומשאבות", "handle": "drainage-pumps" },
+      { "name": "פנאומטיקה וכיבוי אש", "handle": "pneumatics-fire-fighting" },
+      { "name": "פרזול, קיבוע וחיבורים", "handle": "forging-fixing-and-connections" },
+      { "name": "צבע, טיח וחומרי גמר", "handle": "paint-plaster-and-finishing-materials" },
+      { "name": "צנרת, מחברים ואביזרים", "handle": "piping-connectors-and-accessories" }
+    ]
+  }
+]

@@ -1,5 +1,4 @@
-import { SellerTabs } from "@/components/organisms"
-import { SellerPageHeader } from "@/components/sections"
+import { SellerStorefront } from "@/components/sections/SellerStorefront/SellerStorefront"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { listRegions } from "@/lib/data/regions"
 import { getSellerByHandle } from "@/lib/data/seller"
@@ -47,7 +46,7 @@ export async function generateMetadata({
 
   const title = seller.name
   const description = `${seller.name} - ${
-    process.env.NEXT_PUBLIC_SITE_NAME || "Storefront"
+    process.env.NEXT_PUBLIC_SITE_NAME || "AZTrade"
   }`
 
   return {
@@ -59,10 +58,10 @@ export async function generateMetadata({
       languages,
     },
     openGraph: {
-      title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || "Storefront"}`,
+      title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || "AZTrade"}`,
       description,
       url: canonical,
-      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "Storefront",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "AZTrade",
       type: "website",
     },
   }
@@ -73,17 +72,15 @@ export default async function SellerPage({
   searchParams,
 }: {
   params: Promise<{ handle: string; locale: string }>
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; tab?: string; category?: string }>
 }) {
   const { handle: rawHandle, locale } = await params
   const handle = decodeSellerHandle(rawHandle)
-  const { page } = await searchParams
+  const { page, tab, category } = await searchParams
 
   const seller = (await getSellerByHandle(handle)) as SellerDTO
 
   const user = await retrieveCustomer()
-
-  const tab = "offers"
 
   if (!seller) {
     const t = getCopy(locale)
@@ -97,13 +94,13 @@ export default async function SellerPage({
 
   return (
     <main className="container">
-      <SellerPageHeader header seller={seller} user={user} />
-      <SellerTabs
-        tab={tab}
-        seller_id={seller.id}
-        seller_handle={seller.handle}
+      <SellerStorefront
+        seller={seller}
         locale={locale}
+        user={user}
         page={page ? parseInt(page, 10) : 1}
+        tab={tab}
+        category={category}
       />
     </main>
   )

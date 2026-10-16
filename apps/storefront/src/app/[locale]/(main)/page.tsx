@@ -19,7 +19,7 @@ import {
 import { getCopy } from "@/lib/i18n/copy"
 import { publicPageUrl } from "@/lib/helpers/locale-path"
 
-const DEFAULT_SITE_NAME = "טרדנסט — שוק סיטונאי B2B"
+const DEFAULT_SITE_NAME = "AZTrade"
 
 export async function generateMetadata({
   params,
@@ -153,7 +153,7 @@ export default async function Home({
         paragraph={t.heroParagraph}
         buttons={[
           { label: t.heroCatalog, path: "/categories" },
-          { label: t.heroSeller, path: "/seller/register" },
+          { label: t.heroSeller, path: "/join-as-seller" },
         ]}
       />
       <HomeStats />
