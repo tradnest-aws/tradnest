@@ -7,7 +7,7 @@ type TradnestLogoProps = {
   priority?: boolean
 }
 
-const LOGO_ASPECT = 1229 / 601
+const LOGO_ASPECT = 956 / 137
 
 export const TradnestLogo = ({
   className,
